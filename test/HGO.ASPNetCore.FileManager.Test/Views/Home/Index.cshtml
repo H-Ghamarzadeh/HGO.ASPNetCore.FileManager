@@ -1,0 +1,28 @@
+﻿@using HGO.ASPNetCore.FileManager.ViewComponentsModel
+
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Welcome</h1>
+    <div id='code-editor' style='width: 100%;height: 100%;font-size: 16px;'></div>
+    <p>@AppDomain.CurrentDomain.BaseDirectory</p>
+    <div style="height: 550px">
+        @await Component.InvokeAsync("FileManagerComponent", new FileManagerModel()
+        {
+            Id = "FM1",
+            RootFolder = AppDomain.CurrentDomain.BaseDirectory,
+            ApiEndPoint = Url.Action("HgoApi")
+        })
+    </div>
+    <p>@System.IO.Path.GetFullPath("../")</p>
+     <div style="height: 550px">
+        @await Component.InvokeAsync("FileManagerComponent", new FileManagerModel()
+        {
+            Id = "FM2",
+       RootFolder = "../",
+            ApiEndPoint = Url.Action("HgoApi")
+        })
+    </div> 
+</div>

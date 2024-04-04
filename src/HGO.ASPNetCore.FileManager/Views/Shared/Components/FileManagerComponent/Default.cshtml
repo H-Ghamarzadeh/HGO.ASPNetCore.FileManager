@@ -1,0 +1,9 @@
+﻿@model HGO.ASPNetCore.FileManager.ViewComponentsModel.FileManagerModel
+
+<div id="@Model.Id"></div>
+
+<script type="text/javascript">
+    document.addEventListener('DOMContentLoaded', function () {
+        new HgoFileManager('@Model.Id', '@Model.ApiEndPoint');
+    }, false);
+</script>

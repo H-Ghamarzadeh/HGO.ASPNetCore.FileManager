@@ -1,0 +1,64 @@
+.context {
+    display: inline-block;
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    min-width: 270px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #fff;
+    background: #292A2D;
+    font-size: 9pt;
+    border: 2px solid #fff836;
+    box-shadow: 4px 4px 3px -1px rgba(0, 0, 0, 0.5);
+    padding: 3px 0px;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.context .item {
+    padding: 4px 19px;
+    cursor: default;
+    color: inherit;
+    border: 2px solid #ff3636;
+}
+
+.context .item:hover {
+    background: #4B4C4F;
+}
+
+.context .item:hover .hotkey {
+    color: #fff;
+}
+
+.context .disabled {
+    color: #878B90;
+}
+
+.context .disabled:hover {
+    background: inherit;
+}
+
+.context .disabled:hover .hotkey {
+    color: #878B90;
+}
+
+.context .separator {
+    margin: 4px 0px;
+    height: 0;
+    padding: 0;
+    border-top: 1px solid #454545;
+}
+
+.label {
+    border: 2px solid #36ff5b;
+}
+
+.hotkey {
+    color: #878B90;
+    float: right;
+    border: 2px solid #8636ff;
+}

@@ -1,0 +1,135 @@
+﻿@model dynamic
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@TempData["FileName"]</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/codemirror.min.css" type="text/css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/addon/search/matchesonscrollbar.min.css" type="text/css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/addon/dialog/dialog.min.css" type="text/css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/addon/hint/show-hint.min.css" integrity="sha512-OmcLQEy8iGiD7PSm85s06dnR7G7C9C0VqahIPAj/KHk5RpOCmnC6R2ob1oK4/uwYhWa9BF1GC6tzxsC8TIx7Jg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/mode/xml/xml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/mode/css/css.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/mode/htmlmixed/htmlmixed.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/addon/scroll/annotatescrollbar.min.js" integrity="sha512-SPKYZCZyjHhQngKdsnTUX0Cb3+gx53U0nVUs/VAV7zYrLdDBmqRi3EF8gevJS6ft1OstIt8BZFEY4TTuVBKbhQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/addon/search/search.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/addon/search/searchcursor.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/addon/search/matchesonscrollbar.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/addon/search/jump-to-line.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/addon/search/match-highlighter.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/addon/selection/active-line.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/addon/dialog/dialog.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/addon/edit/closetag.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/addon/edit/closebrackets.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/addon/edit/matchbrackets.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/addon/edit/matchtags.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/addon/fold/indent-fold.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/addon/fold/xml-fold.min.js" integrity="sha512-3/N6i9E1fOr1I/8Yt3KL9uFeoEcjh3ceFXf83X6vIlElMZEq0LKF1JDYsIJYaZIJeG2YD9TnGCA4KAR2bEbz/w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/addon/hint/show-hint.min.js" integrity="sha512-yhmeAerubMLaGAsyS7sE8Oqub6GeTkBDQpkXo2JKHgg7JOCudQvcbDQc5rPxdl7MqcDusTJzSy+ODlyzAwETfQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/addon/hint/anyword-hint.min.js" integrity="sha512-wdYOcbX/zcS4tP3HEDTkdOI5UybyuRxJMQzDQIRcafRLY/oTDWyXO+P8SzuajQipcJXkb2vHcd1QetccSFAaVw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+
+    <style>
+        html, body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            padding: 0;
+            margin: 0;
+        }
+
+        .header {
+            padding: 10px;
+            background-color: #e9e9e9;
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            align-content: center;
+            align-items: center;
+            border-bottom: 1px solid #c7c7c7;
+            flex-wrap: wrap;
+        }
+
+            .header span {
+                overflow: hidden;
+                text-wrap: nowrap;
+            }
+
+            .header button {
+                border: none;
+                border-radius: 10px;
+                padding: 5px 20px;
+                cursor: pointer;
+                transition: all .25s linear;
+                color: white;
+            }
+
+            .header .saveBtn {
+                background-color: #348efd;
+            }
+
+            .header .closeBtn {
+                background-color: #858585;
+            }
+
+            .header button:hover {
+                background-color: #585858;
+                transition: all .25s linear;
+            }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <span>File Name: @TempData["FileFullPath"]</span>
+        <div>
+            <button class="saveBtn" onclick="SaveDocument()">Save</button>
+            <button class="closeBtn" onclick="window.close()">Close</button>
+        </div>
+    </div>
+    <textarea id="code-editor">@TempData["FileData"]</textarea>
+
+    <script type="text/javascript">
+        CodeMirror.commands.autocomplete = function (cm) {
+            cm.showHint({ hint: CodeMirror.hint.anyword });
+        }
+
+        var editor = undefined;
+        document.addEventListener('DOMContentLoaded', function () {
+            editor = CodeMirror.fromTextArea(document.getElementById('code-editor'), {
+                mode: "htmlmixed",
+                styleActiveLine: true,
+                lineNumbers: true,
+                autoCloseBrackets: true,
+                autoCloseTags: true,
+                matchTags: { bothTags: true },
+                matchBrackets: { bothBrackets: true },
+                highlightSelectionMatches: { showToken: /\w/ },
+                extraKeys: { "Ctrl-Space": "autocomplete" },
+                viewportMargin: Infinity
+            });
+            editor.setSize("100%", "100%");
+        }, false);
+
+        function SaveDocument() {
+            let content = editor.getValue();
+
+            $.post('@Context.Request.Path', { id: '@TempData["Id"]', command: "EditFileContent", parameters: JSON.stringify({ FilePath: '@TempData["FileFullPath"].ToString().Replace("\\", "\\\\")', Data: content }) }, function (data) {
+                if (data.message === 'OK') {
+                    window.close();
+                } else {
+                    alert(data.message);
+                }
+            }, 'json');
+        }
+    </script>
+</body>
+</html>

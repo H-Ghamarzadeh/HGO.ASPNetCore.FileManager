@@ -1,0 +1,418 @@
+﻿/*---- main continer start ----------------------*/
+.hgo-fm-wrapper {
+    border: solid 1px #e3e3e3;
+    border-radius: 7px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    flex-wrap: nowrap;
+    text-align: left !important;
+    resize: both;
+    height: 100%;
+    min-height: 200px;
+    min-width: 200px;
+    max-height: 100%;
+    max-width: 100%;
+    position: relative;
+}
+
+    .hgo-fm-wrapper .loadingPanel {
+        width: 100%;
+        height: 100%;
+        z-index: 10;
+        background-color: #0000006b;
+        position: absolute;
+    }
+
+        .hgo-fm-wrapper .loadingPanel .loader {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            position: relative;
+            animation: rotate 1s linear infinite;
+            top: 50%;
+            left: 50%;
+        }
+
+            .hgo-fm-wrapper .loadingPanel .loader::before, .hgo-fm-wrapper .loadingPanel .loader::after {
+                content: "";
+                box-sizing: border-box;
+                position: absolute;
+                inset: 0px;
+                border-radius: 50%;
+                border: 5px solid #ffffff;
+                animation: prixClipFix 2s linear infinite;
+            }
+
+            .hgo-fm-wrapper .loadingPanel .loader::after {
+                border-color: #2098ff;
+                animation: prixClipFix 2s linear infinite, rotate 0.5s linear infinite reverse;
+                inset: 6px;
+            }
+
+@keyframes rotate {
+    0% {
+        transform: rotate(0deg)
+    }
+
+    100% {
+        transform: rotate(360deg)
+    }
+}
+
+@keyframes prixClipFix {
+    0% {
+        clip-path: polygon(50% 50%,0 0,0 0,0 0,0 0,0 0)
+    }
+
+    25% {
+        clip-path: polygon(50% 50%,0 0,100% 0,100% 0,100% 0,100% 0)
+    }
+
+    50% {
+        clip-path: polygon(50% 50%,0 0,100% 0,100% 100%,100% 100%,100% 100%)
+    }
+
+    75% {
+        clip-path: polygon(50% 50%,0 0,100% 0,100% 100%,0 100%,0 100%)
+    }
+
+    100% {
+        clip-path: polygon(50% 50%,0 0,100% 0,100% 100%,0 100%,0 0)
+    }
+}
+/*---- main continer end ----------------------*/
+
+/*---- Scrollbar start ----------------------*/
+.hgo-fm-wrapper ::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+}
+
+.hgo-fm-wrapper ::-webkit-scrollbar-track {
+    box-shadow: inset 0 0 5px #d1d1d1;
+    border-radius: 50px;
+}
+
+.hgo-fm-wrapper ::-webkit-scrollbar-thumb {
+    background: #c3c3c3;
+    border-radius: 50px;
+}
+
+    .hgo-fm-wrapper ::-webkit-scrollbar-thumb:hover {
+        background: #9f9f9f;
+    }
+/*---- Scrollbar end ----------------------*/
+
+/*---- Menu/Nav Bar start ----------------------*/
+.hgo-fm-menu {
+    padding: 3px;
+    border-bottom: solid 1px #e3e3e3;
+    background-color: #f9f9f9;
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    font-size: 13px;
+    align-items: center;
+    justify-content: space-between;
+}
+
+    .hgo-fm-menu .button-continer {
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+        align-content: center;
+        align-items: center;
+    }
+
+    .hgo-fm-menu .input-continer {
+        display: flex;
+        flex-grow: 1;
+        flex-direction: row;
+        align-items: center;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-content: center;
+    }
+
+    .hgo-fm-menu input {
+        border-radius: 30px;
+        box-shadow: 0 3px 20px 0 rgba(0,0,0,.07);
+        border: solid 1px #fff;
+        background-color: #fff;
+        padding: 3px 10px;
+        color: #727272;
+        flex: auto;
+        transition: all .25s linear;
+        margin: 3px;
+    }
+
+        .hgo-fm-menu input:focus-visible {
+            border: solid 1px #aab9ff;
+            transition: all .25s linear;
+            outline: none;
+        }
+
+    .hgo-fm-menu hr {
+        height: 12px;
+        width: 1px;
+        margin: 0px 3px;
+    }
+
+    .hgo-fm-menu button {
+        border-radius: 5px;
+        border: solid 1px #d1d1d1;
+        margin: 3px;
+        transition: all .25s linear;
+        color: #3e5a70;
+        font-size: 16px;
+    }
+
+        .hgo-fm-menu button:hover:enabled {
+            background: rgba(46, 115, 252, 0.11);
+            border: 1px solid rgb(0 93 255 / 36%);
+            transition: all .25s linear;
+        }
+
+        .hgo-fm-menu button:disabled {
+            color: #cdcdcd;
+        }
+/*---- Menu/Nav Bar end ----------------------*/
+
+/*---- footer breadcrumb start ----------------------*/
+.hgo-fm-breadcrumb {
+    padding: 5px;
+    border-top: solid 1px #e3e3e3;
+    background-color: #f9f9f9;
+}
+
+    .hgo-fm-breadcrumb ul {
+        display: flex;
+        flex-wrap: wrap;
+        padding: 0 0;
+        margin: 0;
+        list-style: none;
+        align-items: center;
+        align-content: center;
+        flex-direction: row;
+    }
+
+    .hgo-fm-breadcrumb li {
+        color: #000000ad;
+        font-size: 12px;
+    }
+
+        .hgo-fm-breadcrumb li:before {
+            content: '\003E ';
+            margin: 0 2px;
+        }
+
+        .hgo-fm-breadcrumb li button {
+            background: rgba(46, 115, 252, 0.11);
+            border: 1px solid rgb(0 93 255 / 36%);
+            border-radius: 3px;
+            padding: 0.1em 0.3em;
+            text-decoration: none;
+            text-align: center;
+            transition: all .25s linear;
+        }
+
+            .hgo-fm-breadcrumb li button:hover {
+                background: rgb(46 115 252 / 23%);
+                border: 1px solid rgb(0 93 255 / 61%);
+                transition: all .25s linear;
+            }
+/*---- footer breadcrumb end ----------------------*/
+
+/*---- filest list and tree continer start ----------------------*/
+.hgo-fm-content-wrapper {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: stretch;
+    flex: 1;
+    overflow: auto;
+}
+
+    .hgo-fm-content-wrapper .split {
+        display: flex;
+        flex-direction: row;
+    }
+
+    .hgo-fm-content-wrapper .gutter {
+        background-color: #eee;
+        background-repeat: no-repeat;
+        background-position: 50%;
+    }
+
+        .hgo-fm-content-wrapper .gutter.gutter-horizontal {
+            background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAeCAYAAADkftS9AAAAIklEQVQoU2M4c+bMfxAGAgYYmwGrIIiDjrELjpo5aiZeMwF+yNnOs5KSvgAAAABJRU5ErkJggg==');
+            cursor: col-resize;
+        }
+/*---- filest list and tree continer end ----------------------*/
+
+/*---- tree continer start ----------------------*/
+.hgo-fm-tree {
+    overflow: auto;
+    background-color: #f9f9f9;
+}
+
+    .hgo-fm-tree .jstree-icon.jstree-themeicon {
+        background-size: cover;
+        background-image: url(/hgofilemanager/images/folder.png);
+        background-position: center;
+    }
+
+    .hgo-fm-tree .jstree-anchor {
+        border: 1px solid #00000000;
+    }
+
+        .hgo-fm-tree .jstree-anchor.jstree-hovered {
+            background: rgba(46, 115, 252, 0.11);
+            border: 1px solid rgb(0 93 255 / 36%);
+            border-radius: 2px;
+        }
+/*---- tree continer end ----------------------*/
+
+/*---- filest list continer end ----------------------*/
+.hgo-fm-fsitems {
+    overflow: auto;
+    display: flex;
+    padding: 15px;
+    user-select: none;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-content: flex-start;
+    flex-wrap: wrap;
+    align-items: flex-start;
+}
+
+    .hgo-fm-fsitems .fsitem {
+        height: 150px;
+        width: 150px;
+        margin: 3px;
+        background: rgba(66, 68, 90, 0.075);
+        border-radius: 10px;
+        cursor: pointer;
+        font-size: 14px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-evenly;
+        padding: 8px;
+        align-items: center;
+        border: 1px solid #00000000;
+    }
+
+        .hgo-fm-fsitems .fsitem img {
+            max-width: 100px;
+            max-height: 100px;
+            display: block;
+        }
+
+    .hgo-fm-fsitems.list {
+        overflow: auto;
+        display: flex;
+        padding: 15px;
+        user-select: none;
+        flex-direction: column;
+        justify-content: flex-start;
+        align-content: flex-start;
+        flex-wrap: nowrap;
+        align-items: flex-start;
+    }
+
+        .hgo-fm-fsitems.list .fsitem {
+            margin: 2px;
+            background: rgba(66, 68, 90, 0.075);
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            flex-direction: row;
+            justify-content: flex-start;
+            padding: 2px 8px;
+            align-items: center;
+            flex-wrap: nowrap;
+            height: initial;
+            width: initial;
+            overflow: initial;
+        }
+
+            .hgo-fm-fsitems.list .fsitem img {
+                max-width: 20px;
+                max-height: 20px;
+                display: block;
+                margin-right: 3px;
+            }
+
+    .hgo-fm-fsitems .fsitem span {
+        text-overflow: ellipsis;
+        display: block;
+        max-width: 100%;
+        overflow: hidden;
+        text-wrap: nowrap;
+    }
+
+    .hgo-fm-fsitems .fsitem.selected {
+        background: rgba(46, 115, 252, 0.11);
+        border: 1px solid rgb(0 93 255 / 36%);
+    }
+
+.selection-area {
+    background: rgba(46, 115, 252, 0.11);
+    border: 1px solid rgba(98, 155, 255, 0.85);
+    border-radius: 0.15em;
+}
+/*---- filest list continer end ----------------------*/
+
+
+/*---- upload panel Start ----------------------*/
+.hgo-fm-wrapper .hgo-upload-panel {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: #4e4e4edb;
+    border: none;
+    border-top: 1px solid #dddddd;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    overflow: auto;
+    align-content: center;
+    align-items: center;
+    padding: 15px;
+    justify-content: center;
+}
+
+    .hgo-fm-wrapper .hgo-upload-panel .close-button {
+        border-radius: 100px;
+        background-color: #4ca4ff;
+        color: white;
+        border: 0px;
+        padding: 5px 11px;
+        font-size: small;
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        z-index: 100;
+        transition: all .25s linear;
+        cursor: pointer;
+    }
+
+        .hgo-fm-wrapper .hgo-upload-panel .close-button:hover {
+            background-color: #115193;
+            transition: all .25s linear;
+        }
+
+.hgo-fm-wrapper .dropzone .dz-message .dz-button {
+    color: white;
+}
+
+.hgo-fm-wrapper .dropzone .dz-preview.dz-image-preview {
+    background: #00000000;
+}
+/*---- upload panel end ----------------------*/
