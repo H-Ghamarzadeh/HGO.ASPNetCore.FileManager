@@ -16,7 +16,15 @@
     <None Remove="hgofilemanager\HgoFileManager.js" />
     <None Remove="hgofilemanager\images\Loading.gif" />
     <None Remove="hgofilemanager\js.cookie\js.cookie.js" />
+    <None Remove="hgofilemanager\jsTree\LICENSE-MIT" />
+    <None Remove="hgofilemanager\jsTree\README.md" />
+    <None Remove="hgofilemanager\split.js\LICENSE.txt" />
+    <None Remove="hgofilemanager\split.js\README.md" />
     <None Remove="hgofilemanager\split.js\split.js" />
+    <None Remove="hgofilemanager\toastify\LICENSE" />
+    <None Remove="hgofilemanager\toastify\README.md" />
+    <None Remove="hgofilemanager\viselect\LICENSE" />
+    <None Remove="hgofilemanager\viselect\README.md" />
     <None Remove="hgofilemanager\viselect\viselect.js" />
     <None Remove="Views\Shared\Components\FileManagerComponent\Default.cshtml" />
     <None Remove="Views\Shared\HgoFileManager\Edit.cshtml" />
