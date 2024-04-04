@@ -5,12 +5,3 @@
 <h1>@ViewData["Title"]</h1>
 
 <p>Use this page to detail your site's privacy policy.</p>
-<p>@System.IO.Path.GetFullPath("../")</p>
-<div style="height: 550px">
-    @await Component.InvokeAsync("FileManagerComponent", new FileManagerModel()
-    {
-        Id = "FM2",
-        RootFolder = "../",
-        ApiEndPoint = Url.Action("HgoApi")
-    })
-</div>

@@ -4,7 +4,6 @@ using HGO.ASPNetCore.FileManager.CommandsProcessor;
 using HGO.ASPNetCore.FileManager.ViewComponents;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation;
 using Microsoft.Extensions.FileProviders;
 
 namespace HGO.ASPNetCore.FileManager

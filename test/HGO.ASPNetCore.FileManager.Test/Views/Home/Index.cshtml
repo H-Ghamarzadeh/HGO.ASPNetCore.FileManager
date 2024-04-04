@@ -5,10 +5,8 @@
 }
 
 <div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <div id='code-editor' style='width: 100%;height: 100%;font-size: 16px;'></div>
-    <p>@AppDomain.CurrentDomain.BaseDirectory</p>
-    <div style="height: 550px">
+    <h1 class="display-4">HGO ASP.Net Core File Manager Example</h1>
+    <div style="height: 550px; margin-bottom:20px">
         @await Component.InvokeAsync("FileManagerComponent", new FileManagerModel()
         {
             Id = "FM1",
@@ -16,13 +14,31 @@
             ApiEndPoint = Url.Action("HgoApi")
         })
     </div>
-    <p>@System.IO.Path.GetFullPath("../")</p>
-     <div style="height: 550px">
-        @await Component.InvokeAsync("FileManagerComponent", new FileManagerModel()
-        {
-            Id = "FM2",
-       RootFolder = "../",
-            ApiEndPoint = Url.Action("HgoApi")
-        })
-    </div> 
+    <button onclick="getSelectedItems('file')" class="btn btn-success">Get Selected Files</button>
+    <button onclick="getSelectedItems('folder')" class="btn btn-success">Get Selected Folders</button>
+    <button onclick="AddNewItemToContextMenu()" class="btn btn-success">Add New Item To Context Menu</button>
+    <button onclick="AddNewButtonToMenu()" class="btn btn-success">Add New Button To Menu</button>
+    <script>
+        function getSelectedItems(itemType){
+            let fileManager = HgoFileManager.selectById("FM1");
+            let selections = fileManager.getSelectedItemsPath(itemType);
+            if (selections && selections.length > 0) {
+                alert(selections); }
+            else{
+                fileManager.showToastify("Please select an item");
+            }
+        }
+
+        function AddNewButtonToMenu(){
+            let fileManager = HgoFileManager.selectById("FM1");
+            fileManager.addButtonToMenu("Hello", (e) => alert('Hello!'));
+            alert('New button has been added to menu!');
+        }
+
+        function AddNewItemToContextMenu() {
+            let fileManager = HgoFileManager.selectById("FM1");
+            fileManager.contextMenu.items.push({ text: 'Hello', onclick: (e) => alert('Hello!') });
+            alert('New item has been added to context menu!');
+        }
+    </script>
 </div>

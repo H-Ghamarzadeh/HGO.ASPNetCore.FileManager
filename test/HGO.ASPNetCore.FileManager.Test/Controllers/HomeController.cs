@@ -2,7 +2,6 @@ using HGO.ASPNetCore.FileManager.Test.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 using HGO.ASPNetCore.FileManager.CommandsProcessor;
-using Microsoft.Extensions.FileProviders;
 
 namespace HGO.ASPNetCore.FileManager.Test.Controllers
 {

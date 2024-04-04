@@ -1,6 +1,4 @@
 using HGO.ASPNetCore.FileManager;
-using Microsoft.AspNetCore.Mvc.Razor;
-using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
