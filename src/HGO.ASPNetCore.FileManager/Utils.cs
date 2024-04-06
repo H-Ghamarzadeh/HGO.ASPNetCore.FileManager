@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.StaticFiles;
+﻿using HGO.ASPNetCore.FileManager.DTOs;
+using Microsoft.AspNetCore.StaticFiles;
+using SharpCompress.Common;
 
 namespace HGO.ASPNetCore.FileManager
 {
@@ -119,6 +121,57 @@ namespace HGO.ASPNetCore.FileManager
             }
 
             return false;
+        }
+
+        public static FileDetail? GetFileDetail(this string filePath, string physicalRootPath, string rootName = "Root")
+        {
+            if (!File.Exists(filePath)) return null;
+
+            var fileDetail = new FileDetail();
+
+            string[] sizes = { "B", "KB", "MB", "GB", "TB" };
+            var fileInfo = new FileInfo(filePath);
+            double len = fileInfo.Length;
+            var order = 0;
+            while (len >= 1024 && order < sizes.Length - 1)
+            {
+                order++;
+                len = len / 1024;
+            }
+
+            fileDetail.FileSize = $"{len:0.##} {sizes[order]}";
+            fileDetail.CreateDate = fileInfo.CreationTime.ToString("yyyy MMM dd - HH:mm");
+            fileDetail.ModifiedDate = fileInfo.LastWriteTime.ToString("yyyy MMM dd - HH:mm");
+            fileDetail.FileName = fileInfo.Name;
+            fileDetail.VirtualPath = filePath.ConvertPhysicalToVirtualPath(physicalRootPath, rootName);
+
+            return fileDetail;
+        }
+
+        public static FolderDetail? GetFolderDetail(this string folderPath, string physicalRootPath, string rootName = "Root")
+        {
+            if (!Directory.Exists(folderPath)) return null;
+
+            var folderDetail = new FolderDetail();
+
+            var directoryInfo = new DirectoryInfo(folderPath);
+
+            folderDetail.CreateDate = directoryInfo.CreationTime.ToString("yyyy MMM dd - HH:mm");
+            folderDetail.ModifiedDate = directoryInfo.LastWriteTime.ToString("yyyy MMM dd - HH:mm");
+            folderDetail.FolderName = directoryInfo.Name;
+            folderDetail.VirtualPath = folderPath.ConvertPhysicalToVirtualPath(physicalRootPath, rootName);
+
+            return folderDetail;
+        }
+
+        public static List<string> GetFiles(string path, string searchPattern, SearchOption searchOption)
+        {
+            return Directory.GetFiles(path, searchPattern, searchOption).Where(p=> !new FileInfo(p).Attributes.HasFlag(FileAttributes.Hidden)).OrderBy(p=> p).ToList();
+        }
+
+        public static List<string> GetDirectories(string path, string searchPattern, SearchOption searchOption)
+        {
+            return Directory.GetDirectories(path, searchPattern, searchOption).Where(p => !new DirectoryInfo(p).Attributes.HasFlag(FileAttributes.Hidden)).OrderBy(p => p).ToList();
         }
     }
 }

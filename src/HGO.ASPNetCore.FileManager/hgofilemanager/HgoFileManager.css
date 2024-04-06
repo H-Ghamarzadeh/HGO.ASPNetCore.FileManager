@@ -357,6 +357,17 @@
         text-wrap: nowrap;
     }
 
+    .hgo-fm-fsitems .fsitem .file-size {
+        color: #8b8b8b;
+        font-size: smaller;
+        text-align: center;
+    }
+
+    .hgo-fm-fsitems.list .fsitem .file-size {
+        display: inline;
+        margin-left: 30px;
+    }
+
     .hgo-fm-fsitems .fsitem.selected {
         background: rgba(46, 115, 252, 0.11);
         border: 1px solid rgb(0 93 255 / 36%);

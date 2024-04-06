@@ -1,4 +1,4 @@
-﻿namespace HGO.ASPNetCore.FileManager.CommandsProcessor.Dto;
+﻿namespace HGO.ASPNetCore.FileManager.DTOs;
 
 internal class CopyCutCommandParameters
 {

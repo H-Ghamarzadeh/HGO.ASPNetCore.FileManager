@@ -260,13 +260,14 @@
     }
 
     #fillFolderContent(data) {
-        if (data.error) {
-            this.showToastify(data.error);
+        if (data.Error) {
+            this.showToastify(data.Error);
+            return;
         }
 
-        if (!data.files || !data.dirs || !data.path) { return; }
+        if (!data.Files || !data.Folders || !data.CurrentPath) { return; }
 
-        let currentPath = data.path.replace(/\\+$/, '') + "\\";
+        let currentPath = data.CurrentPath.replace(/\\+$/, '') + "\\";
         this.#setCurrentPath(currentPath);
 
         let self = this;
@@ -276,15 +277,15 @@
 
         let jsTreeNodes = [];
 
-        $.each(data.dirs, function (idx, folderFullPath) {
+        $.each(data.Folders, function (idx, folder) {
 
-            let dirName = folderFullPath.replace(currentPath, "");
+            //let dirName = folder.VirtualPath.replace(currentPath, "");
 
-            jsTreeNodes.push({ 'text': dirName, 'state': { 'opened': false, 'selected': false } });
+            jsTreeNodes.push({ 'text': folder.FolderName, 'state': { 'opened': false, 'selected': false } });
 
             let fsItemDiv = document.createElement('div');
-            fsItemDiv.setAttribute('title', dirName);
-            fsItemDiv.setAttribute('path', folderFullPath);
+            fsItemDiv.setAttribute('title', 'Name: ' + folder.FolderName + '\nCreate Date: ' + folder.CreateDate + '\nModified Date: ' + folder.ModifiedDate);
+            fsItemDiv.setAttribute('path', folder.VirtualPath);
             fsItemDiv.setAttribute('item-type', 'folder');
             fsItemDiv.classList.add('fsitem');
             fsItemDiv.addEventListener('dblclick', (e) => {
@@ -300,17 +301,17 @@
             fsItemDiv.appendChild(fsItemImg);
 
             let fsItemSpan = document.createElement('span');
-            fsItemSpan.innerText = dirName;
+            fsItemSpan.innerText = folder.FolderName;
             fsItemDiv.appendChild(fsItemSpan);
 
             selectDiv.appendChild(fsItemDiv);
         });
 
-        data.files.forEach((file) => {
+        data.Files.forEach((file) => {
 
             let fsItemDiv = document.createElement('div');
-            fsItemDiv.setAttribute('title', file);
-            fsItemDiv.setAttribute('path', currentPath + file);
+            fsItemDiv.setAttribute('title', 'Name: ' + file.FileName + '\nSize: ' + file.FileSize + '\nCreate Date: ' + file.CreateDate + '\nModified Date: ' + file.ModifiedDate);
+            fsItemDiv.setAttribute('path', file.VirtualPath);
             fsItemDiv.setAttribute('item-type', 'file');
             fsItemDiv.classList.add('fsitem');
             fsItemDiv.addEventListener('dblclick', (e) => {
@@ -321,12 +322,17 @@
             let fsItemImg = document.createElement('img');
             fsItemImg.classList.add('lozad');
             fsItemImg.src = '/hgofilemanager/images/loading.gif';
-            fsItemImg.setAttribute('data-src', this.apiUrl + `?id=${this.thisId}&command=filePreview&parameters=${currentPath + file}`);
+            fsItemImg.setAttribute('data-src', this.apiUrl + `?id=${this.thisId}&command=filePreview&parameters=${file.VirtualPath}`);
             fsItemDiv.appendChild(fsItemImg);
 
             let fsItemSpan = document.createElement('span');
-            fsItemSpan.innerText = file;
+            fsItemSpan.innerText = file.FileName;
             fsItemDiv.appendChild(fsItemSpan);
+
+            let fsItemSizeSpan = document.createElement('span');
+            fsItemSizeSpan.innerText = file.FileSize;
+            fsItemSizeSpan.classList.add('file-size');
+            fsItemSpan.appendChild(fsItemSizeSpan);
 
             selectDiv.appendChild(fsItemDiv);
 

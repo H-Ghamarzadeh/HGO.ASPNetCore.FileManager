@@ -1,4 +1,4 @@
-﻿using HGO.ASPNetCore.FileManager.CommandsProcessor.Dto;
+﻿using HGO.ASPNetCore.FileManager.DTOs;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
@@ -9,6 +9,8 @@ using SharpCompress.Archives.Zip;
 using SharpCompress.Common;
 using SharpCompress.Readers;
 using SharpCompress.Writers;
+using System.IO;
+using SharpCompress.Compressors.Deflate;
 
 namespace HGO.ASPNetCore.FileManager.CommandsProcessor;
 
@@ -28,103 +30,85 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
 
     public async Task<IActionResult> ProcessCommandAsync(string id, string command, string parameters, IFormFile file)
     {
-        try
-        {
-            var result = new ContentResult()
-            {
-                StatusCode = 200
-            };
-            
-            if (command.ToLower() == "getFolderContent".ToLower())
-            {
-                result.Content = GetContent(id, parameters);
-                return result;
-            }
-            else if (command.ToLower() == "Search".ToLower())
-            {
-                var parameter = JsonConvert.DeserializeObject<SearchCommandParameters>(parameters);
-                result.Content = GetContent(id, parameter.Path, parameter.Query);
-                return result;
-            }
-            else if (command.ToLower() == "CreateNewFolder".ToLower())
-            {
-                result.Content = CreateNewFolder(id, JsonConvert.DeserializeObject<CreateNewFolderCommandParameters>(parameters));
-                return result;
-            }
-            else if (command.ToLower() == "CreateNewFile".ToLower())
-            {
-                result.Content = CreateNewFile(id, JsonConvert.DeserializeObject<CreateNewFileCommandParameters>(parameters));
-                return result;
-            }
-            else if (command.ToLower() == "DeleteItems".ToLower())
-            {
-                result.Content = DeleteItems(id, JsonConvert.DeserializeObject<DeleteItemsCommandParameters>(parameters));
-                return result;
-            }
-            else if (command.ToLower() == "RenameItems".ToLower())
-            {
-                result.Content = RenameItems(id, JsonConvert.DeserializeObject<RenameItemsCommandParameters>(parameters));
-                return result;
-            }
-            else if (command.ToLower() == "ZipItems".ToLower())
-            {
-                result.Content = ZipItems(id, JsonConvert.DeserializeObject<ZipItemsCommandParameters>(parameters));
-                return result;
-            }
-            else if (command.ToLower() == "ExtractItems".ToLower())
-            {
-                result.Content = ExtractItems(id, JsonConvert.DeserializeObject<ExtractItemsCommandParameters>(parameters));
-                return result;
-            }
-            else if (command.ToLower() == "DownloadItem".ToLower())
-            {
-                return DownloadItem(id, parameters);
-            }
-            else if (command.ToLower() == "ShowFileContent".ToLower())
-            {
-                return ShowFileContent(id, parameters);
-            }
-            else if (command.ToLower() == "EditFileContent".ToLower())
-            {
-                result.Content = EditFileContent(id, JsonConvert.DeserializeObject<EditFileCommandParameters>(parameters));
-                return result;
-            }
-            else if (command.ToLower() == "Upload".ToLower())
-            {
-                return await Upload(id, parameters, file);
-            }
-            else if (command.ToLower() == "Copy".ToLower() || command.ToLower() == "Cut".ToLower())
-            {
-                result.Content = CopyCutItems(id, command.ToLower(), JsonConvert.DeserializeObject<CopyCutCommandParameters>(parameters));
-                return result;
-            }
-            else if (command.ToLower() == "FilePreview".ToLower())
-            {
-                return FilePreview(id, parameters);
-            }
 
-            return new ContentResult(){
-                Content = JsonConvert.SerializeObject(new
-                {
-                    error = "Unknown command!"
-                }),
-                StatusCode = 500
-            };
-        }
-        catch (Exception e)
+        if (string.IsNullOrWhiteSpace(command))
         {
             return new ContentResult()
             {
-                Content = JsonConvert.SerializeObject(new
-                {
-                    error = e.Message
-                }),
-                StatusCode = 500
+                Content = JsonConvert.SerializeObject(new { Error = "Unknown command!" })
             };
         }
+
+        return await Task.Factory.StartNew(() =>
+        {
+            var result = new ContentResult();
+            try
+            {
+                switch (command.ToLower().Trim())
+                {
+                    case "getfoldercontent":
+                        result.Content = GetContent(id, parameters);
+                        return result;
+                    case "search":
+                        result.Content = Search(id, JsonConvert.DeserializeObject<SearchCommandParameters>(parameters));
+                        return result;
+                    case "createnewfolder":
+                        result.Content = CreateNewFolder(id,
+                            JsonConvert.DeserializeObject<CreateNewFolderCommandParameters>(parameters));
+                        return result;
+                    case "createnewfile":
+                        result.Content = CreateNewFile(id,
+                            JsonConvert.DeserializeObject<CreateNewFileCommandParameters>(parameters));
+                        return result;
+                    case "deleteitems":
+                        result.Content = DeleteItems(id,
+                            JsonConvert.DeserializeObject<DeleteItemsCommandParameters>(parameters));
+                        return result;
+                    case "renameitems":
+                        result.Content = RenameItems(id,
+                            JsonConvert.DeserializeObject<RenameItemsCommandParameters>(parameters));
+                        return result;
+                    case "zipitems":
+                        result.Content = ZipItems(id,
+                            JsonConvert.DeserializeObject<ZipItemsCommandParameters>(parameters));
+                        return result;
+                    case "extractitems":
+                        result.Content = ExtractItems(id,
+                            JsonConvert.DeserializeObject<ExtractItemsCommandParameters>(parameters));
+                        return result;
+                    case "copy":
+                    case "cut":
+                        result.Content = CopyCutItems(id, command.ToLower(),
+                            JsonConvert.DeserializeObject<CopyCutCommandParameters>(parameters));
+                        return result;
+                    case "editfilecontent":
+                        return EditFileContent(id,
+                            JsonConvert.DeserializeObject<EditFileCommandParameters>(parameters));
+                    case "downloaditem":
+                        return DownloadItem(id, parameters);
+                    case "showfilecontent":
+                        return ShowFileContent(id, parameters);
+                    case "upload":
+                        return Upload(id, parameters, file);
+                    case "filepreview":
+                        return FilePreview(id, parameters);
+                    default:
+                        result.Content = JsonConvert.SerializeObject(new { Error = "Unknown command!" });
+                        return result;
+                }
+            }
+            catch (Exception e)
+            {
+                var physicalRootPath = GetCurrentSessionPhysicalRootPath(id);
+                result.Content = JsonConvert.SerializeObject(string.IsNullOrWhiteSpace(physicalRootPath)
+                    ? new { Error = e.Message }
+                    : new { Error = e.Message.Replace(physicalRootPath.TrimEnd(Path.DirectorySeparatorChar), "Root") });
+                return result;
+            }
+        });
     }
 
-    public string? GetCurrentUserRootPath(string id)
+    public string? GetCurrentSessionPhysicalRootPath(string id)
     {
         var sessionKey = RootPathSessionKey + id;
         if (_session == null || string.IsNullOrWhiteSpace(_session.GetString(sessionKey)))
@@ -140,430 +124,394 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
         return Path.GetFullPath(_session.GetString(sessionKey).Trim());
     }
 
-    private string GetContent(string id, string path, string searchPattern = "*.*")
+    private string GetContent(string id, string virtualPath)
     {
-        var rootPath = GetCurrentUserRootPath(id);
-        if (string.IsNullOrWhiteSpace(rootPath)) { return JsonConvert.SerializeObject(new { error = "Something went wrong!" }); }
-
-        path = path.ConvertVirtualToPhysicalPath(rootPath);
-
-        if (!path.ToLower().StartsWith(rootPath.ToLower()) || !Directory.Exists(path))
+        var physicalRootPath = GetCurrentSessionPhysicalRootPath(id);
+        if (string.IsNullOrWhiteSpace(physicalRootPath))
         {
-            path = rootPath;
+            throw new Exception("Invalid Root Path!");
         }
 
-        if (string.IsNullOrWhiteSpace(searchPattern))
+        var physicalPath = virtualPath.ConvertVirtualToPhysicalPath(physicalRootPath);
+
+        if (!physicalPath.ToLower().StartsWith(physicalRootPath.ToLower()) || !Directory.Exists(physicalPath))
+        {
+            physicalPath = physicalRootPath;
+        }
+
+        var result = new GetContentResultModel()
+        {
+            CurrentPath = physicalPath.ConvertPhysicalToVirtualPath(physicalRootPath),
+        };
+
+        result.Files.AddRange(Utils.GetFiles(physicalPath, "*.*", SearchOption.TopDirectoryOnly)
+            .Select(p => p.GetFileDetail(physicalRootPath)));
+        result.Folders.AddRange(Utils.GetDirectories(physicalPath, "*.*", SearchOption.TopDirectoryOnly)
+            .OrderBy(p => p).Select(p => p.GetFolderDetail(physicalRootPath)));
+
+        return result.ToString();
+    }
+
+    private string Search(string id, SearchCommandParameters commandParameters)
+    {
+        var physicalRootPath = GetCurrentSessionPhysicalRootPath(id);
+        if (string.IsNullOrWhiteSpace(physicalRootPath))
+        {
+            throw new Exception("Invalid Root Path!");
+        }
+
+        var physicalPath = commandParameters.Path.ConvertVirtualToPhysicalPath(physicalRootPath);
+
+        if (!physicalPath.ToLower().StartsWith(physicalRootPath.ToLower()) || !Directory.Exists(physicalPath))
+        {
+            physicalPath = physicalRootPath;
+        }
+
+        var searchPattern = commandParameters.Query;
+        if (string.IsNullOrWhiteSpace(commandParameters.Query))
         {
             searchPattern = "*.*";
         }
 
-        var dirs = new List<string>();
-        var files = new List<string>();
-        var error = string.Empty;
-        try
+        var result = new GetContentResultModel()
         {
-            dirs.AddRange(Directory.GetDirectories(path, searchPattern, SearchOption.TopDirectoryOnly).Select(p=> p.ConvertPhysicalToVirtualPath(rootPath)).OrderBy(p => p));
-            files.AddRange(Directory.GetFiles(path, searchPattern, SearchOption.TopDirectoryOnly).Select(p => Path.GetFileName(p)).OrderBy(p => p));
-        }
-        catch (Exception ex)  
-        {
-            error = ex.Message;
-            dirs.Clear();
-            files.Clear();
-            path = rootPath;
+            CurrentPath = physicalPath.ConvertPhysicalToVirtualPath(physicalRootPath),
+        };
 
-            dirs.AddRange(Directory.GetDirectories(path, "*.*", SearchOption.TopDirectoryOnly).Select(p => p.ConvertPhysicalToVirtualPath(rootPath)).OrderBy(p => p));
-            files.AddRange(Directory.GetFiles(path, "*.*", SearchOption.TopDirectoryOnly).Select(p => Path.GetFileName(p)).OrderBy(p => p));
-        }
-        
-        return JsonConvert.SerializeObject(new
-        {
-            path = path.ConvertPhysicalToVirtualPath(rootPath).Replace(Path.DirectorySeparatorChar, '\\'),
-            dirs,
-            files,
-            error
-        });
+        result.Files.AddRange(Utils.GetFiles(physicalPath, searchPattern, SearchOption.AllDirectories).OrderBy(p => p)
+            .Select(p => p.GetFileDetail(physicalRootPath)));
+        result.Folders.AddRange(Utils.GetDirectories(physicalPath, searchPattern, SearchOption.AllDirectories)
+            .OrderBy(p => p).Select(p => p.GetFolderDetail(physicalRootPath)));
+
+        return result.ToString();
     }
 
     private string CreateNewFolder(string id, CreateNewFolderCommandParameters commandParameters)
     {
-        var rootPath = GetCurrentUserRootPath(id);
-        if (string.IsNullOrWhiteSpace(rootPath)) { return JsonConvert.SerializeObject(new { error = "Something went wrong!" }); }
-
-        var path = commandParameters.Path.ConvertVirtualToPhysicalPath(rootPath);
-
-        if (!path.ToLower().StartsWith(rootPath.ToLower()) || !Directory.Exists(path))
+        var physicalRootPath = GetCurrentSessionPhysicalRootPath(id);
+        if (string.IsNullOrWhiteSpace(physicalRootPath))
         {
-            path = rootPath;
+            throw new Exception("Invalid Root Path!");
         }
 
-        var dirs = new List<string>();
-        var files = new List<string>();
-        var error = string.Empty;
-        try
-        {
-            var newFolder = Path.Combine(path, commandParameters.FolderName);
-            var tmp = newFolder;
-            var counter = 1;
-            while (Directory.Exists(tmp))
-            {
-                tmp = newFolder+ $" ({counter})";
-                counter++;
-            }
-            newFolder = tmp;
-            Directory.CreateDirectory(newFolder);
+        var physicalPath = commandParameters.Path.ConvertVirtualToPhysicalPath(physicalRootPath);
 
-            dirs.AddRange(Directory.GetDirectories(path, "*.*", SearchOption.TopDirectoryOnly).Select(p => p.ConvertPhysicalToVirtualPath(rootPath)).OrderBy(p => p));
-            files.AddRange(Directory.GetFiles(path, "*.*", SearchOption.TopDirectoryOnly).Select(p => Path.GetFileName(p)).OrderBy(p => p));
-        }
-        catch (Exception ex)
+        if (!physicalPath.ToLower().StartsWith(physicalRootPath.ToLower()) || !Directory.Exists(physicalPath))
         {
-            error = "Invalid folder name!";
-            dirs.Clear();
-            files.Clear();
-            path = rootPath;
-
-            dirs.AddRange(Directory.GetDirectories(path, "*.*", SearchOption.TopDirectoryOnly).Select(p => p.ConvertPhysicalToVirtualPath(rootPath)).OrderBy(p => p));
-            files.AddRange(Directory.GetFiles(path, "*.*", SearchOption.TopDirectoryOnly).Select(p => Path.GetFileName(p)).OrderBy(p => p));
+            physicalPath = physicalRootPath;
         }
 
-        return JsonConvert.SerializeObject(new
+        //create new folder
+        var newFolder = Path.Combine(physicalPath, commandParameters.FolderName);
+        var tmp = newFolder;
+        var counter = 1;
+        while (Directory.Exists(tmp))
         {
-            path = path.ConvertPhysicalToVirtualPath(rootPath),
-            dirs,
-            files,
-            error
-        });
+            tmp = newFolder + $" ({counter})";
+            counter++;
+        }
+        newFolder = tmp;
+        Directory.CreateDirectory(newFolder);
+
+        return GetContent(id, commandParameters.Path);
     }
-    
+
     private string CreateNewFile(string id, CreateNewFileCommandParameters commandParameters)
     {
-        var rootPath = GetCurrentUserRootPath(id);
-        if (string.IsNullOrWhiteSpace(rootPath)) { return JsonConvert.SerializeObject(new { error = "Something went wrong!" }); }
-
-        var path = commandParameters.Path.ConvertVirtualToPhysicalPath(rootPath);
-
-        if (!path.ToLower().StartsWith(rootPath.ToLower()) || !Directory.Exists(path))
+        var physicalRootPath = GetCurrentSessionPhysicalRootPath(id);
+        if (string.IsNullOrWhiteSpace(physicalRootPath))
         {
-            path = rootPath;
+            throw new Exception("Invalid Root Path!");
         }
 
-        var dirs = new List<string>();
-        var files = new List<string>();
-        var error = string.Empty;
-        try
-        {
-            var newFile = Path.Combine(path, commandParameters.FileName);
-            var tmp = newFile;
-            var counter = 1;
-            while (File.Exists(tmp))
-            {
-                var ext = Path.GetExtension(newFile);
-                tmp = newFile.TrimEnd(ext) + $" ({counter})" + ext;
-                counter++;
-            }
-            newFile = tmp;
-            File.WriteAllText(newFile, "");
+        var physicalPath = commandParameters.Path.ConvertVirtualToPhysicalPath(physicalRootPath);
 
-            dirs.AddRange(Directory.GetDirectories(path, "*.*", SearchOption.TopDirectoryOnly).Select(p => p.ConvertPhysicalToVirtualPath(rootPath)).OrderBy(p => p));
-            files.AddRange(Directory.GetFiles(path, "*.*", SearchOption.TopDirectoryOnly).Select(p => Path.GetFileName(p)).OrderBy(p => p));
-        }
-        catch (Exception ex)
+        if (!physicalPath.ToLower().StartsWith(physicalRootPath.ToLower()) || !Directory.Exists(physicalPath))
         {
-            error = "Invalid folder name!";
-            dirs.Clear();
-            files.Clear();
-            path = rootPath;
-
-            dirs.AddRange(Directory.GetDirectories(path, "*.*", SearchOption.TopDirectoryOnly).Select(p => p.ConvertPhysicalToVirtualPath(rootPath)).OrderBy(p => p));
-            files.AddRange(Directory.GetFiles(path, "*.*", SearchOption.TopDirectoryOnly).Select(p => Path.GetFileName(p)).OrderBy(p => p));
+            physicalPath = physicalRootPath;
         }
 
-        return JsonConvert.SerializeObject(new
+        //create new file
+        var newFile = Path.Combine(physicalPath, commandParameters.FileName);
+        var tmp = newFile;
+        var counter = 1;
+        while (File.Exists(tmp))
         {
-            path = path.ConvertPhysicalToVirtualPath(rootPath),
-            dirs,
-            files,
-            error
-        });
+            var ext = Path.GetExtension(newFile);
+            tmp = newFile.TrimEnd(ext) + $" ({counter})" + ext;
+            counter++;
+        }
+        newFile = tmp;
+        File.WriteAllText(newFile, "");
+
+        return GetContent(id, commandParameters.Path);
     }
 
     private string DeleteItems(string id, DeleteItemsCommandParameters commandParameters)
     {
-        var rootPath = GetCurrentUserRootPath(id);
-        if (string.IsNullOrWhiteSpace(rootPath)) { return JsonConvert.SerializeObject(new { error = "Something went wrong!" }); }
-
-        var path = commandParameters.Path.ConvertVirtualToPhysicalPath(rootPath);
-
-        if (!path.ToLower().StartsWith(rootPath.ToLower()) || !Directory.Exists(path))
+        var physicalRootPath = GetCurrentSessionPhysicalRootPath(id);
+        if (string.IsNullOrWhiteSpace(physicalRootPath))
         {
-            path = rootPath;
+            throw new Exception("Invalid Root Path!");
         }
 
-        var dirs = new List<string>();
-        var files = new List<string>();
-        var error = string.Empty;
-        try
-        {
-            foreach (var item in commandParameters.Items)
-            {
-                var physicalPath = item.ConvertVirtualToPhysicalPath(rootPath);
+        var physicalPath = commandParameters.Path.ConvertVirtualToPhysicalPath(physicalRootPath);
 
-                if (Directory.Exists(physicalPath))
+        if (!physicalPath.ToLower().StartsWith(physicalRootPath.ToLower()) || !Directory.Exists(physicalPath))
+        {
+            physicalPath = physicalRootPath;
+        }
+
+        //Delete selected files/folders
+        foreach (var item in commandParameters.Items)
+        {
+            var physicalItemPathToDelete = item.ConvertVirtualToPhysicalPath(physicalRootPath);
+
+            if (physicalItemPathToDelete.ToLower().StartsWith(physicalPath.ToLower()))
+            {
+                if (Directory.Exists(physicalItemPathToDelete))
                 {
-                    Directory.Delete(physicalPath, true);
+                    Directory.Delete(physicalItemPathToDelete, true);
                 }
-                else if (File.Exists(physicalPath))
+                else if (File.Exists(physicalItemPathToDelete))
                 {
-                    File.Delete(physicalPath);
+                    File.Delete(physicalItemPathToDelete);
                 }
             }
-
-            dirs.AddRange(Directory.GetDirectories(path, "*.*", SearchOption.TopDirectoryOnly).Select(p => p.ConvertPhysicalToVirtualPath(rootPath)).OrderBy(p => p));
-            files.AddRange(Directory.GetFiles(path, "*.*", SearchOption.TopDirectoryOnly).Select(p => Path.GetFileName(p)).OrderBy(p => p));
-        }
-        catch (Exception ex)
-        {
-            error = ex.Message;
-            dirs.Clear();
-            files.Clear();
-
-            dirs.AddRange(Directory.GetDirectories(path, "*.*", SearchOption.TopDirectoryOnly).Select(p => p.ConvertPhysicalToVirtualPath(rootPath)).OrderBy(p => p));
-            files.AddRange(Directory.GetFiles(path, "*.*", SearchOption.TopDirectoryOnly).Select(p => Path.GetFileName(p)).OrderBy(p => p));
         }
 
-        return JsonConvert.SerializeObject(new
-        {
-            path = path.ConvertPhysicalToVirtualPath(rootPath),
-            dirs,
-            files,
-            error
-        });
+        return GetContent(id, commandParameters.Path);
     }
 
     private string RenameItems(string id, RenameItemsCommandParameters commandParameters)
     {
-        var rootPath = GetCurrentUserRootPath(id);
-        if (string.IsNullOrWhiteSpace(rootPath)) { return JsonConvert.SerializeObject(new { error = "Something went wrong!" }); }
-
-        var path = commandParameters.Path.ConvertVirtualToPhysicalPath(rootPath);
-
-        if (!path.ToLower().StartsWith(rootPath.ToLower()) || !Directory.Exists(path))
+        var physicalRootPath = GetCurrentSessionPhysicalRootPath(id);
+        if (string.IsNullOrWhiteSpace(physicalRootPath))
         {
-            path = rootPath;
+            throw new Exception("Invalid Root Path!");
         }
 
-        var dirs = new List<string>();
-        var files = new List<string>();
-        var error = string.Empty;
-        try
+        var physicalPath = commandParameters.Path.ConvertVirtualToPhysicalPath(physicalRootPath);
+
+        if (!physicalPath.ToLower().StartsWith(physicalRootPath.ToLower()) || !Directory.Exists(physicalPath))
         {
-            //Move Files/Folders
-            int dirCounter = 0;
-            int fileCounter = 0;
-            foreach (var item in commandParameters.Items)
+            physicalPath = physicalRootPath;
+        }
+
+        //Rename files/folders
+        foreach (var item in commandParameters.Items)
+        {
+            var physicalItemPathToRename = item.ConvertVirtualToPhysicalPath(physicalRootPath);
+            int dirCounter = 1;
+            int fileCounter = 1;
+
+            if (Directory.Exists(physicalItemPathToRename))
             {
-                var physicalPath = item.ConvertVirtualToPhysicalPath(rootPath);
+                var folderNewName = Path.Combine(physicalPath, commandParameters.NewName);
 
-                if (Directory.Exists(physicalPath))
+                if (folderNewName.ToLower().Trim() == physicalItemPathToRename.ToLower().Trim())
                 {
-                    var newDir = Path.Combine(new DirectoryInfo(physicalPath).Parent.FullName,
-                        commandParameters.NewName) + (dirCounter > 0 ? $" ({dirCounter})" : "");
+                    continue;
+                }
+
+                while (Directory.Exists(folderNewName))
+                {
+                    folderNewName = Path.Combine(physicalPath, commandParameters.NewName + $" ({dirCounter})");
                     dirCounter++;
-
-                    if (newDir.ToLower().Trim() == physicalPath.ToLower().Trim())
-                    {
-                        continue;
-                    }
-
-                    Directory.Move(physicalPath, newDir);
                 }
 
-                if (File.Exists(physicalPath))
-                {
-                    var ext = Path.GetExtension(commandParameters.NewName);
-                    var newFile = Path.Combine(new FileInfo(physicalPath).DirectoryName,
-                        commandParameters.NewName);
-                    if (fileCounter > 0)
-                    {
-                        newFile = newFile.TrimEnd(ext) + $" ({fileCounter})" + ext;
-                    }
-
-                    fileCounter++;
-
-                    if (newFile.ToLower().Trim() == physicalPath.ToLower().Trim())
-                    {
-                        continue;
-                    }
-
-                    File.Move(physicalPath, newFile, true);
-                }
+                Directory.Move(physicalItemPathToRename, folderNewName);
             }
 
-            dirs.AddRange(Directory.GetDirectories(path, "*.*", SearchOption.TopDirectoryOnly).Select(p => p.ConvertPhysicalToVirtualPath(rootPath)).OrderBy(p => p));
-            files.AddRange(Directory.GetFiles(path, "*.*", SearchOption.TopDirectoryOnly).Select(p => Path.GetFileName(p)).OrderBy(p => p));
-        }
-        catch (Exception ex)
-        {
-            error = ex.Message;
-            dirs.Clear();
-            files.Clear();
+            if (File.Exists(physicalItemPathToRename))
+            {
+                var ext = Path.GetExtension(commandParameters.NewName);
+                if (string.IsNullOrWhiteSpace(ext))
+                    ext = Path.GetExtension(physicalItemPathToRename);
 
-            dirs.AddRange(Directory.GetDirectories(path, "*.*", SearchOption.TopDirectoryOnly).Select(p => p.ConvertPhysicalToVirtualPath(rootPath)).OrderBy(p => p));
-            files.AddRange(Directory.GetFiles(path, "*.*", SearchOption.TopDirectoryOnly).Select(p => Path.GetFileName(p)).OrderBy(p => p));
+                var newName = commandParameters.NewName.TrimEnd(ext);
+
+                var fileNewName = Path.Combine(physicalPath, newName + ext);
+
+                if (fileNewName.ToLower().Trim() == physicalItemPathToRename.ToLower().Trim())
+                {
+                    continue;
+                }
+
+                while (File.Exists(fileNewName))
+                {
+                    fileNewName = Path.Combine(physicalPath, newName + $" ({fileCounter})" + ext);
+                    fileCounter++;
+                }
+
+                File.Move(physicalItemPathToRename, fileNewName, true);
+            }
         }
 
-        return JsonConvert.SerializeObject(new
-        {
-            path = path.ConvertPhysicalToVirtualPath(rootPath),
-            dirs,
-            files,
-            error
-        });
+        return GetContent(id, commandParameters.Path);
     }
 
     private string ZipItems(string id, ZipItemsCommandParameters commandParameters)
     {
-        var rootPath = GetCurrentUserRootPath(id);
-        if (string.IsNullOrWhiteSpace(rootPath)) { return JsonConvert.SerializeObject(new { error = "Something went wrong!" }); }
-
-        var path = commandParameters.Path.ConvertVirtualToPhysicalPath(rootPath);
-
-        if (!path.ToLower().StartsWith(rootPath.ToLower()) || !Directory.Exists(path))
+        var physicalRootPath = GetCurrentSessionPhysicalRootPath(id);
+        if (string.IsNullOrWhiteSpace(physicalRootPath))
         {
-            path = rootPath;
+            throw new Exception("Invalid Root Path!");
         }
 
-        var dirs = new List<string>();
-        var files = new List<string>();
-        var error = string.Empty;
-        try
-        {
-            using (Stream stream = File.Create(Path.Combine(path, commandParameters.FileName.TrimStart(Path.DirectorySeparatorChar).TrimEnd(".zip")+".zip")))
-            using (var archive = ZipArchive.Create())
-            {
-                foreach (var item in commandParameters.Items.Select(p => p.ConvertVirtualToPhysicalPath(rootPath)))
-                {
-                    if (Directory.Exists(item))
-                    {
-                        foreach (var file in Directory.GetFiles(item, "*.*", SearchOption.AllDirectories))
-                        {
-                            archive.AddEntry(file.TrimStart(path), file);
-                        }
-                    }
+        var physicalPath = commandParameters.Path.ConvertVirtualToPhysicalPath(physicalRootPath);
 
-                    if (File.Exists(item))
+        if (!physicalPath.ToLower().StartsWith(physicalRootPath.ToLower()) || !Directory.Exists(physicalPath))
+        {
+            physicalPath = physicalRootPath;
+        }
+
+        //check if file exist
+        var newZipFileName = Path.Combine(physicalPath, commandParameters.FileName.TrimStart(Path.DirectorySeparatorChar).TrimEnd(".zip"));
+        var tmp = newZipFileName;
+        int counter = 1;
+        while (File.Exists(newZipFileName + ".zip"))
+        {
+            newZipFileName = tmp + $" ({counter})";
+            counter++;
+        }
+        newZipFileName += ".zip";
+
+        //create Zip archive
+        using (Stream stream = File.Create(newZipFileName))
+        using (var archive = ZipArchive.Create())
+        {
+            archive.DeflateCompressionLevel = CompressionLevel.Default;
+
+            foreach (var item in commandParameters.Items.Select(p => p.ConvertVirtualToPhysicalPath(physicalRootPath)))
+            {
+                if (Directory.Exists(item))
+                {
+                    foreach (var file in Utils.GetFiles(item, "*.*", SearchOption.AllDirectories))
                     {
-                        archive.AddEntry(Path.GetFileName(item), item);
+                        archive.AddEntry(file.TrimStart(physicalPath), file);
                     }
                 }
-                
-                archive.SaveTo(stream, new WriterOptions(CompressionType.Deflate)
+
+                if (File.Exists(item))
                 {
-                    LeaveStreamOpen = false
-                });
+                    archive.AddEntry(Path.GetFileName(item), item);
+                }
             }
 
-            dirs.AddRange(Directory.GetDirectories(path, "*.*", SearchOption.TopDirectoryOnly).Select(p => p.ConvertPhysicalToVirtualPath(rootPath)).OrderBy(p => p));
-            files.AddRange(Directory.GetFiles(path, "*.*", SearchOption.TopDirectoryOnly).Select(p => Path.GetFileName(p)).OrderBy(p => p));
-        }
-        catch (Exception ex)
-        {
-            error = ex.Message;
-            dirs.Clear();
-            files.Clear();
-
-            dirs.AddRange(Directory.GetDirectories(path, "*.*", SearchOption.TopDirectoryOnly).Select(p => p.ConvertPhysicalToVirtualPath(rootPath)).OrderBy(p => p));
-            files.AddRange(Directory.GetFiles(path, "*.*", SearchOption.TopDirectoryOnly).Select(p => Path.GetFileName(p)).OrderBy(p => p));
+            archive.SaveTo(stream, new WriterOptions(CompressionType.Deflate)
+            {
+                LeaveStreamOpen = false
+            });
         }
 
-        return JsonConvert.SerializeObject(new
-        {
-            path = path.ConvertPhysicalToVirtualPath(rootPath),
-            dirs,
-            files,
-            error
-        });
+        return GetContent(id, commandParameters.Path);
     }
-    
+
     private string ExtractItems(string id, ExtractItemsCommandParameters commandParameters)
     {
-        var rootPath = GetCurrentUserRootPath(id);
-        if (string.IsNullOrWhiteSpace(rootPath)) { return JsonConvert.SerializeObject(new { error = "Something went wrong!" }); }
-
-        var path = commandParameters.Path.ConvertVirtualToPhysicalPath(rootPath);
-
-        if (!path.ToLower().StartsWith(rootPath.ToLower()) || !Directory.Exists(path))
+        var physicalRootPath = GetCurrentSessionPhysicalRootPath(id);
+        if (string.IsNullOrWhiteSpace(physicalRootPath))
         {
-            path = rootPath;
+            throw new Exception("Invalid Root Path!");
         }
 
-        var dirs = new List<string>();
-        var files = new List<string>();
-        var error = string.Empty;
-        try
-        {
-            foreach (var item in commandParameters.Items)
-            {
-                var physicalPath = item.ConvertVirtualToPhysicalPath(rootPath);
+        var physicalPath = commandParameters.Path.ConvertVirtualToPhysicalPath(physicalRootPath);
 
-                if (File.Exists(physicalPath))
+        if (!physicalPath.ToLower().StartsWith(physicalRootPath.ToLower()) || !Directory.Exists(physicalPath))
+        {
+            physicalPath = physicalRootPath;
+        }
+
+        //decompress zip archive
+        foreach (var item in commandParameters.Items)
+        {
+            var zipArchivePhysicalPath = item.ConvertVirtualToPhysicalPath(physicalRootPath);
+
+            if (File.Exists(zipArchivePhysicalPath))
+            {
+                using (Stream stream = File.OpenRead(zipArchivePhysicalPath))
+                using (var reader = ReaderFactory.Open(stream))
                 {
-                    try
+                    reader.WriteAllToDirectory(physicalPath, new ExtractionOptions()
                     {
-                        using (Stream stream = File.OpenRead(physicalPath))
-                        using (var reader = ReaderFactory.Open(stream))
-                        {
-                            reader.WriteAllToDirectory(path, new ExtractionOptions()
-                            {
-                                ExtractFullPath = true,
-                                Overwrite = true,
-                            });
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        error += $"Error: {e.Message}\r\n";
-                    }
-                }
-                else
-                {
-                    error += $"Invalid file name: {item}\r\n";
+                        ExtractFullPath = true,
+                        Overwrite = true,
+                    });
                 }
             }
-
-            dirs.AddRange(Directory.GetDirectories(path, "*.*", SearchOption.TopDirectoryOnly).Select(p => p.ConvertPhysicalToVirtualPath(rootPath)).OrderBy(p => p));
-            files.AddRange(Directory.GetFiles(path, "*.*", SearchOption.TopDirectoryOnly).Select(p => Path.GetFileName(p)).OrderBy(p => p));
-        }
-        catch (Exception ex)
-        {
-            error = ex.Message;
-            dirs.Clear();
-            files.Clear();
-
-            dirs.AddRange(Directory.GetDirectories(path, "*.*", SearchOption.TopDirectoryOnly).Select(p => p.ConvertPhysicalToVirtualPath(rootPath)).OrderBy(p => p));
-            files.AddRange(Directory.GetFiles(path, "*.*", SearchOption.TopDirectoryOnly).Select(p => Path.GetFileName(p)).OrderBy(p => p));
         }
 
-        return JsonConvert.SerializeObject(new
+        return GetContent(id, commandParameters.Path);
+    }
+
+    private string CopyCutItems(string id, string action, CopyCutCommandParameters commandParameters)
+    {
+        var physicalRootPath = GetCurrentSessionPhysicalRootPath(id);
+        if (string.IsNullOrWhiteSpace(physicalRootPath))
         {
-            path = path.ConvertPhysicalToVirtualPath(rootPath),
-            dirs,
-            files,
-            error
-        });
+            throw new Exception("Invalid Root Path!");
+        }
+
+        var physicalPath = commandParameters.Path.ConvertVirtualToPhysicalPath(physicalRootPath);
+
+        if (!physicalPath.ToLower().StartsWith(physicalRootPath.ToLower()) || !Directory.Exists(physicalPath))
+        {
+            physicalPath = physicalRootPath;
+        }
+
+        //Copy/Move Files/Folders
+        foreach (var item in commandParameters.Items)
+        {
+            var physicalItemPathToCopy = item.ConvertVirtualToPhysicalPath(physicalRootPath);
+
+            if (File.Exists(physicalItemPathToCopy))
+            {
+                if (action.Trim().ToLower() == "copy")
+                {
+                    File.Copy(physicalItemPathToCopy, Path.Combine(physicalPath, Path.GetFileName(physicalItemPathToCopy)), true);
+                }
+                else if (action.Trim().ToLower() == "cut")
+                {
+                    File.Move(physicalItemPathToCopy, Path.Combine(physicalPath, Path.GetFileName(physicalItemPathToCopy)), true);
+                }
+            }
+            else if (Directory.Exists(physicalItemPathToCopy))
+            {
+                Utils.CopyDirectory(physicalItemPathToCopy, physicalPath, true);
+                if (action.Trim().ToLower() == "cut")
+                {
+                    Directory.Delete(physicalItemPathToCopy, true);
+                }
+            }
+        }
+
+        return GetContent(id, commandParameters.Path);
     }
 
     private IActionResult DownloadItem(string id, string filePath)
     {
-        var rootPath = GetCurrentUserRootPath(id);
-        if (string.IsNullOrWhiteSpace(rootPath)) { return new StatusCodeResult(404); }
-
-        var physicalPath = filePath.ConvertVirtualToPhysicalPath(rootPath);
-        if (!physicalPath.ToLower().StartsWith(rootPath.ToLower()) || !System.IO.File.Exists(physicalPath))
+        var physicalRootPath = GetCurrentSessionPhysicalRootPath(id);
+        if (string.IsNullOrWhiteSpace(physicalRootPath))
         {
-            return new StatusCodeResult(404);
+            return new ContentResult()
+            {
+                Content = "Invalid Root Path!",
+                StatusCode = 500//server error
+            };
         }
+
+        var physicalPath = filePath.ConvertVirtualToPhysicalPath(physicalRootPath);
+
+        if (!physicalPath.ToLower().StartsWith(physicalRootPath.ToLower()) || !File.Exists(physicalPath))
+        {
+            return new ContentResult()
+            {
+                Content = "Your requested resource was not found!",
+                StatusCode = 404 //not found
+            };
+        }
+
         return new PhysicalFileResult(physicalPath, Utils.GetMimeTypeForFileExtension(physicalPath))
         {
             FileDownloadName = Path.GetFileName(physicalPath),
@@ -573,13 +521,25 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
 
     private IActionResult ShowFileContent(string id, string filePath)
     {
-        var rootPath = GetCurrentUserRootPath(id);
-        if (string.IsNullOrWhiteSpace(rootPath)) { return new StatusCodeResult(404); }
-
-        var physicalPath = filePath.ConvertVirtualToPhysicalPath(rootPath);
-        if (!physicalPath.ToLower().StartsWith(rootPath.ToLower()) || !File.Exists(physicalPath))
+        var physicalRootPath = GetCurrentSessionPhysicalRootPath(id);
+        if (string.IsNullOrWhiteSpace(physicalRootPath))
         {
-            return new StatusCodeResult(404); //File Not Found
+            return new ContentResult()
+            {
+                Content = "Invalid Root Path!",
+                StatusCode = 500//server error
+            };
+        }
+
+        var physicalPath = filePath.ConvertVirtualToPhysicalPath(physicalRootPath);
+
+        if (!physicalPath.ToLower().StartsWith(physicalRootPath.ToLower()) || !File.Exists(physicalPath))
+        {
+            return new ContentResult()
+            {
+                Content = "Your requested resource was not found!",
+                StatusCode = 404 //not found
+            };
         }
 
         if (Utils.IsBinary(physicalPath))
@@ -587,150 +547,83 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
             return new ContentResult()
             {
                 Content = Path.GetFileName(physicalPath) + " is not editable file!",
-                StatusCode = 400 //Bad Request
+                StatusCode = 400 //bad Request
             };
         }
 
-        var error = string.Empty;
         var result = new ViewResult()
         {
             ViewName = "HgoFileManager/Edit",
             TempData = new TempDataDictionary(_httpContextAccessor.HttpContext, _tempDataProvider)
         };
-        try
-        {
-            try
-            {
-                result.TempData["Id"]  = id;
-                result.TempData["FileFullPath"] = filePath;
-                result.TempData["FileName"] = Path.GetFileName(physicalPath);
-                result.TempData["FileData"] = File.ReadAllText(physicalPath);
-            }
-            catch (Exception e)
-            {
-                error += $"Error: {e.Message}\r\n";
-            }
-        }
-        catch (Exception ex)
-        {
-            error = ex.Message;
-        }
+        result.TempData["Id"] = id;
+        result.TempData["FileFullPath"] = filePath;
+        result.TempData["FileName"] = Path.GetFileName(physicalPath);
+        result.TempData["FileData"] = File.ReadAllText(physicalPath);
 
         return result;
     }
 
-    private string EditFileContent(string id, EditFileCommandParameters commandParameters)
+    private IActionResult EditFileContent(string id, EditFileCommandParameters commandParameters)
     {
-        var rootPath = GetCurrentUserRootPath(id);
-        if (string.IsNullOrWhiteSpace(rootPath)) { return JsonConvert.SerializeObject(new { message = "Something went wrong!" }); }
-
-        var physicalPath = commandParameters.FilePath.ConvertVirtualToPhysicalPath(rootPath);
-        if (!physicalPath.ToLower().StartsWith(rootPath.ToLower()) || !File.Exists(physicalPath))
+        var physicalRootPath = GetCurrentSessionPhysicalRootPath(id);
+        if (string.IsNullOrWhiteSpace(physicalRootPath))
         {
-            return JsonConvert.SerializeObject(new { message = "Something went wrong!" });
+            return new ContentResult()
+            {
+                Content = JsonConvert.SerializeObject(new
+                {
+                    message = "Invalid Root Path!"
+                })
+            };
         }
 
-        var error = string.Empty;
+        var physicalPath = commandParameters.FilePath.ConvertVirtualToPhysicalPath(physicalRootPath);
+
+        if (!physicalPath.ToLower().StartsWith(physicalRootPath.ToLower()) || !File.Exists(physicalPath))
+        {
+            return new ContentResult()
+            {
+                Content = JsonConvert.SerializeObject(new
+                {
+                    message = "Your requested resource was not found!"
+                })
+            };
+        }
+
         try
         {
             File.WriteAllText(physicalPath, commandParameters.Data);
-            return JsonConvert.SerializeObject(new { message = "OK" });
+            return new ContentResult()
+            {
+                Content = JsonConvert.SerializeObject(new { message = "OK" })
+            };
         }
         catch (Exception e)
         {
-            error += $"Error: {e.Message}\r\n";
-        }
-
-        return JsonConvert.SerializeObject(new { message = error });
-    }
-    private string CopyCutItems(string id, string action, CopyCutCommandParameters commandParameters)
-    {
-        var rootPath = GetCurrentUserRootPath(id);
-        if (string.IsNullOrWhiteSpace(rootPath)) { return JsonConvert.SerializeObject(new { error = "Something went wrong!" }); }
-
-        var path = commandParameters.Path.ConvertVirtualToPhysicalPath(rootPath);
-
-        if (!path.ToLower().StartsWith(rootPath.ToLower()) || !Directory.Exists(path))
-        {
-            path = rootPath;
-        }
-
-        var dirs = new List<string>();
-        var files = new List<string>();
-        var error = string.Empty;
-        try
-        {
-            foreach (var item in commandParameters.Items)
+            return new ContentResult()
             {
-                var physicalPath = item.ConvertVirtualToPhysicalPath(rootPath);
-
-                if (File.Exists(physicalPath))
+                Content = JsonConvert.SerializeObject(new
                 {
-                    try
-                    {
-                        if (action.Trim().ToLower() == "copy")
-                        {
-                            File.Copy(physicalPath, Path.Combine(path , Path.GetFileName(physicalPath)), true);
-                        }
-                        else if (action.Trim().ToLower() == "cut")
-                        {
-                            File.Move(physicalPath, Path.Combine(path, Path.GetFileName(physicalPath)), true);
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        error += $"Error: {e.Message}\r\n";
-                    }
-                }
-                else if (Directory.Exists(physicalPath))
-                {
-                    try
-                    {
-                        Utils.CopyDirectory(physicalPath, path, true);
-                        if (action.Trim().ToLower() == "cut")
-                        {
-                            Directory.Delete(physicalPath, true);
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        error += $"Error: {e.Message}\r\n";
-                    }
-                }
-            }
-
-            dirs.AddRange(Directory.GetDirectories(path, "*.*", SearchOption.TopDirectoryOnly).Select(p => p.ConvertPhysicalToVirtualPath(rootPath)).OrderBy(p => p));
-            files.AddRange(Directory.GetFiles(path, "*.*", SearchOption.TopDirectoryOnly).Select(p => Path.GetFileName(p)).OrderBy(p => p));
+                    message = e.Message.Replace(physicalRootPath.TrimEnd(Path.DirectorySeparatorChar), "Root")
+                })
+            };
         }
-        catch (Exception ex)
-        {
-            error = ex.Message;
-            dirs.Clear();
-            files.Clear();
-
-            dirs.AddRange(Directory.GetDirectories(path, "*.*", SearchOption.TopDirectoryOnly).Select(p => p.ConvertPhysicalToVirtualPath(rootPath)).OrderBy(p => p));
-            files.AddRange(Directory.GetFiles(path, "*.*", SearchOption.TopDirectoryOnly).Select(p => Path.GetFileName(p)).OrderBy(p => p));
-        }
-
-        return JsonConvert.SerializeObject(new
-        {
-            path = path.ConvertPhysicalToVirtualPath(rootPath),
-            dirs,
-            files,
-            error
-        });
     }
 
-    private async Task<IActionResult> Upload(string id, string path, IFormFile file)
+    private IActionResult Upload(string id, string path, IFormFile file)
     {
-        var rootPath = GetCurrentUserRootPath(id);
-        if (string.IsNullOrWhiteSpace(rootPath)) { return new StatusCodeResult(500); }
-
-        var physicalPath = path.ConvertVirtualToPhysicalPath(rootPath);
-
-        if (!physicalPath.ToLower().StartsWith(rootPath.ToLower()) || !Directory.Exists(physicalPath))
+        var physicalRootPath = GetCurrentSessionPhysicalRootPath(id);
+        if (string.IsNullOrWhiteSpace(physicalRootPath))
         {
-            physicalPath = rootPath;
+            throw new Exception("Invalid Root Path!");
+        }
+
+        var physicalPath = path.ConvertVirtualToPhysicalPath(physicalRootPath);
+
+        if (!physicalPath.ToLower().StartsWith(physicalRootPath.ToLower()) || !Directory.Exists(physicalPath))
+        {
+            physicalPath = physicalRootPath;
         }
 
         if (file.Length > 0)
@@ -745,22 +638,34 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
                 }
             }
 
-            await using Stream fileStream = new FileStream(filePath, FileMode.Append);
-            await file.CopyToAsync(fileStream);
+            using Stream fileStream = new FileStream(filePath, FileMode.Append);
+            file.CopyTo(fileStream);
         }
 
         return new OkResult();
     }
-    
+
     private IActionResult FilePreview(string id, string filePath)
     {
-        var rootPath = GetCurrentUserRootPath(id);
-        if (string.IsNullOrWhiteSpace(rootPath)) { return new StatusCodeResult(404); }
-
-        var physicalPath = filePath.ConvertVirtualToPhysicalPath(rootPath);
-        if (!physicalPath.ToLower().StartsWith(rootPath.ToLower()) || !File.Exists(physicalPath))
+        var physicalRootPath = GetCurrentSessionPhysicalRootPath(id);
+        if (string.IsNullOrWhiteSpace(physicalRootPath))
         {
-            return new StatusCodeResult(404);
+            return new ContentResult()
+            {
+                Content = "Invalid Root Path!",
+                StatusCode = 500//server error
+            };
+        }
+
+        var physicalPath = filePath.ConvertVirtualToPhysicalPath(physicalRootPath);
+
+        if (!physicalPath.ToLower().StartsWith(physicalRootPath.ToLower()) || !File.Exists(physicalPath))
+        {
+            return new ContentResult()
+            {
+                Content = "Your requested resource was not found!",
+                StatusCode = 404 //not found
+            };
         }
 
         switch (Path.GetExtension(physicalPath).ToLower().Trim())
@@ -784,7 +689,7 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
             case ".json":
                 return new RedirectResult("/hgofilemanager/images/json.png") { Permanent = true };
             default:
-                return new RedirectResult("/hgofilemanager/images/file.png") {Permanent = true};
+                return new RedirectResult("/hgofilemanager/images/file.png") { Permanent = true };
         }
     }
 }
