@@ -710,6 +710,30 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
             };
         }
 
+        var maxFileSizeToUpload = FileManagerComponent.ConfigStorage[id].MaxFileSizeToUploadMByte;
+        if (maxFileSizeToUpload > 0 && maxFileSizeToUpload < (file.Length / 1024 / 1024))
+        {
+            return new ContentResult()
+            {
+                Content = "File is too large!",
+                StatusCode = 400
+            };
+        }
+
+        var acceptedFiles = FileManagerComponent.ConfigStorage[id].AcceptedFiles;
+        if (!string.IsNullOrWhiteSpace(acceptedFiles))
+        {
+            var fileExt = Path.GetExtension(file.FileName).ToLower().Trim();
+            if (!acceptedFiles.ToLower().Contains(fileExt))
+            {
+                return new ContentResult()
+                {
+                    Content = $"'{fileExt}' files are not accepted!",
+                    StatusCode = 400
+                };
+            }
+        }
+
         var physicalRootPath = GetCurrentSessionPhysicalRootPath(id);
         if (string.IsNullOrWhiteSpace(physicalRootPath))
         {
