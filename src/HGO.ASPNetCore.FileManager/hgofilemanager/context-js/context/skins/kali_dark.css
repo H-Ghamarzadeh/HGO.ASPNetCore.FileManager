@@ -6,7 +6,7 @@
     min-width: 270px;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     color: #fff;
-    background: #262933;
+    background: #303030;
     font-size: 9pt;
     border: 1px solid #333333;
     border-radius: 6px;
@@ -26,9 +26,9 @@
     color: inherit;
 }
 
-.context .item:hover {
-    background: #2777FF;
-}
+    .context .item:hover {
+        background: rgba(46, 115, 252, 0.25);
+    }
 
 .context .item:hover .hotkey {
     color: #fff;

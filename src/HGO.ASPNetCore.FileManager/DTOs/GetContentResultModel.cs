@@ -6,7 +6,6 @@ namespace HGO.ASPNetCore.FileManager.DTOs
     {
         public List<FolderDetail> Folders { get; set; } = new List<FolderDetail>();
         public List<FileDetail> Files { get; set; } = new List<FileDetail>();
-        public string Error { get; set; }
         public string CurrentPath { get; set; }
         public override string ToString()
         {

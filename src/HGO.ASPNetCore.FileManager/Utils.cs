@@ -1,6 +1,5 @@
 ﻿using HGO.ASPNetCore.FileManager.DTOs;
 using Microsoft.AspNetCore.StaticFiles;
-using SharpCompress.Common;
 
 namespace HGO.ASPNetCore.FileManager
 {

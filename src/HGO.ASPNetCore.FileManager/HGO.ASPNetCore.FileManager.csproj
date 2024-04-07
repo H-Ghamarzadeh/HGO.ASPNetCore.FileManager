@@ -19,4 +19,8 @@
 	  <EmbeddedResource Include="Views/**/*.cshtml" Pack="true" />
 	  <EmbeddedResource Include="hgofilemanager/**/*.*" Pack="true" />
   </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="hgofilemanager\HgoFileManager-dark.css" />
+  </ItemGroup>
 </Project>

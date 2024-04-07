@@ -14,10 +14,12 @@
             ApiEndPoint = Url.Action("HgoApi")
         })
     </div>
+
     <button onclick="getSelectedItems('file')" class="btn btn-success">Get Selected Files</button>
     <button onclick="getSelectedItems('folder')" class="btn btn-success">Get Selected Folders</button>
     <button onclick="AddNewItemToContextMenu()" class="btn btn-success">Add New Item To Context Menu</button>
     <button onclick="AddNewButtonToMenu()" class="btn btn-success">Add New Button To Menu</button>
+
     <script>
         function getSelectedItems(itemType){
             let fileManager = HgoFileManager.selectById("FM1");
