@@ -11,8 +11,25 @@
         {
             Id = "FM1",
             RootFolder = AppDomain.CurrentDomain.BaseDirectory,
-            ApiEndPoint = Url.Action("HgoApi")
+            ApiEndPoint = Url.Action("HgoApi"),
+            Config = new FileManagerConfig()
+            {
+                CompressionLevel = 9,
+                StorageMaxSizeMByte = 10
+            }
         })
+    </div>
+    <div style="height: 550px; margin-bottom:20px">
+        @await Component.InvokeAsync("FileManagerComponent", new FileManagerModel()
+   {
+       Id = "FM2",
+       RootFolder = AppDomain.CurrentDomain.BaseDirectory,
+       ApiEndPoint = Url.Action("HgoApi"),
+       Config = new FileManagerConfig()
+       {
+           CompressionLevel = 0
+       }
+   })
     </div>
 
     <button onclick="getSelectedItems('file')" class="btn btn-success">Get Selected Files</button>

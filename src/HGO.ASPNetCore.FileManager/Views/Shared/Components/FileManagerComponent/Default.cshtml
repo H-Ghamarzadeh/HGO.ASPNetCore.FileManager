@@ -4,6 +4,6 @@
 
 <script type="text/javascript">
     document.addEventListener('DOMContentLoaded', function () {
-        new HgoFileManager('@Model.Id', '@Model.ApiEndPoint');
+        new HgoFileManager('@Model.Id', '@Model.ApiEndPoint', JSON.parse('@Json.Serialize(Model.Config)'));
     }, false);
 </script>

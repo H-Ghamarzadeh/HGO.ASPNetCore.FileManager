@@ -9,8 +9,9 @@ using SharpCompress.Archives.Zip;
 using SharpCompress.Common;
 using SharpCompress.Readers;
 using SharpCompress.Writers;
-using System.IO;
+using HGO.ASPNetCore.FileManager.ViewComponents;
 using SharpCompress.Compressors.Deflate;
+using System.Text;
 
 namespace HGO.ASPNetCore.FileManager.CommandsProcessor;
 
@@ -108,7 +109,7 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
         });
     }
 
-    public string? GetCurrentSessionPhysicalRootPath(string id)
+    private string? GetCurrentSessionPhysicalRootPath(string id)
     {
         var sessionKey = RootPathSessionKey + id;
         if (_session == null || string.IsNullOrWhiteSpace(_session.GetString(sessionKey)))
@@ -122,6 +123,16 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
         }
 
         return Path.GetFullPath(_session.GetString(sessionKey).Trim());
+    }
+
+    private long GetRootFolderSize(string id)
+    {
+        var physicalRootPath = GetCurrentSessionPhysicalRootPath(id);
+        if (Directory.Exists(physicalRootPath))
+        {
+            return new DirectoryInfo(physicalRootPath).GetFiles("*", SearchOption.AllDirectories).Sum(p => p.Length) / 1024 / 1024;
+        }
+        return 0;
     }
 
     private string GetContent(string id, string virtualPath)
@@ -353,6 +364,13 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
 
     private string ZipItems(string id, ZipItemsCommandParameters commandParameters)
     {
+        var storageSizeLimit = FileManagerComponent.ConfigStorage[id].StorageMaxSizeMByte;
+        var rootFolderSize = GetRootFolderSize(id);
+        if (storageSizeLimit > 0 && storageSizeLimit < rootFolderSize)
+        {
+            throw new Exception("There is no more storage space to perform this action!");
+        }
+
         var physicalRootPath = GetCurrentSessionPhysicalRootPath(id);
         if (string.IsNullOrWhiteSpace(physicalRootPath))
         {
@@ -377,11 +395,46 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
         }
         newZipFileName += ".zip";
 
+        //Compute all selected files size
+        var compressionMaxSize = FileManagerComponent.ConfigStorage[id].CompressionMaxSizeMByte;
+        if (compressionMaxSize > 0 || storageSizeLimit > 0)
+        {
+            long allFilesSize = 0;
+            foreach (var item in commandParameters.Items.Select(p => p.ConvertVirtualToPhysicalPath(physicalRootPath)))
+            {
+                if (Directory.Exists(item))
+                {
+                    allFilesSize += new DirectoryInfo(item).GetFiles("*", SearchOption.AllDirectories)
+                        .Sum(p => p.Length);
+                }
+
+                if (File.Exists(item))
+                {
+                    allFilesSize += new FileInfo(item).Length;
+                }
+            }
+
+            allFilesSize = allFilesSize / 1024 / 1024;
+
+            if (compressionMaxSize > 0)
+            {
+                if (compressionMaxSize < allFilesSize)
+                {
+                    throw new Exception("Selected File/Folder(s) size is too large!");
+                }
+            }
+
+            if (storageSizeLimit > 0 && storageSizeLimit < rootFolderSize + allFilesSize)
+            {
+                throw new Exception("There is no more storage space to perform this action!");
+            }
+        }
+
         //create Zip archive
         using (Stream stream = File.Create(newZipFileName))
         using (var archive = ZipArchive.Create())
         {
-            archive.DeflateCompressionLevel = CompressionLevel.Default;
+            archive.DeflateCompressionLevel = (CompressionLevel)FileManagerComponent.ConfigStorage[id].CompressionLevel;
 
             foreach (var item in commandParameters.Items.Select(p => p.ConvertVirtualToPhysicalPath(physicalRootPath)))
             {
@@ -401,7 +454,7 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
 
             archive.SaveTo(stream, new WriterOptions(CompressionType.Deflate)
             {
-                LeaveStreamOpen = false
+                LeaveStreamOpen = false,
             });
         }
 
@@ -410,6 +463,13 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
 
     private string ExtractItems(string id, ExtractItemsCommandParameters commandParameters)
     {
+        var storageSizeLimit = FileManagerComponent.ConfigStorage[id].StorageMaxSizeMByte;
+        var rootFolderSize = GetRootFolderSize(id);
+        if (storageSizeLimit > 0 && storageSizeLimit < rootFolderSize)
+        {
+            throw new Exception("There is no more storage space to perform this action!");
+        }
+
         var physicalRootPath = GetCurrentSessionPhysicalRootPath(id);
         if (string.IsNullOrWhiteSpace(physicalRootPath))
         {
@@ -421,6 +481,20 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
         if (!physicalPath.ToLower().StartsWith(physicalRootPath.ToLower()) || !Directory.Exists(physicalPath))
         {
             physicalPath = physicalRootPath;
+        }
+
+        //compute all selected zip files size
+        if (storageSizeLimit > 0)
+        {
+            long allFilesSize = commandParameters.Items.Select(p => p.ConvertVirtualToPhysicalPath(physicalRootPath))
+                .Where(item => File.Exists(item)).Sum(item => new FileInfo(item).Length);
+
+            allFilesSize = allFilesSize / 1024 / 1024;
+
+            if (storageSizeLimit < rootFolderSize + allFilesSize)
+            {
+                throw new Exception("There is no more storage space to perform this action!");
+            }
         }
 
         //decompress zip archive
@@ -566,6 +640,19 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
 
     private IActionResult EditFileContent(string id, EditFileCommandParameters commandParameters)
     {
+        var storageSizeLimit = FileManagerComponent.ConfigStorage[id].StorageMaxSizeMByte;
+        var fileContentSize = ASCIIEncoding.Unicode.GetByteCount(commandParameters.Data) / 1024 / 1024;
+        if (storageSizeLimit > 0 && storageSizeLimit < GetRootFolderSize(id) + fileContentSize)
+        {
+            return new ContentResult()
+            {
+                Content = JsonConvert.SerializeObject(new
+                {
+                    message = "There is no more storage space to perform this action!"
+                })
+            };
+        }
+
         var physicalRootPath = GetCurrentSessionPhysicalRootPath(id);
         if (string.IsNullOrWhiteSpace(physicalRootPath))
         {
@@ -613,10 +700,24 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
 
     private IActionResult Upload(string id, string path, IFormFile file)
     {
+        var storageSizeLimit = FileManagerComponent.ConfigStorage[id].StorageMaxSizeMByte;
+        if (storageSizeLimit > 0 && storageSizeLimit < GetRootFolderSize(id) + (file.Length /1024 /1024))
+        {
+            return new ContentResult()
+            {
+                Content = "There is no more storage space to perform this action!",
+                StatusCode = 400
+            };
+        }
+
         var physicalRootPath = GetCurrentSessionPhysicalRootPath(id);
         if (string.IsNullOrWhiteSpace(physicalRootPath))
         {
-            throw new Exception("Invalid Root Path!");
+            return new ContentResult()
+            {
+                Content = "Invalid Root Path!",
+                StatusCode = 400
+            };
         }
 
         var physicalPath = path.ConvertVirtualToPhysicalPath(physicalRootPath);
@@ -634,7 +735,11 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
             {
                 if (int.TryParse(chunkIndex.ToString(), out int idx) && idx == 0)
                 {
-                    throw new Exception("File already exist");
+                    return new ContentResult()
+                    {
+                        Content = "File already exist",
+                        StatusCode = 400
+                    };
                 }
             }
 

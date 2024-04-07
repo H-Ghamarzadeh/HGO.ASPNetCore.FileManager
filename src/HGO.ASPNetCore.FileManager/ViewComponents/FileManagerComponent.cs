@@ -8,6 +8,7 @@ namespace HGO.ASPNetCore.FileManager.ViewComponents
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
         private const string RootPathSessionKey = "HGO-FM-RootFolder";
+        public static Dictionary<string, FileManagerConfig> ConfigStorage = new Dictionary<string, FileManagerConfig>();
 
         public FileManagerComponent(IHttpContextAccessor httpContextAccessor)
         {
@@ -23,6 +24,7 @@ namespace HGO.ASPNetCore.FileManager.ViewComponents
             }
 
             model.Id = "hgo_fm_"+ model.Id;
+            ConfigStorage[model.Id] = model.Config;
 
             //Check if directory exist
             if (!Directory.Exists(model.RootFolder))

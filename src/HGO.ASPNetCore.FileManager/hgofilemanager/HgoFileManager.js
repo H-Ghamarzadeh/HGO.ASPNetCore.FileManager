@@ -1,6 +1,7 @@
 ﻿class HgoFileManager {
     thisId;
     apiUrl;
+    config;
 
     menuButtonContinerDiv;
     menuInputContinerDiv;
@@ -20,9 +21,10 @@
 
     static instances = [];
 
-    constructor(id, apiEndPointUrl) {
+    constructor(id, apiEndPointUrl, config) {
         this.thisId = id;
         this.apiUrl = apiEndPointUrl;
+        this.config = config;
 
         this.#initExplorer();
         this.lazyLoader = lozad();
@@ -746,14 +748,14 @@
         Dropzone.autoDiscover = false;
         let dropZone = new Dropzone(uploadPanel, {
             url: this.apiUrl + `?id=${this.thisId}&command=upload&parameters=${this.getCurrentPath()}`,
-            parallelUploads: 1,
-            chunking: true,
-            chunkSize: 10000000, // bytes
-            retryChunks: true,
-            retryChunksLimit: 3,
-            maxFilesize: 256, // bytes
+            parallelUploads: (typeof this.config.parallelUploads != "undefined" ? this.config.parallelUploads : 1),
+            chunking: (typeof this.config.chunking != "undefined" ? this.config.chunking : true),
+            chunkSize: (typeof this.config.chunkSizeByte != "undefined" ? this.config.chunkSizeByte : 10000000),  // bytes
+            retryChunks: (typeof this.config.retryChunks != "undefined" ? this.config.retryChunks : true),  
+            retryChunksLimit: (typeof this.config.retryChunksLimit != "undefined" ? this.config.retryChunksLimit : 3),  
+            maxFilesize: (typeof this.config.maxFileSizeToUploadMByte != "undefined" ? this.config.maxFileSizeToUploadMByte : 256), // mega bytes
+            acceptedFiles: (typeof this.config.acceptedFiles != "undefined" ? this.config.acceptedFiles : ''), //'.png,.pdf'
             paramName: 'file',
-            acceptedFiles: '' //'.png,.pdf'
         });
     }
 }
