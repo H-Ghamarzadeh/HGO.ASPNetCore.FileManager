@@ -1,23 +1,23 @@
-﻿@using HGO.ASPNetCore.FileManager.ViewComponentsModel
-
+﻿@page
+@using HGO.ASPNetCore.FileManager.ViewComponentsModel
+@model IndexModel
 @{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Home page";
 }
 
 <div class="text-center">
-    <h1 class="display-4">HGO ASP.Net Core File Manager Example</h1>
+    <h1 class="display-4">HGO ASP.Net Core File Manager Razor Pages Example</h1>
     <div style="height: 550px; margin-bottom:20px">
         @await Component.InvokeAsync("FileManagerComponent", new FileManagerModel()
-        {
-            Id = "FM1",
-            RootFolder = AppDomain.CurrentDomain.BaseDirectory,
-            ApiEndPoint = Url.Action("HgoApi"),
-            Config = new FileManagerConfig()
-            {
-                CompressionLevel = 9,
-                StorageMaxSizeMByte = 10
-            }
-        })
+           {
+               Id = "FM1",
+               RootFolder = AppDomain.CurrentDomain.BaseDirectory,
+               ApiEndPoint = Url.Action("Index", "FileManager"),
+               Config = new FileManagerConfig()
+               {
+                   StorageMaxSizeMByte = 100
+               }
+           })
     </div>
 
     <button onclick="getSelectedItems('file')" class="btn btn-success">Get Selected Files</button>
@@ -26,17 +26,18 @@
     <button onclick="AddNewButtonToMenu()" class="btn btn-success">Add New Button To Menu</button>
 
     <script>
-        function getSelectedItems(itemType){
+        function getSelectedItems(itemType) {
             let fileManager = HgoFileManager.selectById("FM1");
             let selections = fileManager.getSelectedItemsPath(itemType);
             if (selections && selections.length > 0) {
-                alert(selections); }
-            else{
+                alert(selections);
+            }
+            else {
                 fileManager.showToastify("Please select an item");
             }
         }
 
-        function AddNewButtonToMenu(){
+        function AddNewButtonToMenu() {
             let fileManager = HgoFileManager.selectById("FM1");
             fileManager.addButtonToMenu("Hello", (e) => alert('Hello!'));
             alert('New button has been added to menu!');
