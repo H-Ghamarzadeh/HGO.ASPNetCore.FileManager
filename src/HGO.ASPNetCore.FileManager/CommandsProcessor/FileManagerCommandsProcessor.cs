@@ -40,6 +40,15 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
             };
         }
 
+        var disabledFunctions = FileManagerComponent.ConfigStorage[id].DisabledFunctions;
+        if (disabledFunctions.Any(p=> p.ToLower().Trim() == command.ToLower().Trim()))
+        {
+            return new ContentResult()
+            {
+                Content = JsonConvert.SerializeObject(new { Error = "This action has been disabled!" })
+            };
+        }
+
         return await Task.Factory.StartNew(() =>
         {
             var result = new ContentResult();
@@ -61,34 +70,34 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
                         result.Content = CreateNewFile(id,
                             JsonConvert.DeserializeObject<CreateNewFileCommandParameters>(parameters));
                         return result;
-                    case "deleteitems":
-                        result.Content = DeleteItems(id,
-                            JsonConvert.DeserializeObject<DeleteItemsCommandParameters>(parameters));
+                    case "delete":
+                        result.Content = Delete(id,
+                            JsonConvert.DeserializeObject<DeleteCommandParameters>(parameters));
                         return result;
-                    case "renameitems":
-                        result.Content = RenameItems(id,
-                            JsonConvert.DeserializeObject<RenameItemsCommandParameters>(parameters));
+                    case "rename":
+                        result.Content = Rename(id,
+                            JsonConvert.DeserializeObject<RenameCommandParameters>(parameters));
                         return result;
-                    case "zipitems":
-                        result.Content = ZipItems(id,
-                            JsonConvert.DeserializeObject<ZipItemsCommandParameters>(parameters));
+                    case "zip":
+                        result.Content = Zip(id,
+                            JsonConvert.DeserializeObject<ZipCommandParameters>(parameters));
                         return result;
-                    case "extractitems":
-                        result.Content = ExtractItems(id,
-                            JsonConvert.DeserializeObject<ExtractItemsCommandParameters>(parameters));
+                    case "unzip":
+                        result.Content = UnZip(id,
+                            JsonConvert.DeserializeObject<UnZipCommandParameters>(parameters));
                         return result;
                     case "copy":
                     case "cut":
                         result.Content = CopyCutItems(id, command.ToLower(),
                             JsonConvert.DeserializeObject<CopyCutCommandParameters>(parameters));
                         return result;
-                    case "editfilecontent":
-                        return EditFileContent(id,
+                    case "editfile":
+                        return EditFile(id,
                             JsonConvert.DeserializeObject<EditFileCommandParameters>(parameters));
-                    case "downloaditem":
-                        return DownloadItem(id, parameters);
-                    case "showfilecontent":
-                        return ShowFileContent(id, parameters);
+                    case "download":
+                        return Download(id, parameters);
+                    case "getfilecontent":
+                        return GetFileContent(id, parameters);
                     case "upload":
                         return Upload(id, parameters, file);
                     case "filepreview":
@@ -258,7 +267,7 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
         return GetContent(id, commandParameters.Path);
     }
 
-    private string DeleteItems(string id, DeleteItemsCommandParameters commandParameters)
+    private string Delete(string id, DeleteCommandParameters commandParameters)
     {
         var physicalRootPath = GetCurrentSessionPhysicalRootPath(id);
         if (string.IsNullOrWhiteSpace(physicalRootPath))
@@ -294,7 +303,7 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
         return GetContent(id, commandParameters.Path);
     }
 
-    private string RenameItems(string id, RenameItemsCommandParameters commandParameters)
+    private string Rename(string id, RenameCommandParameters commandParameters)
     {
         var physicalRootPath = GetCurrentSessionPhysicalRootPath(id);
         if (string.IsNullOrWhiteSpace(physicalRootPath))
@@ -362,7 +371,7 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
         return GetContent(id, commandParameters.Path);
     }
 
-    private string ZipItems(string id, ZipItemsCommandParameters commandParameters)
+    private string Zip(string id, ZipCommandParameters commandParameters)
     {
         var storageSizeLimit = FileManagerComponent.ConfigStorage[id].StorageMaxSizeMByte;
         var rootFolderSize = GetRootFolderSize(id);
@@ -461,7 +470,7 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
         return GetContent(id, commandParameters.Path);
     }
 
-    private string ExtractItems(string id, ExtractItemsCommandParameters commandParameters)
+    private string UnZip(string id, UnZipCommandParameters commandParameters)
     {
         var storageSizeLimit = FileManagerComponent.ConfigStorage[id].StorageMaxSizeMByte;
         var rootFolderSize = GetRootFolderSize(id);
@@ -563,7 +572,7 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
         return GetContent(id, commandParameters.Path);
     }
 
-    private IActionResult DownloadItem(string id, string filePath)
+    private IActionResult Download(string id, string filePath)
     {
         var physicalRootPath = GetCurrentSessionPhysicalRootPath(id);
         if (string.IsNullOrWhiteSpace(physicalRootPath))
@@ -593,7 +602,7 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
         };
     }
 
-    private IActionResult ShowFileContent(string id, string filePath)
+    private IActionResult GetFileContent(string id, string filePath)
     {
         var physicalRootPath = GetCurrentSessionPhysicalRootPath(id);
         if (string.IsNullOrWhiteSpace(physicalRootPath))
@@ -638,7 +647,7 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
         return result;
     }
 
-    private IActionResult EditFileContent(string id, EditFileCommandParameters commandParameters)
+    private IActionResult EditFile(string id, EditFileCommandParameters commandParameters)
     {
         var storageSizeLimit = FileManagerComponent.ConfigStorage[id].StorageMaxSizeMByte;
         var fileContentSize = ASCIIEncoding.Unicode.GetByteCount(commandParameters.Data) / 1024 / 1024;

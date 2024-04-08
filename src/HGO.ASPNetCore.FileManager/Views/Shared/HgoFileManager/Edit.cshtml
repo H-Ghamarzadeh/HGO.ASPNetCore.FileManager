@@ -131,11 +131,14 @@
         function SaveDocument() {
             let content = editor.getValue();
 
-            $.post('@Context.Request.Path', { id: '@TempData["Id"]', command: "EditFileContent", parameters: JSON.stringify({ FilePath: '@TempData["FileFullPath"].ToString().Replace("\\", "\\\\")', Data: content }) }, function (data) {
+            $.post('@Context.Request.Path', { id: '@TempData["Id"]', command: "editfile", parameters: JSON.stringify({ FilePath: '@TempData["FileFullPath"].ToString().Replace("\\", "\\\\")', Data: content }) }, function (data) {
                 if (data.message === 'OK') {
                     window.close();
                 } else {
-                    alert(data.message);
+                    if (data.message)
+                        alert(data.message);
+                    if (data.Error)
+                        alert(data.Error);
                 }
             }, 'json');
         }

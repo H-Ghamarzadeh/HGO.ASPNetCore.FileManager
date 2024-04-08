@@ -1,8 +1,8 @@
 ﻿namespace HGO.ASPNetCore.FileManager.DTOs;
 
-internal class ZipItemsCommandParameters
+internal class RenameCommandParameters
 {
     public string Path { get; set; }
     public List<string> Items { get; set; }
-    public string FileName { get; set; }
+    public string NewName { get; set; }
 }

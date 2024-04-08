@@ -8,16 +8,41 @@
     <h1 class="display-4">HGO ASP.Net Core File Manager Example</h1>
     <div style="height: 550px; margin-bottom:20px">
         @await Component.InvokeAsync("FileManagerComponent", new FileManagerModel()
-        {
-            Id = "FM1",
-            RootFolder = AppDomain.CurrentDomain.BaseDirectory,
-            ApiEndPoint = Url.Action("HgoApi"),
-            Config = new FileManagerConfig()
+   {
+       Id = "FM1",
+       RootFolder = AppDomain.CurrentDomain.BaseDirectory,
+       ApiEndPoint = Url.Action("HgoApi"),
+       Config = new FileManagerConfig()
+       { /*
+           CompressionLevel = 9,
+           StorageMaxSizeMByte = 10,
+           DisabledFunctions = new List<string>()
             {
-                CompressionLevel = 9,
-                StorageMaxSizeMByte = 10
+                // you can disable the following functions
+                "Search",
+                "CreateNewFolder",
+                "CreateNewFile",
+                "Delete",
+                "Rename",
+                "Zip",
+                "Unzip",
+                "Copy",
+                "Cut",
+                "EditFile",
+                "Download",
+                "GetFileContent",
+                "Upload",
+                "ToggleView",
+                "Browse",
+                "Reload",
+                "Breadcrumb",
+                "FoldersTree",
+                "MenuBar",
+                "ContextMenu"
             }
-        })
+        */
+       }
+   })
     </div>
 
     <button onclick="getSelectedItems('file')" class="btn btn-success">Get Selected Files</button>
@@ -26,19 +51,20 @@
     <button onclick="AddNewButtonToMenu()" class="btn btn-success">Add New Button To Menu</button>
 
     <script>
-        function getSelectedItems(itemType){
+        function getSelectedItems(itemType) {
             let fileManager = HgoFileManager.selectById("FM1");
             let selections = fileManager.getSelectedItemsPath(itemType);
             if (selections && selections.length > 0) {
-                alert(selections); }
-            else{
+                alert(selections);
+            }
+            else {
                 fileManager.showToastify("Please select an item");
             }
         }
 
-        function AddNewButtonToMenu(){
+        function AddNewButtonToMenu() {
             let fileManager = HgoFileManager.selectById("FM1");
-            fileManager.addButtonToMenu("Hello", (e) => alert('Hello!'));
+            fileManager.addButtonToMenu("Open 'refs' Folder", (e) => fileManager.getFolderContent('Root\\refs'));
             alert('New button has been added to menu!');
         }
 

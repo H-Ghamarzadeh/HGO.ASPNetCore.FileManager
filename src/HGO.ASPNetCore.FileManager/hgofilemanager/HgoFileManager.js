@@ -49,6 +49,8 @@
     }
 
     #initMenu() {
+        let disabledFunctions = (typeof this.config.disabledFunctions != "undefined" ? this.config.disabledFunctions.join(',') : '').toLowerCase();
+
         let menuContinerDiv = document.createElement('div');
         menuContinerDiv.classList.add('hgo-fm-menu');
         this.#fileManager().appendChild(menuContinerDiv);
@@ -61,68 +63,127 @@
         this.menuInputContinerDiv.classList.add('input-continer');
         menuContinerDiv.appendChild(this.menuInputContinerDiv);
 
-        this.backButton = this.addButtonToMenu('<i class="fa-solid fa-rotate-left"></i>', (e) => this.goPreviousPath());
-        this.backButton.setAttribute('title', 'Back');
-        this.backButton.setAttribute('disabled', 'disabled');
-        this.addButtonToMenu('<i class="fa-solid fa-turn-up"></i>', (e) => this.goUpFolder()).setAttribute('title', 'Up');
+        if (!disabledFunctions.includes('browse')) {
+            this.backButton = this.addButtonToMenu('<i class="fa-solid fa-rotate-left"></i>', (e) => this.goPreviousPath());
+            this.backButton.setAttribute('title', 'Back');
+            this.backButton.setAttribute('disabled', 'disabled');
 
-        this.addButtonToMenu();
+            this.addButtonToMenu('<i class="fa-solid fa-turn-up"></i>', (e) => this.goUpFolder()).setAttribute('title', 'Up');
 
-        this.addButtonToMenu('<i class="fa-solid fa-copy"></i>', (e) => this.copyItems()).setAttribute('title', 'Copy');
-        this.addButtonToMenu('<i class="fa-solid fa-scissors"></i>', (e) => this.cutItems()).setAttribute('title', 'Cut');
-        this.pasteButton = this.addButtonToMenu('<i class="fa-solid fa-paste"></i>', (e) => this.pasteItems());
-        this.pasteButton.setAttribute('title', 'Paste');
-        this.pasteButton.setAttribute('disabled', 'disabled');
+            this.addButtonToMenu();
+        }
 
-        this.addButtonToMenu();
+        if (!disabledFunctions.includes('copy')) 
+            this.addButtonToMenu('<i class="fa-solid fa-copy"></i>', (e) => this.copyItems()).setAttribute('title', 'Copy');
+        if (!disabledFunctions.includes('cut')) 
+            this.addButtonToMenu('<i class="fa-solid fa-scissors"></i>', (e) => this.cutItems()).setAttribute('title', 'Cut');
+        if (!(disabledFunctions.includes('copy') && disabledFunctions.includes('cut'))) {
+            this.pasteButton = this.addButtonToMenu('<i class="fa-solid fa-paste"></i>', (e) => this.pasteItems());
+            this.pasteButton.setAttribute('title', 'Paste');
+            this.pasteButton.setAttribute('disabled', 'disabled');
 
-        this.addButtonToMenu('<i class="fa-solid fa-i-cursor"></i>', (e) => this.renameSelectedItems()).setAttribute('title', 'Rename');
-        this.addButtonToMenu('<i class="fa-solid fa-file-pen"></i>', (e) => this.showFileContent()).setAttribute('title', 'Edit');
-        this.addButtonToMenu('<i class="fa-solid fa-trash"></i>', (e) => this.deleteSelectedItems()).setAttribute('title', 'Delete');
-        this.addButtonToMenu();
-        this.addButtonToMenu('<i class="fa-solid fa-folder-plus"></i>', (e) => this.createNewFolder()).setAttribute('title', 'New Folder');
-        this.addButtonToMenu('<i class="fa-solid fa-file-circle-plus"></i>', (e) => this.createNewFile()).setAttribute('title', 'New File');
-        this.addButtonToMenu();
-        this.addButtonToMenu('<i class="fa-solid fa-cloud-arrow-down"></i>', (e) => this.downloadFile()).setAttribute('title', 'Download');
-        this.addButtonToMenu('<i class="fa-solid fa-cloud-arrow-up"></i>', (e) => this.showUploadPanel()).setAttribute('title', 'Upload');
-        this.addButtonToMenu();
-        this.addButtonToMenu('<i class="fa-solid fa-file-zipper"></i>', (e) => this.zipSelectedItems()).setAttribute('title', 'Zip');
-        this.addButtonToMenu('<i class="fa-solid fa-square-arrow-up-right"></i>', (e) => this.extractSelectedItems()).setAttribute('title', 'UnZip');
-        this.addButtonToMenu();
-        this.addButtonToMenu('<i class="fa-solid fa-list-ul"></i>', (e) => this.toggleFilesListView()).setAttribute('title', 'Toggle View');
+            this.addButtonToMenu();
+        }
 
-        this.addInputToMenu('Search ...', (e) => { if (e.keyCode == 13) this.search(e.currentTarget.value); }, 'search-box');
+        if (!disabledFunctions.includes('rename')) 
+            this.addButtonToMenu('<i class="fa-solid fa-i-cursor"></i>', (e) => this.renameSelectedItems()).setAttribute('title', 'Rename');
+        if (!disabledFunctions.includes('getfilecontent')) 
+            this.addButtonToMenu('<i class="fa-solid fa-file-pen"></i>', (e) => this.getFileContent()).setAttribute('title', 'Edit');
+        if (!disabledFunctions.includes('delete')) 
+            this.addButtonToMenu('<i class="fa-solid fa-trash"></i>', (e) => this.deleteSelectedItems()).setAttribute('title', 'Delete');
+        if (!(disabledFunctions.includes('rename') && disabledFunctions.includes('getfilecontent') && disabledFunctions.includes('delete'))) 
+            this.addButtonToMenu();
+
+        if (!disabledFunctions.includes('createnewfolder'))
+            this.addButtonToMenu('<i class="fa-solid fa-folder-plus"></i>', (e) => this.createNewFolder()).setAttribute('title', 'New Folder');
+        if (!disabledFunctions.includes('createnewfile'))
+            this.addButtonToMenu('<i class="fa-solid fa-file-circle-plus"></i>', (e) => this.createNewFile()).setAttribute('title', 'New File');
+        if (!(disabledFunctions.includes('createnewfolder') && disabledFunctions.includes('createnewfile'))) 
+            this.addButtonToMenu();
+
+        if (!disabledFunctions.includes('download')) 
+            this.addButtonToMenu('<i class="fa-solid fa-cloud-arrow-down"></i>', (e) => this.downloadFile()).setAttribute('title', 'Download');
+        if (!disabledFunctions.includes('upload')) 
+            this.addButtonToMenu('<i class="fa-solid fa-cloud-arrow-up"></i>', (e) => this.showUploadPanel()).setAttribute('title', 'Upload');
+        if (!(disabledFunctions.includes('download') && disabledFunctions.includes('upload'))) 
+            this.addButtonToMenu();
+
+        if (!disabledFunctions.includes('zip')) 
+            this.addButtonToMenu('<i class="fa-solid fa-file-zipper"></i>', (e) => this.zipSelectedItems()).setAttribute('title', 'Zip');
+        if (!disabledFunctions.includes('unzip')) 
+            this.addButtonToMenu('<i class="fa-solid fa-square-arrow-up-right"></i>', (e) => this.extractSelectedItems()).setAttribute('title', 'UnZip');
+        if (!(disabledFunctions.includes('unzip') && disabledFunctions.includes('zip'))) 
+            this.addButtonToMenu();
+
+        if (!disabledFunctions.includes('toggleview')) 
+            this.addButtonToMenu('<i class="fa-solid fa-list-ul"></i>', (e) => this.toggleFilesListView()).setAttribute('title', 'Toggle View');
+
+        if (!disabledFunctions.includes('search'))
+            this.addInputToMenu('Search ...', (e) => { if (e.keyCode == 13) this.search(e.currentTarget.value); }, 'search-box');
+
+        if (disabledFunctions.includes('menubar')) 
+            menuContinerDiv.style.display = 'none';
     }
 
     #initContextMenu() {
+        let disabledFunctions = (typeof this.config.disabledFunctions != "undefined" ? this.config.disabledFunctions.join(',') : '').toLowerCase();
         let self = this;
-        this.contextMenu = new ContextMenu(this.jsSelectContinerDiv, [
-            { text: '<i class="fa-solid fa-turn-up"></i> Up', onclick: function (e) { self.goUpFolder(); } },
-            { text: '<i class="fa-solid fa-repeat"></i> Reload', onclick: function (e) { self.getFolderContent(); } },
-            null,
-            { text: '<i class="fa-solid fa-copy"></i> Copy', onclick: function (e) { self.copyItems(); } },
-            { text: '<i class="fa-solid fa-scissors"></i> Cut', onclick: function (e) { self.cutItems(); } },
-            { text: '<i class="fa-solid fa-paste"></i> Paste', onclick: function (e) { self.pasteItems(); }, disabled: true },
-            null,
-            { text: '<i class="fa-solid fa-folder-plus"></i> New Folder', onclick: function (e) { self.createNewFolder(); } },
-            { text: '<i class="fa-solid fa-file-circle-plus"></i> New File', onclick: function (e) { self.createNewFile(); } },
-            null,
-            { text: '<i class="fa-solid fa-i-cursor"></i> Rename', onclick: function (e) { self.renameSelectedItems(); } },
-            { text: '<i class="fa-solid fa-file-pen"></i> Edit', onclick: function (e) { self.showFileContent(); } },
-            { text: '<i class="fa-solid fa-trash"></i> Delete', onclick: function (e) { self.deleteSelectedItems(); } },
-            null,
-            { text: '<i class="fa-solid fa-file-zipper"></i> Zip', onclick: function (e) { self.zipSelectedItems(); } },
-            { text: '<i class="fa-solid fa-square-arrow-up-right"></i> UnZip', onclick: function (e) { self.extractSelectedItems(); } },
-            null,
-            { text: '<i class="fa-solid fa-cloud-arrow-down"></i> Download', onclick: function (e) { self.downloadFile(); } },
-            { text: '<i class="fa-solid fa-cloud-arrow-up"></i> Upload', onclick: function (e) { self.showUploadPanel(); } },
-        ]);
+        let menuItems = [];
 
-        this.contextMenu.install();
+        if (!disabledFunctions.includes('browse')) 
+            menuItems.push({ text: '<i class="fa-solid fa-turn-up"></i> Up', onclick: function (e) { self.goUpFolder(); } });
+        if (!disabledFunctions.includes('reload')) 
+            menuItems.push({ text: '<i class="fa-solid fa-repeat"></i> Reload', onclick: function (e) { self.getFolderContent(); } });
+        if (!(disabledFunctions.includes('browse') && disabledFunctions.includes('reload'))) 
+            menuItems.push(null);
+
+        if (!disabledFunctions.includes('copy')) 
+            menuItems.push({ text: '<i class="fa-solid fa-copy"></i> Copy', onclick: function (e) { self.copyItems(); } });
+        if (!disabledFunctions.includes('cut')) 
+            menuItems.push({ text: '<i class="fa-solid fa-scissors"></i> Cut', onclick: function (e) { self.cutItems(); } });
+        if (!(disabledFunctions.includes('copy') && disabledFunctions.includes('cut'))) {
+            menuItems.push({ text: '<i class="fa-solid fa-paste"></i> Paste', onclick: function (e) { self.pasteItems(); }, disabled: true });
+            menuItems.push(null);
+        }
+
+        if (!disabledFunctions.includes('createnewfolder'))
+            menuItems.push({ text: '<i class="fa-solid fa-folder-plus"></i> New Folder', onclick: function (e) { self.createNewFolder(); } });
+        if (!disabledFunctions.includes('createnewfile'))
+            menuItems.push({ text: '<i class="fa-solid fa-file-circle-plus"></i> New File', onclick: function (e) { self.createNewFile(); } });
+        if (!(disabledFunctions.includes('createnewfolder') && disabledFunctions.includes('createnewfile')))
+            menuItems.push(null);
+
+        if (!disabledFunctions.includes('rename')) 
+            menuItems.push({ text: '<i class="fa-solid fa-i-cursor"></i> Rename', onclick: function (e) { self.renameSelectedItems(); } });
+        if (!disabledFunctions.includes('getfilecontent'))
+            menuItems.push({ text: '<i class="fa-solid fa-file-pen"></i> Edit', onclick: function (e) { self.getFileContent(); } });
+        if (!disabledFunctions.includes('delete')) 
+            menuItems.push({ text: '<i class="fa-solid fa-trash"></i> Delete', onclick: function (e) { self.deleteSelectedItems(); } });
+        if (!(disabledFunctions.includes('rename') && disabledFunctions.includes('getfilecontent') && disabledFunctions.includes('delete'))) 
+            menuItems.push(null);
+
+        if (!disabledFunctions.includes('zip')) 
+            menuItems.push({ text: '<i class="fa-solid fa-file-zipper"></i> Zip', onclick: function (e) { self.zipSelectedItems(); } });
+        if (!disabledFunctions.includes('unzip')) 
+            menuItems.push({ text: '<i class="fa-solid fa-square-arrow-up-right"></i> UnZip', onclick: function (e) { self.extractSelectedItems(); } });
+        if (!(disabledFunctions.includes('unzip') && disabledFunctions.includes('zip'))) 
+            menuItems.push(null);
+
+        if (!disabledFunctions.includes('download')) 
+            menuItems.push({ text: '<i class="fa-solid fa-cloud-arrow-down"></i> Download', onclick: function (e) { self.downloadFile(); } });
+        if (!disabledFunctions.includes('upload')) 
+            menuItems.push({ text: '<i class="fa-solid fa-cloud-arrow-up"></i> Upload', onclick: function (e) { self.showUploadPanel(); } });
+
+
+        this.contextMenu = new ContextMenu(this.jsSelectContinerDiv, menuItems);
+
+        if (!disabledFunctions.includes('contextmenu'))
+            this.contextMenu.install();
     }
 
     #initExplorer() {
         let self = this;
+        let disabledFunctions = (typeof this.config.disabledFunctions != "undefined" ? this.config.disabledFunctions.join(',') : '').toLowerCase();
 
         this.#fileManager().classList.add('hgo-fm-wrapper');
 
@@ -142,10 +203,11 @@
         this.jsSelectContinerDiv.classList.add('hgo-fm-fsitems');
         if (Cookies.get('hgo-fm-current-view-' + this.thisId))
             this.jsSelectContinerDiv.classList.add(Cookies.get('hgo-fm-current-view-' + this.thisId));
-        this.jsSelectContinerDiv.addEventListener('dblclick', (e) => {
-            e.stopPropagation();
-            this.goUpFolder();
-        });
+        if (!disabledFunctions.includes('browse')) 
+            this.jsSelectContinerDiv.addEventListener('dblclick', (e) => {
+                e.stopPropagation();
+                this.goUpFolder();
+            });
         wrapper.appendChild(this.jsSelectContinerDiv);
 
         this.breadcrumbContinerDiv = document.createElement('div');
@@ -170,7 +232,7 @@
                 "keep_selected_style": false
             },
             "plugins": []
-        }).on("select_node.jstree",
+        }).on("select_node.jstree", (!disabledFunctions.includes('browse')) ? 
             function (evt, data) {
                 if (data.event.type === 'click') {
                     if (data.node.parent === "#") {
@@ -182,14 +244,17 @@
                         self.getFolderContent(self.getCurrentPath() + "\\" + data.node.text);
                     }
                 }
-            }
+            } 
+            : null
         );
         this.jsTree = $(jsTreeDiv).jstree(true);
+        if (disabledFunctions.includes('folderstree'))
+            jsTreeDiv.style.display = 'none';
 
         //init ViSelect------------------------------------------------
         this.jsSelect = new SelectionArea({
             selectables: ['#' + this.thisId + ' .hgo-fm-fsitems > .fsitem'],
-            boundaries: [this.jsSelectContinerDiv]
+            boundaries: [this.jsSelectContinerDiv],
         }).on('beforestart', ({ store, event }) => {
             let contextMenu = $('#' + this.thisId + ' .hgo-fm-fsitems .context');
             if (!event.ctrlKey && !event.metaKey && contextMenu.length === 0) {
@@ -208,6 +273,7 @@
             for (const el of removed) {
                 el.classList.remove('selected');
             }
+            
         }).on('beforedrag', ({ store, event }) => {
             if (!event.ctrlKey && !event.metaKey) {
                 this.jsSelect.clearSelection();
@@ -215,9 +281,10 @@
         });
 
         //init SplitJS-------------------------------------------------
-        Split([jsTreeDiv, this.jsSelectContinerDiv], {
-            sizes: [20, 80],
-        });
+        if (!disabledFunctions.includes('folderstree'))
+            Split([jsTreeDiv, this.jsSelectContinerDiv], {
+                sizes: [20, 80],
+            });
     }
 
     #WaitingPanel() {
@@ -231,6 +298,14 @@
     }
 
     #reloadBreadcrumb() {
+        let disabledFunctions = (typeof this.config.disabledFunctions != "undefined" ? this.config.disabledFunctions.join(',') : '').toLowerCase();
+        if (disabledFunctions.includes('breadcrumb')) {
+            this.breadcrumbContinerDiv.style.display = 'none';
+            return;
+        }
+
+        this.breadcrumbContinerDiv.style.display = 'initial';
+
         let splitedDirs = this.getCurrentPath().split('\\').filter(i => i);
         if (splitedDirs && splitedDirs.length > 0) {
             let currentDir = '';
@@ -246,7 +321,8 @@
                     let btn = document.createElement('button');
                     btn.innerText = dir;
                     btn.setAttribute('path', currentDir);
-                    btn.addEventListener('click', (e) => { this.getFolderContent(e.currentTarget.getAttribute('path')); });
+                    if (!disabledFunctions.includes('browse'))
+                        btn.addEventListener('click', (e) => { this.getFolderContent(e.currentTarget.getAttribute('path')); });
                     li.appendChild(btn);
 
                 }
@@ -262,6 +338,8 @@
     }
 
     #fillFolderContent(data) {
+        let disabledFunctions = (typeof this.config.disabledFunctions != "undefined" ? this.config.disabledFunctions.join(',') : '').toLowerCase();
+
         if (data.Error) {
             this.showToastify(data.Error);
             return;
@@ -281,8 +359,6 @@
 
         $.each(data.Folders, function (idx, folder) {
 
-            //let dirName = folder.VirtualPath.replace(currentPath, "");
-
             jsTreeNodes.push({ 'text': folder.FolderName, 'state': { 'opened': false, 'selected': false } });
 
             let fsItemDiv = document.createElement('div');
@@ -290,11 +366,12 @@
             fsItemDiv.setAttribute('path', folder.VirtualPath);
             fsItemDiv.setAttribute('item-type', 'folder');
             fsItemDiv.classList.add('fsitem');
-            fsItemDiv.addEventListener('dblclick', (e) => {
-                e.stopPropagation();
-                let path = e.currentTarget.getAttribute('path');
-                self.getFolderContent(path);
-            });
+            if (!disabledFunctions.includes('browse'))
+                fsItemDiv.addEventListener('dblclick', (e) => {
+                    e.stopPropagation();
+                    let path = e.currentTarget.getAttribute('path');
+                    self.getFolderContent(path);
+                });
 
             let fsItemImg = document.createElement('img');
             fsItemImg.classList.add('lozad');
@@ -316,10 +393,12 @@
             fsItemDiv.setAttribute('path', file.VirtualPath);
             fsItemDiv.setAttribute('item-type', 'file');
             fsItemDiv.classList.add('fsitem');
-            fsItemDiv.addEventListener('dblclick', (e) => {
-                e.stopPropagation();
-                self.downloadFile();
-            });
+
+            if (!disabledFunctions.includes('download')) 
+                fsItemDiv.addEventListener('dblclick', (e) => {
+                    e.stopPropagation();
+                    self.downloadFile();
+                });
 
             let fsItemImg = document.createElement('img');
             fsItemImg.classList.add('lozad');
@@ -466,7 +545,8 @@
             if (addToHistory === true) {
                 if (this.browseHistory[this.browseHistory.length - 1] != this.getCurrentPath()) {
                     this.browseHistory.push(this.getCurrentPath());
-                    this.backButton.removeAttribute('disabled');
+                    if (this.backButton)
+                        this.backButton.removeAttribute('disabled');
                 }
             }
         }
@@ -532,7 +612,7 @@
         if (confirm("Are you sure you want to delete selected items?")) {
             let self = this;
             this.#WaitingPanel();
-            $.post(this.apiUrl, { id: this.thisId, command: "DeleteItems", parameters: JSON.stringify({ Path: this.getCurrentPath(), Items: selectedItems }) }, function (data) {
+            $.post(this.apiUrl, { id: this.thisId, command: "delete", parameters: JSON.stringify({ Path: this.getCurrentPath(), Items: selectedItems }) }, function (data) {
                 self.#WaitingPanel();
                 self.#fillFolderContent(data);
             }, 'json');
@@ -569,7 +649,7 @@
 
         let self = this;
         this.#WaitingPanel();
-        $.post(this.apiUrl, { id: this.thisId, command: "RenameItems", parameters: JSON.stringify({ Path: currentPath, Items: selectedItems, NewName: newName }) }, function (data) {
+        $.post(this.apiUrl, { id: this.thisId, command: "rename", parameters: JSON.stringify({ Path: currentPath, Items: selectedItems, NewName: newName }) }, function (data) {
             self.#WaitingPanel();
             self.#fillFolderContent(data);
         }, 'json');
@@ -591,7 +671,7 @@
 
         let self = this;
         this.#WaitingPanel();
-        $.post(this.apiUrl, { id: this.thisId, command: "ZipItems", parameters: JSON.stringify({ Path: this.getCurrentPath(), Items: selectedItems, FileName: zipFileName }) }, function (data) {
+        $.post(this.apiUrl, { id: this.thisId, command: "zip", parameters: JSON.stringify({ Path: this.getCurrentPath(), Items: selectedItems, FileName: zipFileName }) }, function (data) {
             self.#WaitingPanel();
             self.#fillFolderContent(data);
         }, 'json');
@@ -605,20 +685,20 @@
 
         let self = this;
         this.#WaitingPanel();
-        $.post(this.apiUrl, { id: this.thisId, command: "ExtractItems", parameters: JSON.stringify({ Path: this.getCurrentPath(), Items: selectedItems }) }, function (data) {
+        $.post(this.apiUrl, { id: this.thisId, command: "unzip", parameters: JSON.stringify({ Path: this.getCurrentPath(), Items: selectedItems }) }, function (data) {
             self.#WaitingPanel();
             self.#fillFolderContent(data);
         }, 'json');
     }
 
-    showFileContent = function () {
+    getFileContent = function () {
         let selectedItems = this.#checkIfAnyItemSelected('file');
         if (selectedItems === false) {
             return;
         }
 
         for (let i = 0; i < selectedItems.length; i++) {
-            window.open(`${this.apiUrl}?id=${this.thisId}&command=ShowFileContent&parameters=${selectedItems[i]}`, '_blank');
+            window.open(`${this.apiUrl}?id=${this.thisId}&command=getfilecontent&parameters=${selectedItems[i]}`, '_blank');
         }
     }
 
@@ -629,7 +709,7 @@
         }
 
         for (let i = 0; i < selectedItems.length; i++) {
-            window.open(`${this.apiUrl}?id=${this.thisId}&command=DownloadItem&parameters=${selectedItems[i]}`, '_blank');
+            window.open(`${this.apiUrl}?id=${this.thisId}&command=download&parameters=${selectedItems[i]}`, '_blank');
         }
     }
 
@@ -650,7 +730,8 @@
         this.clipboard.push("copy");
 
         this.clipboard = this.clipboard.concat(this.getSelectedItemsPath());
-        this.pasteButton.removeAttribute('disabled');
+        if (this.pasteButton)
+            this.pasteButton.removeAttribute('disabled');
 
         let pasteContextMenu = this.contextMenu.items.filter(function (el) {
             return el && el.text.includes('Paste');
@@ -665,7 +746,8 @@
         this.clipboard.push("cut");
 
         this.clipboard = this.clipboard.concat(this.getSelectedItemsPath());
-        this.pasteButton.removeAttribute('disabled');
+        if (this.pasteButton)
+            this.pasteButton.removeAttribute('disabled');
 
         let pasteContextMenu = this.contextMenu.items.filter(function (el) {
             return el && el.text.includes('Paste');
@@ -710,7 +792,8 @@
             }, 'json');
         }
         this.clipboard = [];
-        this.pasteButton.setAttribute('disabled', 'disabled');
+        if (this.pasteButton)
+            this.pasteButton.setAttribute('disabled', 'disabled');
 
         let pasteContextMenu = this.contextMenu.items.filter(function (el) {
             return el && el.text.includes('Paste');
