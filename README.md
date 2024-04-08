@@ -15,9 +15,6 @@ HGO.ASPNetCore.FileManager is a free, open source, feature rich and easy to use 
 -  Ability to control disk space usage
 -  and more ...
 
-<p align="center" width="100%">
-    <img src="https://github.com/H-Ghamarzadeh/HGO.ASPNetCore.FileManager/blob/master/Light-min.png?raw=true" alt="HGO.ASPNetCore.FileManager Light Mode"> 
-</p>
-<p align="center" width="100%">
-    <img src="https://github.com/H-Ghamarzadeh/HGO.ASPNetCore.FileManager/blob/master/Dark-min.png?raw=true" alt="HGO.ASPNetCore.FileManager Dark Mode"> 
-</p>
+![HGO.ASPNetCore.FileManager Light Mode](https://github.com/H-Ghamarzadeh/HGO.ASPNetCore.FileManager/blob/master/Light-min.png?raw=true "HGO.ASPNetCore.FileManager Light Mode")
+![HGO.ASPNetCore.FileManager Dark Mode](https://github.com/H-Ghamarzadeh/HGO.ASPNetCore.FileManager/blob/master/Dark-min.png?raw=true "HGO.ASPNetCore.FileManager Dark Mode")
+
