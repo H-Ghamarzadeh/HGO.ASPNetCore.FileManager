@@ -33,6 +33,7 @@
 		<PackageIcon>Logo.png</PackageIcon>
 		<AssemblyOriginatorKeyFile>HGO.ASPNetCore.FileManager.snk</AssemblyOriginatorKeyFile>
 		<Version>1.0.0</Version>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
 	</PropertyGroup>
 
 	<ItemGroup>
