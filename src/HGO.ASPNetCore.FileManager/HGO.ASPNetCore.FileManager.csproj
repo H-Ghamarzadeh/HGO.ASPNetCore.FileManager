@@ -1,26 +1,51 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-	  <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+		<Features>strict</Features>
+		<PublishRepositoryUrl>true</PublishRepositoryUrl>
+		<EmbedUntrackedSources>true</EmbedUntrackedSources>
+		<Deterministic>true</Deterministic>
+		<ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
+		<ProduceReferenceAssembly>False</ProduceReferenceAssembly>
+		<GenerateDocumentationFile>True</GenerateDocumentationFile>
+		<SignAssembly>True</SignAssembly>
+		<Authors>SeyedHadi GhamarzadehOsgouei</Authors>
+		<Description>
+			HGO.ASPNetCore.FileManager is a free, open source, feature rich and easy to use file explorer/manager component for ASP.Net Core 6 and above with MIT license!
+		</Description>
+		<Copyright>Copyright Hadi Ghamarzadeh</Copyright>
+		<PackageTags>ASP.Net File Manage, ASP.Net File Explorer, ASP.Net Core File Manager, ASP.Net Core File Explorer, ASP.Net Upload File, ASP.Net Core Upload File, File Manager, File Explorer, Upload File, Download File</PackageTags>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<IncludeSymbols>True</IncludeSymbols>
+		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+		<EnableNETAnalyzers>False</EnableNETAnalyzers>
+		<LangVersion>latest</LangVersion>
+		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+		<Title>HGO.ASPNetCore.FileManager</Title>
+		<PackageProjectUrl>https://github.com/H-Ghamarzadeh/HGO.ASPNetCore.FileManager</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/H-Ghamarzadeh/HGO.ASPNetCore.FileManager</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
+		<NeutralLanguage>en</NeutralLanguage>
+		<PackageIcon>Logo.png</PackageIcon>
+		<AssemblyOriginatorKeyFile>HGO.ASPNetCore.FileManager.snk</AssemblyOriginatorKeyFile>
+		<Version>1.0.0</Version>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="6.0.27" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.1" />
-    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="8.0.3" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="SharpCompress" Version="0.36.0" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="6.0.27" />
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.1" />
+		<PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="8.0.3" />
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+		<PackageReference Include="SharpCompress" Version="0.36.0" />
+	</ItemGroup>
 
-  <ItemGroup>
-	  <EmbeddedResource Include="Views/**/*.cshtml" Pack="true" />
-	  <EmbeddedResource Include="hgofilemanager/**/*.*" Pack="true" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Remove="hgofilemanager\HgoFileManager-dark.css" />
-  </ItemGroup>
+	<ItemGroup>
+		<EmbeddedResource Include="Views/**/*.cshtml" Pack="true" />
+		<EmbeddedResource Include="hgofilemanager/**/*.*" Pack="true" />
+		<None Include="Logo.png" Pack="true" PackagePath="\" />
+	</ItemGroup>
 </Project>
