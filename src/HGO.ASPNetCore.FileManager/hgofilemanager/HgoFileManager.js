@@ -403,7 +403,11 @@
             let fsItemImg = document.createElement('img');
             fsItemImg.classList.add('lozad');
             fsItemImg.src = '/hgofilemanager/images/loading.gif';
-            fsItemImg.setAttribute('data-src', this.apiUrl + `?id=${this.thisId}&command=filePreview&parameters=${file.VirtualPath}`);
+            if (!disabledFunctions.includes('filepreview')) {
+                fsItemImg.setAttribute('data-src', this.apiUrl + `?id=${this.thisId}&command=filePreview&parameters=${file.VirtualPath}`);
+            } else {
+                fsItemImg.setAttribute('data-src', '/hgofilemanager/images/file.png');
+            }
             fsItemDiv.appendChild(fsItemImg);
 
             let fsItemSpan = document.createElement('span');

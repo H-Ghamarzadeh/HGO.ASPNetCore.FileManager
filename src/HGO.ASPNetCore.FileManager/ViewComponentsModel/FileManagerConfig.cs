@@ -55,7 +55,7 @@
         /// "Search", "CreateNewFolder", "CreateNewFile", "Delete", "Rename", "Zip",
         /// "Unzip", "Copy", "Cut", "EditFile", "Download", "GetFileContent", "Upload",
         /// "ToggleView", "Browse", "Reload", "Breadcrumb", "FoldersTree", "MenuBar",
-        /// "ContextMenu"
+        /// "ContextMenu", "FilePreview"
         /// </summary>
         public List<string> DisabledFunctions { get; set; } = new List<string>();
 
