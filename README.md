@@ -2,6 +2,7 @@
 HGO.ASPNetCore.FileManager is a free, open source, feature rich and easy to use file explorer/manager component for ASP.Net Core 6 and above with MIT license!
 
 [![NuGet version (HGO.ASPNetCore.FileManager)](https://img.shields.io/nuget/v/HGO.ASPNetCore.FileManager)](https://www.nuget.org/packages/HGO.ASPNetCore.FileManager/)
+![HGO.ASPNetCore.FileManager](https://github.com/H-Ghamarzadeh/HGO.ASPNetCore.FileManager/blob/master/HGO.ASPNetCore.FileManager.png?raw=true "HGO.ASPNetCore.FileManager")
 
 ## Features:
 -  Manage server's files from client side
