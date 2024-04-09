@@ -14,10 +14,8 @@
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
 		<SignAssembly>True</SignAssembly>
 		<Authors>SeyedHadi GhamarzadehOsgouei</Authors>
-		<Description>
-			HGO.ASPNetCore.FileManager is a free, open source, feature rich and easy to use file explorer/manager component for ASP.Net Core 6 and above with MIT license!
-		</Description>
-		<Copyright>Copyright Hadi Ghamarzadeh</Copyright>
+		<Description>HGO.ASPNetCore.FileManager is a free, open source, feature rich and easy to use file explorer/manager component for ASP.Net Core 6 and above with MIT license!</Description>
+		<Copyright>Copyright SeyedHadi GhamarzadehOsgouei</Copyright>
 		<PackageTags>ASP.NetFileManager, ASP.NetFileExplorer, ASP.NetCoreFileManager, ASP.NetCoreFileExplorer, ASP.NetUploadFile, ASP.NetCoreUploadFile, FileManager, FileExplorer, UploadFile, DownloadFile</PackageTags>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<IncludeSymbols>True</IncludeSymbols>
@@ -32,8 +30,9 @@
 		<NeutralLanguage>en</NeutralLanguage>
 		<PackageIcon>Logo.png</PackageIcon>
 		<AssemblyOriginatorKeyFile>HGO.ASPNetCore.FileManager.snk</AssemblyOriginatorKeyFile>
-		<Version>1.0.2</Version>
+		<Version>1.0.3</Version>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -45,8 +44,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<EmbeddedResource Include="Views/**/*.cshtml" Pack="true" />
-		<EmbeddedResource Include="hgofilemanager/**/*.*" Pack="true" />
+		<EmbeddedResource Include="Views/**/*.cshtml" Pack="false" />
+		<EmbeddedResource Include="hgofilemanager/**/*.*" Pack="false" />
 		<None Include="Logo.png" Pack="true" PackagePath="\" />
 		<None Include="README.md" Pack="true" PackagePath="\" />
 	</ItemGroup>
