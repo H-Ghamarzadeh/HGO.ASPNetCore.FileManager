@@ -79,6 +79,15 @@ public async Task<IActionResult> HgoApi(string id, string command, string parame
     return await _processor.ProcessCommandAsync(id, command, parameters, file);
 }
 ```
+Also you need to inject `IFileManagerCommandsProcessor` to you controller contractor method with IoC, so edit your controller contractor method like below:
+```cs
+private readonly IFileManagerCommandsProcessor _processor;
+
+public HomeController(IFileManagerCommandsProcessor processor)
+{
+    _processor = processor;
+}
+```
 Now you can add `HGO.ASPNetCore.FileManager` component view to any razor page or view you want:
 ```cs
 <div style="height: 550px; margin-bottom:20px">
