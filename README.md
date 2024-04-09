@@ -142,6 +142,7 @@ For more information please check the following sample projects:
 
 ## See installation guide on YouTube:
 [![Hgo.ASPNetCore.FileManager Installation guide in ASP.Net Core MVC project](https://i.ytimg.com/vi/_1bZYUQm3wc/hq720.jpg)](https://www.youtube.com/watch?v=_1bZYUQm3wc)
+[![Hgo.ASPNetCore.FileManager Installation guide in ASP.Net Core Razor Pages project](https://i.ytimg.com/vi/kDlHLdVtrMc/hq720.jpg)](https://www.youtube.com/watch?v=kDlHLdVtrMc)
 
 ### Note:
 HGO.ASPNetCore.FileManager depends on jQuery library, so you need reference jQuery library before calling `RenderHgoFileManagerJavaScripts()`
