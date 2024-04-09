@@ -139,4 +139,19 @@ For more information please check the following sample projects:
 - [ASP.Net Core MVC](https://github.com/H-Ghamarzadeh/HGO.ASPNetCore.FileManager/tree/master/test/HGO.ASPNetCore.FileManager.Test)
 - [ASP.Net Core Razor Pages](https://github.com/H-Ghamarzadeh/HGO.ASPNetCore.FileManager/tree/master/test/HGO.ASPNetCore.FileManager.RazorPages.Test)
 
+### Note:
+HGO.ASPNetCore.FileManager depends on jQuery library, so you need reference jQuery library before calling `RenderHgoFileManagerJavaScripts()`
+
+### Third-party JS libraries which I used in this project:
+- [context-js](https://github.com/heapoverride/context-js)
+- [dropzone](https://github.com/dropzone/dropzone)
+- [Font Awesome](https://github.com/FortAwesome/Font-Awesome)
+- [js-cookie](https://github.com/js-cookie/js-cookie)
+- [jsTree](https://github.com/vakata/jstree)
+- [Lozad.js](https://github.com/ApoorvSaxena/lozad.js)
+- [Split.js](https://github.com/nathancahill/split)
+- [toastify-js](https://github.com/apvarun/toastify-js)
+- [viSelection](https://github.com/simonwep/selection)
+
+Thanks to all!
 
