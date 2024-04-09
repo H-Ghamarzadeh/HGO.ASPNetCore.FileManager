@@ -71,7 +71,7 @@ app.MapControllerRoute(
 
 app.Run();
 ```
-Now you need to create an `Action Method` to handle server side oprations, so open (or create) a `Controller` class and add the following action method:
+Now you need to create an `Action Method` to handle server side operations, so open (or create) a `Controller` class and add the following action method:
 ```cs
 [HttpPost, HttpGet]
 public async Task<IActionResult> HgoApi(string id, string command, string parameters, IFormFile file)
