@@ -2,6 +2,10 @@
 HGO.ASPNetCore.FileManager is a free, open source, feature rich and easy to use file explorer/manager component for ASP.Net Core 6 and above with MIT license!
 
 [![NuGet version (HGO.ASPNetCore.FileManager)](https://img.shields.io/nuget/v/HGO.ASPNetCore.FileManager)](https://www.nuget.org/packages/HGO.ASPNetCore.FileManager/)
+![NuGet Downloads](https://img.shields.io/nuget/dt/Hgo.ASPNetCore.FileManager?style=flat&color=%23238636)
+
+
+![HGO.ASPNetCore.FileManager](https://github.com/H-Ghamarzadeh/HGO.ASPNetCore.FileManager/blob/master/HGO.ASPNetCore.FileManager.png?raw=true "HGO.ASPNetCore.FileManager")
 
 ## Features:
 -  Manage server's files from client side
@@ -79,6 +83,15 @@ public async Task<IActionResult> HgoApi(string id, string command, string parame
     return await _processor.ProcessCommandAsync(id, command, parameters, file);
 }
 ```
+Also you need to inject `IFileManagerCommandsProcessor` to you controller contractor method with IoC, so edit your controller contractor method like below:
+```cs
+private readonly IFileManagerCommandsProcessor _processor;
+
+public HomeController(IFileManagerCommandsProcessor processor)
+{
+    _processor = processor;
+}
+```
 Now you can add `HGO.ASPNetCore.FileManager` component view to any razor page or view you want:
 ```cs
 <div style="height: 550px; margin-bottom:20px">
@@ -130,4 +143,23 @@ For more information please check the following sample projects:
 - [ASP.Net Core MVC](https://github.com/H-Ghamarzadeh/HGO.ASPNetCore.FileManager/tree/master/test/HGO.ASPNetCore.FileManager.Test)
 - [ASP.Net Core Razor Pages](https://github.com/H-Ghamarzadeh/HGO.ASPNetCore.FileManager/tree/master/test/HGO.ASPNetCore.FileManager.RazorPages.Test)
 
+## See installation guide on YouTube:
+[![Hgo.ASPNetCore.FileManager Installation guide in ASP.Net Core MVC project](https://i.ytimg.com/vi/_1bZYUQm3wc/hq720.jpg)](https://www.youtube.com/watch?v=_1bZYUQm3wc)
+[![Hgo.ASPNetCore.FileManager Installation guide in ASP.Net Core Razor Pages project](https://i.ytimg.com/vi/kDlHLdVtrMc/hq720.jpg)](https://www.youtube.com/watch?v=kDlHLdVtrMc)
+
+### Note:
+HGO.ASPNetCore.FileManager depends on jQuery library, so you need reference jQuery library before calling `RenderHgoFileManagerJavaScripts()`
+
+### Third-party JS libraries which I used in this project:
+- [context-js](https://github.com/heapoverride/context-js)
+- [dropzone](https://github.com/dropzone/dropzone)
+- [Font Awesome](https://github.com/FortAwesome/Font-Awesome)
+- [js-cookie](https://github.com/js-cookie/js-cookie)
+- [jsTree](https://github.com/vakata/jstree)
+- [Lozad.js](https://github.com/ApoorvSaxena/lozad.js)
+- [Split.js](https://github.com/nathancahill/split)
+- [toastify-js](https://github.com/apvarun/toastify-js)
+- [viSelection](https://github.com/simonwep/selection)
+
+Thanks to all!
 
