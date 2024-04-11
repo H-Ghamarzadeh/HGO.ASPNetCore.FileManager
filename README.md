@@ -4,9 +4,7 @@ HGO.ASPNetCore.FileManager is a free, open source, feature rich and easy to use 
 [![NuGet version (HGO.ASPNetCore.FileManager)](https://img.shields.io/nuget/v/HGO.ASPNetCore.FileManager)](https://www.nuget.org/packages/HGO.ASPNetCore.FileManager/)
 ![NuGet Downloads](https://img.shields.io/nuget/dt/Hgo.ASPNetCore.FileManager?style=flat&color=%23238636)
 
-<p style="font-size: large;">
-    <a href="https://filemanager.ghamarzadeh.com/" target="_blank">Online Demo</a>
-</p>
+# **[Online Demo](https://filemanager.ghamarzadeh.com/)**
 
 ![HGO.ASPNetCore.FileManager](https://github.com/H-Ghamarzadeh/HGO.ASPNetCore.FileManager/blob/master/HGO.ASPNetCore.FileManager.png?raw=true "HGO.ASPNetCore.FileManager")
 
