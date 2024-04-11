@@ -1,4 +1,5 @@
-﻿using HGO.ASPNetCore.FileManager.DTOs;
+﻿using System.Net;
+using HGO.ASPNetCore.FileManager.DTOs;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
@@ -12,6 +13,7 @@ using SharpCompress.Writers;
 using HGO.ASPNetCore.FileManager.ViewComponents;
 using SharpCompress.Compressors.Deflate;
 using System.Text;
+using System.IO;
 
 namespace HGO.ASPNetCore.FileManager.CommandsProcessor;
 
@@ -95,7 +97,9 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
                         return EditFile(id,
                             JsonConvert.DeserializeObject<EditFileCommandParameters>(parameters));
                     case "download":
-                        return Download(id, parameters);
+                        return Download(id, parameters, false);
+                    case "view":
+                        return Download(id, parameters, true);
                     case "getfilecontent":
                         return GetFileContent(id, parameters);
                     case "upload":
@@ -572,7 +576,7 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
         return GetContent(id, commandParameters.Path);
     }
 
-    private IActionResult Download(string id, string filePath)
+    private IActionResult Download(string id, string filePath, bool view)
     {
         var physicalRootPath = GetCurrentSessionPhysicalRootPath(id);
         if (string.IsNullOrWhiteSpace(physicalRootPath))
@@ -593,6 +597,11 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
                 Content = "Your requested resource was not found!",
                 StatusCode = 404 //not found
             };
+        }
+
+        if (view)
+        {
+            return new FileStreamResult(File.OpenRead(physicalPath), Utils.GetMimeTypeForFileExtension(physicalPath));
         }
 
         return new PhysicalFileResult(physicalPath, Utils.GetMimeTypeForFileExtension(physicalPath))

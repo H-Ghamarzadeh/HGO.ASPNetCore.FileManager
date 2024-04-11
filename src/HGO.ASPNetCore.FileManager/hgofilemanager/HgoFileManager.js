@@ -101,11 +101,13 @@
         if (!(disabledFunctions.includes('createnewfolder') && disabledFunctions.includes('createnewfile'))) 
             this.addButtonToMenu();
 
+        if (!disabledFunctions.includes('view'))
+            this.addButtonToMenu('<i class="fa-solid fa-eye"></i>', (e) => this.viewFile()).setAttribute('title', 'View');
         if (!disabledFunctions.includes('download')) 
             this.addButtonToMenu('<i class="fa-solid fa-cloud-arrow-down"></i>', (e) => this.downloadFile()).setAttribute('title', 'Download');
         if (!disabledFunctions.includes('upload')) 
             this.addButtonToMenu('<i class="fa-solid fa-cloud-arrow-up"></i>', (e) => this.showUploadPanel()).setAttribute('title', 'Upload');
-        if (!(disabledFunctions.includes('download') && disabledFunctions.includes('upload'))) 
+        if (!(disabledFunctions.includes('download') && disabledFunctions.includes('upload') && disabledFunctions.includes('view'))) 
             this.addButtonToMenu();
 
         if (!disabledFunctions.includes('zip')) 
@@ -169,6 +171,8 @@
         if (!(disabledFunctions.includes('unzip') && disabledFunctions.includes('zip'))) 
             menuItems.push(null);
 
+        if (!disabledFunctions.includes('view'))
+            menuItems.push({ text: '<i class="fa-solid fa-eye"></i> View', onclick: function (e) { self.viewFile(); } });
         if (!disabledFunctions.includes('download')) 
             menuItems.push({ text: '<i class="fa-solid fa-cloud-arrow-down"></i> Download', onclick: function (e) { self.downloadFile(); } });
         if (!disabledFunctions.includes('upload')) 
@@ -394,10 +398,10 @@
             fsItemDiv.setAttribute('item-type', 'file');
             fsItemDiv.classList.add('fsitem');
 
-            if (!disabledFunctions.includes('download')) 
+            if (!disabledFunctions.includes('view')) 
                 fsItemDiv.addEventListener('dblclick', (e) => {
                     e.stopPropagation();
-                    self.downloadFile();
+                    self.viewFile();
                 });
 
             let fsItemImg = document.createElement('img');
@@ -714,6 +718,17 @@
 
         for (let i = 0; i < selectedItems.length; i++) {
             window.open(`${this.apiUrl}?id=${this.thisId}&command=download&parameters=${selectedItems[i]}`, '_blank');
+        }
+    }
+
+    viewFile = function () {
+        let selectedItems = this.#checkIfAnyItemSelected('file');
+        if (selectedItems === false) {
+            return;
+        }
+
+        for (let i = 0; i < selectedItems.length; i++) {
+            window.open(`${this.apiUrl}?id=${this.thisId}&command=view&parameters=${selectedItems[i]}`, '_blank');
         }
     }
 
