@@ -1,5 +1,4 @@
-﻿using System.Net;
-using HGO.ASPNetCore.FileManager.DTOs;
+﻿using HGO.ASPNetCore.FileManager.DTOs;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
@@ -13,7 +12,6 @@ using SharpCompress.Writers;
 using HGO.ASPNetCore.FileManager.ViewComponents;
 using SharpCompress.Compressors.Deflate;
 using System.Text;
-using System.IO;
 
 namespace HGO.ASPNetCore.FileManager.CommandsProcessor;
 
@@ -835,6 +833,18 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
                 return new RedirectResult("/hgofilemanager/images/css.png") { Permanent = true };
             case ".json":
                 return new RedirectResult("/hgofilemanager/images/json.png") { Permanent = true };
+            case ".txt":
+                return new RedirectResult("/hgofilemanager/images/txt.png") { Permanent = true };
+            case ".pdf":
+                return new RedirectResult("/hgofilemanager/images/pdf.png") { Permanent = true };
+            case ".mp4":
+                return new RedirectResult("/hgofilemanager/images/mp4.png") { Permanent = true };
+            case ".mp3":
+                return new RedirectResult("/hgofilemanager/images/mp3.png") { Permanent = true };
+            case ".exe":
+                return new RedirectResult("/hgofilemanager/images/exe.png") { Permanent = true };
+            case ".dll":
+                return new RedirectResult("/hgofilemanager/images/dll.png") { Permanent = true };
             default:
                 return new RedirectResult("/hgofilemanager/images/file.png") { Permanent = true };
         }
