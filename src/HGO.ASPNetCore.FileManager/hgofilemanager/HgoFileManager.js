@@ -213,10 +213,12 @@
                 this.goUpFolder();
             });
         if (!disabledFunctions.includes('upload')) {
-            this.jsSelectContinerDiv.setAttribute('draggable', 'true');
             this.jsSelectContinerDiv.addEventListener('dragover', (e) => {
-                e.stopPropagation();
-                this.showUploadPanel();
+                if (e.dataTransfer.types.length > 0 && e.dataTransfer.types[0] == "Files" &&
+                    e.dataTransfer.items.length > 0) {
+                    e.stopPropagation();
+                    this.showUploadPanel();
+                }
             });
         }
         wrapper.appendChild(this.jsSelectContinerDiv);

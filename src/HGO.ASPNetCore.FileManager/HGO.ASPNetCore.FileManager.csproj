@@ -30,7 +30,7 @@
 		<NeutralLanguage>en</NeutralLanguage>
 		<PackageIcon>Logo.png</PackageIcon>
 		<AssemblyOriginatorKeyFile>HGO.ASPNetCore.FileManager.snk</AssemblyOriginatorKeyFile>
-		<Version>1.0.6</Version>
+		<Version>1.0.7</Version>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
 	</PropertyGroup>
