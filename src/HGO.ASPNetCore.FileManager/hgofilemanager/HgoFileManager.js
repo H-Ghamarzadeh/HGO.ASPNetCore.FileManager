@@ -212,6 +212,13 @@
                 e.stopPropagation();
                 this.goUpFolder();
             });
+        if (!disabledFunctions.includes('upload')) {
+            this.jsSelectContinerDiv.setAttribute('draggable', 'true');
+            this.jsSelectContinerDiv.addEventListener('dragover', (e) => {
+                e.stopPropagation();
+                this.showUploadPanel();
+            });
+        }
         wrapper.appendChild(this.jsSelectContinerDiv);
 
         this.breadcrumbContinerDiv = document.createElement('div');

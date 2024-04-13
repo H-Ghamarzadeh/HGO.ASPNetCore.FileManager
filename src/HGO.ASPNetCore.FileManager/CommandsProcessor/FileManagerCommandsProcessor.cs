@@ -192,7 +192,7 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
         var searchPattern = commandParameters.Query;
         if (string.IsNullOrWhiteSpace(commandParameters.Query))
         {
-            searchPattern = "*.*";
+            searchPattern = "*";
         }
 
         var result = new GetContentResultModel()
@@ -200,10 +200,25 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
             CurrentPath = physicalPath.ConvertPhysicalToVirtualPath(physicalRootPath),
         };
 
-        result.Files.AddRange(Utils.GetFiles(physicalPath, searchPattern, SearchOption.AllDirectories).OrderBy(p => p)
-            .Select(p => p.GetFileDetail(physicalRootPath)));
-        result.Folders.AddRange(Utils.GetDirectories(physicalPath, searchPattern, SearchOption.AllDirectories)
-            .OrderBy(p => p).Select(p => p.GetFolderDetail(physicalRootPath)));
+        if (searchPattern.Contains("*"))
+        {
+            result.Files.AddRange(Utils.GetFiles(physicalPath, searchPattern, SearchOption.AllDirectories).OrderBy(p => p)
+                .Select(p => p.GetFileDetail(physicalRootPath)));
+            result.Folders.AddRange(Utils.GetDirectories(physicalPath, searchPattern, SearchOption.AllDirectories)
+                .OrderBy(p => p).Select(p => p.GetFolderDetail(physicalRootPath)));
+        }
+        else
+        {
+            result.Files.AddRange(Utils.GetFiles(physicalPath, "*", SearchOption.AllDirectories).OrderBy(p => p)
+                .Select(p => p.GetFileDetail(physicalRootPath)));
+            result.Folders.AddRange(Utils.GetDirectories(physicalPath, "*", SearchOption.AllDirectories)
+                .OrderBy(p => p).Select(p => p.GetFolderDetail(physicalRootPath)));
+
+            result.Files.RemoveAll(p =>
+                !p.FileName.Contains(searchPattern, StringComparison.InvariantCultureIgnoreCase));
+            result.Folders.RemoveAll(p =>
+                !p.FolderName.Contains(searchPattern, StringComparison.InvariantCultureIgnoreCase));
+        }
 
         return result.ToString();
     }
@@ -767,25 +782,22 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
             physicalPath = physicalRootPath;
         }
 
-        if (file.Length > 0)
+        var filePath = Path.Combine(physicalPath, file.FileName);
+
+        if (File.Exists(filePath) && _httpContextAccessor.HttpContext.Request.Form.TryGetValue("dzchunkindex", out StringValues chunkIndex))
         {
-            var filePath = Path.Combine(physicalPath, file.FileName);
-
-            if (File.Exists(filePath) && _httpContextAccessor.HttpContext.Request.Form.TryGetValue("dzchunkindex", out StringValues chunkIndex))
+            if (int.TryParse(chunkIndex.ToString(), out int idx) && idx == 0)
             {
-                if (int.TryParse(chunkIndex.ToString(), out int idx) && idx == 0)
+                return new ContentResult()
                 {
-                    return new ContentResult()
-                    {
-                        Content = "File already exist",
-                        StatusCode = 400
-                    };
-                }
+                    Content = "File already exist",
+                    StatusCode = 400
+                };
             }
-
-            using Stream fileStream = new FileStream(filePath, FileMode.Append);
-            file.CopyTo(fileStream);
         }
+
+        using Stream fileStream = new FileStream(filePath, FileMode.Append);
+        file.CopyTo(fileStream);
 
         return new OkResult();
     }
