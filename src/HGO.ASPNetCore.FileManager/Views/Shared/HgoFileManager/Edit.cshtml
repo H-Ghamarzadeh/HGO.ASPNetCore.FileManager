@@ -13,37 +13,37 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@TempData["FileName"]</title>
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/codemirror.min.css" type="text/css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/addon/search/matchesonscrollbar.min.css" type="text/css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/addon/dialog/dialog.min.css" type="text/css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/addon/hint/show-hint.min.css" type="text/css" />
+    <link rel="stylesheet" href="hgofilemanager/codemirror/5.65.7/lib/codemirror.css" type="text/css" />
+    <link rel="stylesheet" href="hgofilemanager/codemirror/5.65.7/addon/search/matchesonscrollbar.css" type="text/css" />
+    <link rel="stylesheet" href="hgofilemanager/codemirror/5.65.7/addon/dialog/dialog.css" type="text/css" />
+    <link rel="stylesheet" href="hgofilemanager/codemirror/5.65.7/addon/hint/show-hint.css" type="text/css" />
     @if (darkMode)
     {
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/theme/ayu-mirage.min.css" type="text/css" />
+        <link rel="stylesheet" href="hgofilemanager/codemirror/5.65.7/theme/ayu-mirage.css" type="text/css" />
     }
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/codemirror.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/mode/xml/xml.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/mode/javascript/javascript.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/mode/css/css.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/mode/htmlmixed/htmlmixed.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/addon/scroll/annotatescrollbar.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/addon/search/search.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/addon/search/searchcursor.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/addon/search/matchesonscrollbar.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/addon/search/jump-to-line.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/addon/search/match-highlighter.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/addon/selection/active-line.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/addon/dialog/dialog.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/addon/edit/closetag.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/addon/edit/closebrackets.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/addon/edit/matchbrackets.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/addon/edit/matchtags.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/addon/fold/indent-fold.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/addon/fold/xml-fold.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/addon/hint/show-hint.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/addon/hint/anyword-hint.min.js"></script>
+    <script src="hgofilemanager/jquery/dist/jquery-3.7.1.min.js"></script>
+    <script src="hgofilemanager/codemirror/5.65.7/lib/codemirror.js"></script>
+    <script src="hgofilemanager/codemirror/5.65.7/mode/xml/xml.js"></script>
+    <script src="hgofilemanager/codemirror/5.65.7/mode/javascript/javascript.js"></script>
+    <script src="hgofilemanager/codemirror/5.65.7/mode/css/css.js"></script>
+    <script src="hgofilemanager/codemirror/5.65.7/mode/htmlmixed/htmlmixed.js"></script>
+    <script src="hgofilemanager/codemirror/5.65.7/addon/scroll/annotatescrollbar.js"></script>
+    <script src="hgofilemanager/codemirror/5.65.7/addon/search/search.js"></script>
+    <script src="hgofilemanager/codemirror/5.65.7/addon/search/searchcursor.js"></script>
+    <script src="hgofilemanager/codemirror/5.65.7/addon/search/matchesonscrollbar.js"></script>
+    <script src="hgofilemanager/codemirror/5.65.7/addon/search/jump-to-line.js"></script>
+    <script src="hgofilemanager/codemirror/5.65.7/addon/search/match-highlighter.js"></script>
+    <script src="hgofilemanager/codemirror/5.65.7/addon/selection/active-line.js"></script>
+    <script src="hgofilemanager/codemirror/5.65.7/addon/dialog/dialog.js"></script>
+    <script src="hgofilemanager/codemirror/5.65.7/addon/edit/closetag.js"></script>
+    <script src="hgofilemanager/codemirror/5.65.7/addon/edit/closebrackets.js"></script>
+    <script src="hgofilemanager/codemirror/5.65.7/addon/edit/matchbrackets.js"></script>
+    <script src="hgofilemanager/codemirror/5.65.7/addon/edit/matchtags.js"></script>
+    <script src="hgofilemanager/codemirror/5.65.7/addon/fold/indent-fold.js"></script>
+    <script src="hgofilemanager/codemirror/5.65.7/addon/fold/xml-fold.js"></script>
+    <script src="hgofilemanager/codemirror/5.65.7/addon/hint/show-hint.js"></script>
+    <script src="hgofilemanager/codemirror/5.65.7/addon/hint/anyword-hint.js"></script>
 
 
     <style>
