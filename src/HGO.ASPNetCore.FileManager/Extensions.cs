@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.Razor;
+using System.Text.Encodings.Web;
+using System.Text.Unicode;
 
 namespace HGO.ASPNetCore.FileManager
 {
@@ -19,6 +21,7 @@ namespace HGO.ASPNetCore.FileManager
             services.AddSession();
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddScoped(typeof(IFileManagerCommandsProcessor), typeof(FileManagerCommandsProcessor));
+            services.AddSingleton(HtmlEncoder.Create(allowedRanges: new[] { UnicodeRanges.BasicLatin, UnicodeRanges.Latin1Supplement, UnicodeRanges.LatinExtendedA }));
         }
 
         public static void UseHgoFileManager(this IApplicationBuilder builder)

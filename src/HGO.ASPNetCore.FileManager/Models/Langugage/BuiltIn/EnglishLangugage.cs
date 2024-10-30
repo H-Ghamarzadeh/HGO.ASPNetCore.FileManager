@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace HGO.ASPNetCore.FileManager.Models.Langugage.BuiltIn
 {
-    public class EnglishLanguage : ILanguage
+    public class EnglishLanguage : LanguageBase, ILanguage
     {
         public string Browse { get; } = "Browse";
         public string Copy { get; } = "Copy";
@@ -35,6 +35,24 @@ namespace HGO.ASPNetCore.FileManager.Models.Langugage.BuiltIn
         public string NewFolderPlaceHolder { get; } = "New Folder";
         public string NewFilePlaceHolder { get; } = "New Text.txt";
         public string NoItemsSelectedMessage { get; } = "Please select your desired item(s).";
+
+        public string CreateDate { get; } = "Create Date";
+
+        public string ModifiedDate { get; } = "Modified Date";
+
+        public string Name { get; } = "Name";
+
+        public string Size { get; } = "Size";
+        public string Back { get; } = "Back";
+        public string Up { get; } = "Up";
+        public string Close { get; } = "Close";
+        public string EnterNewFolderNameMessage { get; } = "Please enter folder name:";
+        public string EnterNewFileNameMessage { get; } = "Please enter your desired file name:";
+        public string DeleteConfirmationMessage { get; } = "Are you sure you want to delete selected items?";
+        public string RenameMessage { get; } = "Please enter new name:";
+        public string ItemAlreadyExistMessage { get; } = "already exist, do you want to overwrite?";
+        public string ZipFileNameMessage { get; } = "Please enter Zip file name:";
+        public string OverrideConfirmationMessage { get; } = "Some item(s) already exist, do you want to overwrite?";
     }
 
 }

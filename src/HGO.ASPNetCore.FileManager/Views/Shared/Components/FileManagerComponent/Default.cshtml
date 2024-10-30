@@ -73,10 +73,10 @@
     {
         <text>
                     this.backButton = this.addButtonToMenu('<i class="fa-solid fa-rotate-left"></i>', (e) => this.goPreviousPath());
-                this.backButton.setAttribute('title', 'Back');
+                this.backButton.setAttribute('title', '@Model.Config.Language.Back');
                 this.backButton.setAttribute('disabled', 'disabled');
 
-                this.addButtonToMenu('<i class="fa-solid fa-turn-up"></i>', (e) => this.goUpFolder()).setAttribute('title', 'Up');
+                this.addButtonToMenu('<i class="fa-solid fa-turn-up"></i>', (e) => this.goUpFolder()).setAttribute('title', '@Model.Config.Language.Up');
 
                 this.addButtonToMenu();
         </text>
@@ -108,19 +108,19 @@
     @if (!Model.Config.DisabledFunctions.Contains(Command.Rename))
     {
         <text>
-                    this.addButtonToMenu('<i class="fa-solid fa-i-cursor"></i>', (e) => this.renameSelectedItems()).setAttribute('title', 'Rename');
+                    this.addButtonToMenu('<i class="fa-solid fa-i-cursor"></i>', (e) => this.renameSelectedItems()).setAttribute('title', '@Model.Config.Language.Rename');
         </text>
     }
     @if (!Model.Config.DisabledFunctions.Contains(Command.GetFileContent))
     {
         <text>
-                    this.addButtonToMenu('<i class="fa-solid fa-file-pen"></i>', (e) => this.getFileContent()).setAttribute('title', 'Edit');
+                    this.addButtonToMenu('<i class="fa-solid fa-file-pen"></i>', (e) => this.getFileContent()).setAttribute('title', '@Model.Config.Language.Edit');
         </text>
     }
     @if (!Model.Config.DisabledFunctions.Contains(Command.Delete))
     {
         <text>
-                    this.addButtonToMenu('<i class="fa-solid fa-trash"></i>', (e) => this.deleteSelectedItems()).setAttribute('title', 'Delete');
+                        this.addButtonToMenu('<i class="fa-solid fa-trash"></i>', (e) => this.deleteSelectedItems()).setAttribute('title', '@Model.Config.Language.Delete');
         </text>
     }
     @if (!(Model.Config.DisabledFunctions.Contains(Command.Rename) && Model.Config.DisabledFunctions.Contains(Command.GetFileContent) && Model.Config.DisabledFunctions.Contains(Command.Delete)))
@@ -133,13 +133,13 @@
     @if (!Model.Config.DisabledFunctions.Contains(Command.CreateNewFolder))
     {
         <text>
-                    this.addButtonToMenu('<i class="fa-solid fa-folder-plus"></i>', (e) => this.createNewFolder()).setAttribute('title', 'New Folder');
+                    this.addButtonToMenu('<i class="fa-solid fa-folder-plus"></i>', (e) => this.createNewFolder()).setAttribute('title', '@Model.Config.Language.CreateNewFolder');
         </text>
     }
     @if (!Model.Config.DisabledFunctions.Contains(Command.CreateNewFile))
     {
         <text>
-                    this.addButtonToMenu('<i class="fa-solid fa-file-circle-plus"></i>', (e) => this.createNewFile()).setAttribute('title', 'New File');
+                        this.addButtonToMenu('<i class="fa-solid fa-file-circle-plus"></i>', (e) => this.createNewFile()).setAttribute('title', '@Model.Config.Language.CreateNewFile');
         </text>
     }
     @if (!(Model.Config.DisabledFunctions.Contains(Command.CreateNewFolder) && Model.Config.DisabledFunctions.Contains(Command.CreateNewFile)))
@@ -152,19 +152,19 @@
     @if (!Model.Config.DisabledFunctions.Contains(Command.View))
     {
         <text>
-                    this.addButtonToMenu('<i class="fa-solid fa-eye"></i>', (e) => this.viewFile()).setAttribute('title', 'View');
+                    this.addButtonToMenu('<i class="fa-solid fa-eye"></i>', (e) => this.viewFile()).setAttribute('title', '@Model.Config.Language.View');
         </text>
     }
     @if (!Model.Config.DisabledFunctions.Contains(Command.Download))
     {
         <text>
-                    this.addButtonToMenu('<i class="fa-solid fa-cloud-arrow-down"></i>', (e) => this.downloadFile()).setAttribute('title', 'Download');
+                        this.addButtonToMenu('<i class="fa-solid fa-cloud-arrow-down"></i>', (e) => this.downloadFile()).setAttribute('title', '@Model.Config.Language.Download');
         </text>
     }
     @if (!Model.Config.DisabledFunctions.Contains(Command.Upload))
     {
         <text>
-                    this.addButtonToMenu('<i class="fa-solid fa-cloud-arrow-up"></i>', (e) => this.showUploadPanel()).setAttribute('title', 'Upload');
+                            this.addButtonToMenu('<i class="fa-solid fa-cloud-arrow-up"></i>', (e) => this.showUploadPanel()).setAttribute('title', '@Model.Config.Language.Upload');
         </text>
     }
     @if (!(Model.Config.DisabledFunctions.Contains(Command.Download) && Model.Config.DisabledFunctions.Contains(Command.Upload) && Model.Config.DisabledFunctions.Contains(Command.View)))
@@ -177,13 +177,13 @@
     @if (!Model.Config.DisabledFunctions.Contains(Command.Zip))
     {
         <text>
-                    this.addButtonToMenu('<i class="fa-solid fa-file-zipper"></i>', (e) => this.zipSelectedItems()).setAttribute('title', 'Zip');
+                    this.addButtonToMenu('<i class="fa-solid fa-file-zipper"></i>', (e) => this.zipSelectedItems()).setAttribute('title', '@Model.Config.Language.Zip');
         </text>
     }
     @if (!Model.Config.DisabledFunctions.Contains(Command.Unzip))
     {
         <text>
-                    this.addButtonToMenu('<i class="fa-solid fa-square-arrow-up-right"></i>', (e) => this.extractSelectedItems()).setAttribute('title', 'UnZip');
+                        this.addButtonToMenu('<i class="fa-solid fa-square-arrow-up-right"></i>', (e) => this.extractSelectedItems()).setAttribute('title', '@Model.Config.Language.Unzip');
         </text>
     }
     @if (!(Model.Config.DisabledFunctions.Contains(Command.Unzip) && Model.Config.DisabledFunctions.Contains(Command.Zip)))
@@ -196,7 +196,7 @@
     @if (!Model.Config.DisabledFunctions.Contains(Command.ToggleView))
     {
         <text>
-                    this.addButtonToMenu('<i class="fa-solid fa-list-ul"></i>', (e) => this.toggleFilesListView()).setAttribute('title', 'Toggle View');
+                    this.addButtonToMenu('<i class="fa-solid fa-list-ul"></i>', (e) => this.toggleFilesListView()).setAttribute('title', '@Model.Config.Language.ToggleView');
         </text>
     }
 
@@ -213,7 +213,7 @@
                     menuContinerDiv.style.display = 'none';
         </text>
     }
-                            }
+                                    }
 
         #initContextMenu() {
             // let disabledFunctions = (typeof this.config.disabledFunctions != "undefined" ? this.config.disabledFunctions.join(',') : '').toLowerCase();
@@ -223,13 +223,13 @@
     @if (Model.Config.DisabledFunctions.Contains(Command.Browse))
     {
         <text>
-                    menuItems.push({ text: '<i class="fa-solid fa-turn-up"></i> Up', onclick: function (e) { self.goUpFolder(); } });
+                    menuItems.push({ text: '<i class="fa-solid fa-turn-up"></i> @Model.Config.Language.Up', onclick: function (e) { self.goUpFolder(); } });
         </text>
     }
     @if (Model.Config.DisabledFunctions.Contains(Command.Reload))
     {
         <text>
-                    menuItems.push({ text: '<i class="fa-solid fa-repeat"></i> Reload', onclick: function (e) { self.getFolderContent(); } });
+                    menuItems.push({ text: '<i class="fa-solid fa-repeat"></i> @Model.Config.Language.Reload', onclick: function (e) { self.getFolderContent(); } });
         </text>
     }
     @if (!(Model.Config.DisabledFunctions.Contains(Command.Reload) && Model.Config.DisabledFunctions.Contains(Command.Reload)))
@@ -241,32 +241,32 @@
     @if (Model.Config.DisabledFunctions.Contains(Command.Copy))
     {
         <text>
-                    menuItems.push({ text: '<i class="fa-solid fa-copy"></i> Copy', onclick: function (e) { self.copyItems(); } });
+                    menuItems.push({ text: '<i class="fa-solid fa-copy"></i> @Model.Config.Language.Copy', onclick: function (e) { self.copyItems(); } });
         </text>
     }
     @if (Model.Config.DisabledFunctions.Contains(Command.Cut))
     {
         <text>
-                    menuItems.push({ text: '<i class="fa-solid fa-scissors"></i> Cut', onclick: function (e) { self.cutItems(); } });
+                    menuItems.push({ text: '<i class="fa-solid fa-scissors"></i> @Model.Config.Language.Cut', onclick: function (e) { self.cutItems(); } });
         </text>
     }
     @if (!(Model.Config.DisabledFunctions.Contains(Command.Copy) && Model.Config.DisabledFunctions.Contains(Command.Cut)))
     {
         <text>
-                    menuItems.push({ text: '<i class="fa-solid fa-paste"></i> Paste', onclick: function (e) { self.pasteItems(); }, disabled: true });
+                    menuItems.push({ text: '<i class="fa-solid fa-paste"></i> @Model.Config.Language.Paste', onclick: function (e) { self.pasteItems(); }, disabled: true });
                 menuItems.push(null);
         </text>
     }
     @if (!Model.Config.DisabledFunctions.Contains(Command.CreateNewFolder))
     {
         <text>
-                    menuItems.push({ text: '<i class="fa-solid fa-folder-plus"></i> New Folder', onclick: function (e) { self.createNewFolder(); } });
+                    menuItems.push({ text: '<i class="fa-solid fa-folder-plus"></i> @Model.Config.Language.CreateNewFile', onclick: function (e) { self.createNewFolder(); } });
         </text>
     }
     @if (!Model.Config.DisabledFunctions.Contains(Command.CreateNewFile))
     {
         <text>
-                    menuItems.push({ text: '<i class="fa-solid fa-file-circle-plus"></i> New File', onclick: function (e) { self.createNewFile(); } });
+                    menuItems.push({ text: '<i class="fa-solid fa-file-circle-plus"></i> @Model.Config.Language.CreateNewFile', onclick: function (e) { self.createNewFile(); } });
         </text>
     }
     @if (!(Model.Config.DisabledFunctions.Contains(Command.CreateNewFolder) && Model.Config.DisabledFunctions.Contains(Command.CreateNewFile)))
@@ -278,19 +278,19 @@
     @if (!Model.Config.DisabledFunctions.Contains(Command.Rename))
     {
         <text>
-                    menuItems.push({ text: '<i class="fa-solid fa-i-cursor"></i> Rename', onclick: function (e) { self.renameSelectedItems(); } });
+                    menuItems.push({ text: '<i class="fa-solid fa-i-cursor"></i> @Model.Config.Language.Rename', onclick: function (e) { self.renameSelectedItems(); } });
         </text>
     }
     @if (!Model.Config.DisabledFunctions.Contains(Command.GetFileContent))
     {
         <text>
-                    menuItems.push({ text: '<i class="fa-solid fa-file-pen"></i> Edit', onclick: function (e) { self.getFileContent(); } });
+                    menuItems.push({ text: '<i class="fa-solid fa-file-pen"></i> @Model.Config.Language.Edit', onclick: function (e) { self.getFileContent(); } });
         </text>
     }
     @if (!Model.Config.DisabledFunctions.Contains(Command.Delete))
     {
         <text>
-                    menuItems.push({ text: '<i class="fa-solid fa-trash"></i> Delete', onclick: function (e) { self.deleteSelectedItems(); } });
+                    menuItems.push({ text: '<i class="fa-solid fa-trash"></i> @Model.Config.Language.Delete', onclick: function (e) { self.deleteSelectedItems(); } });
         </text>
     }
     @if (!(Model.Config.DisabledFunctions.Contains(Command.Rename) && Model.Config.DisabledFunctions.Contains(Command.GetFileContent) && Model.Config.DisabledFunctions.Contains(Command.Delete)))
@@ -302,13 +302,13 @@
     @if (!Model.Config.DisabledFunctions.Contains(Command.Zip))
     {
         <text>
-                    menuItems.push({ text: '<i class="fa-solid fa-file-zipper"></i> Zip', onclick: function (e) { self.zipSelectedItems(); } });
+                    menuItems.push({ text: '<i class="fa-solid fa-file-zipper"></i> @Model.Config.Language.Zip', onclick: function (e) { self.zipSelectedItems(); } });
         </text>
     }
     @if (!Model.Config.DisabledFunctions.Contains(Command.Unzip))
     {
         <text>
-                    menuItems.push({ text: '<i class="fa-solid fa-square-arrow-up-right"></i> UnZip', onclick: function (e) { self.extractSelectedItems(); } });
+                    menuItems.push({ text: '<i class="fa-solid fa-square-arrow-up-right"></i> @Model.Config.Language.Unzip', onclick: function (e) { self.extractSelectedItems(); } });
         </text>
     }
     @if (!(Model.Config.DisabledFunctions.Contains(Command.Unzip) && Model.Config.DisabledFunctions.Contains(Command.Unzip)))
@@ -320,19 +320,19 @@
     @if (!Model.Config.DisabledFunctions.Contains(Command.View))
     {
         <text>
-                    menuItems.push({ text: '<i class="fa-solid fa-eye"></i> View', onclick: function (e) { self.viewFile(); } });
+                    menuItems.push({ text: '<i class="fa-solid fa-eye"></i> @Model.Config.Language.View', onclick: function (e) { self.viewFile(); } });
         </text>
     }
     @if (!Model.Config.DisabledFunctions.Contains(Command.Download))
     {
         <text>
-                    menuItems.push({ text: '<i class="fa-solid fa-cloud-arrow-down"></i> Download', onclick: function (e) { self.downloadFile(); } });
+                    menuItems.push({ text: '<i class="fa-solid fa-cloud-arrow-down"></i> @Model.Config.Language.Download', onclick: function (e) { self.downloadFile(); } });
         </text>
     }
     @if (!Model.Config.DisabledFunctions.Contains(Command.Upload))
     {
         <text>
-                    menuItems.push({ text: '<i class="fa-solid fa-cloud-arrow-up"></i> Upload', onclick: function (e) { self.showUploadPanel(); } });
+                    menuItems.push({ text: '<i class="fa-solid fa-cloud-arrow-up"></i> @Model.Config.Language.Upload', onclick: function (e) { self.showUploadPanel(); } });
         </text>
     }
 
@@ -346,7 +346,7 @@
                     this.contextMenu.install();
         </text>
     }
-                    }
+                            }
 
         #initExplorer() {
             let self = this;
@@ -440,7 +440,7 @@
                     null
         </text>
     }
-                                                        ));
+                                                                ));
             this.jsTree = $(jsTreeDiv).jstree(true);
     @if (Model.Config.DisabledFunctions.Contains(Command.FoldersTree))
     {
@@ -487,7 +487,7 @@
                     });
         </text>
     }
-                        }
+                                }
 
         #WaitingPanel() {
             let loadingPanel = this.#fileManager().querySelector('.loadingPanel');
@@ -572,7 +572,7 @@
                 jsTreeNodes.push({ 'text': folder.FolderName, 'state': { 'opened': false, 'selected': false } });
 
                 let fsItemDiv = document.createElement('div');
-                fsItemDiv.setAttribute('title', 'Name: ' + folder.FolderName + '\nCreate Date: ' + folder.CreateDate + '\nModified Date: ' + folder.ModifiedDate);
+                fsItemDiv.setAttribute('title', ' @Model.Config.Language.Name: ' + folder.FolderName + '\n @Model.Config.Language.CreateDate: ' + folder.CreateDate + '\n @Model.Config.Language.ModifiedDate: ' + folder.ModifiedDate);
                 fsItemDiv.setAttribute('path', folder.VirtualPath);
                 fsItemDiv.setAttribute('item-type', 'folder');
                 fsItemDiv.classList.add('fsitem');
@@ -604,7 +604,7 @@
             data.Files.forEach((file) => {
 
                 let fsItemDiv = document.createElement('div');
-                fsItemDiv.setAttribute('title', 'Name: ' + file.FileName + '\nSize: ' + file.FileSize + '\nCreate Date: ' + file.CreateDate + '\nModified Date: ' + file.ModifiedDate);
+                fsItemDiv.setAttribute('title', ' @Model.Config.Language.Name: ' + file.FileName + '\n @Model.Config.Language.Size: ' + file.FileSize + '\n @Model.Config.Language.CreateDate: ' + file.CreateDate + '\n @Model.Config.Language.ModifiedDate: ' + file.ModifiedDate);
                 fsItemDiv.setAttribute('path', file.VirtualPath);
                 fsItemDiv.setAttribute('item-type', 'file');
                 fsItemDiv.classList.add('fsitem');
@@ -666,7 +666,7 @@
         #checkIfAnyItemSelected(itemtype) {
             let selectedItems = this.getSelectedItemsPath(itemtype);
             if (!selectedItems) {
-                this.showToastify('Please select your desired item(s).');
+                this.showToastify('@Model.Config.Language.NoItemsSelectedMessage');
                 return false;
             }
             return selectedItems;
@@ -783,7 +783,7 @@
 
             folder = folder.replace(/\\+$/, '') + "\\";
             this.#WaitingPanel();
-            $.post(this.apiUrl, { id: this.thisId, command: "getFolderContent", parameters: folder }, function (data) {
+            $.post(this.apiUrl, { id: this.thisId, command: "@Command.GetFolderContent", parameters: folder }, function (data) {
                 self.#WaitingPanel();
                 self.#fillFolderContent(data);
             }, 'json');
@@ -799,35 +799,35 @@
         search = function (query) {
             let self = this;
             this.#WaitingPanel();
-            $.post(this.apiUrl, { id: this.thisId, command: "Search", parameters: JSON.stringify({ Path: this.getCurrentPath(), Query: query }) }, function (data) {
+            $.post(this.apiUrl, { id: this.thisId, command: "@Command.Search", parameters: JSON.stringify({ Path: this.getCurrentPath(), Query: query }) }, function (data) {
                 self.#WaitingPanel();
                 self.#fillFolderContent(data);
             }, 'json');
         }
 
         createNewFolder = function () {
-            let newFolderName = prompt("Please enter folder name:", "New Folder");
+            let newFolderName = prompt("@Model.Config.Language.EnterNewFolderNameMessage", "@Model.Config.Language.NewFolderPlaceHolder");
             if (!newFolderName) {
                 return;
             }
 
             let self = this;
             this.#WaitingPanel();
-            $.post(this.apiUrl, { id: this.thisId, command: "CreateNewFolder", parameters: JSON.stringify({ Path: this.getCurrentPath(), FolderName: newFolderName }) }, function (data) {
+            $.post(this.apiUrl, { id: this.thisId, command: "@Command.CreateNewFolder", parameters: JSON.stringify({ Path: this.getCurrentPath(), FolderName: newFolderName }) }, function (data) {
                 self.#WaitingPanel();
                 self.#fillFolderContent(data);
             }, 'json');
         }
 
         createNewFile = function () {
-            let newFileName = prompt("Please enter your desired file name:", "New Text.txt");
+            let newFileName = prompt("@Model.Config.Language.EnterNewFileNameMessage", "@Model.Config.Language.NewFilePlaceHolder");
             if (!newFileName) {
                 return;
             }
 
             let self = this;
             this.#WaitingPanel();
-            $.post(this.apiUrl, { id: this.thisId, command: "CreateNewFile", parameters: JSON.stringify({ Path: this.getCurrentPath(), FileName: newFileName }) }, function (data) {
+            $.post(this.apiUrl, { id: this.thisId, command: "@Command.CreateNewFile", parameters: JSON.stringify({ Path: this.getCurrentPath(), FileName: newFileName }) }, function (data) {
                 self.#WaitingPanel();
                 self.#fillFolderContent(data);
             }, 'json');
@@ -839,10 +839,10 @@
                 return;
             }
 
-            if (confirm("Are you sure you want to delete selected items?")) {
+            if (confirm("@Model.Config.Language.DeleteConfirmationMessage")) {
                 let self = this;
                 this.#WaitingPanel();
-                $.post(this.apiUrl, { id: this.thisId, command: "delete", parameters: JSON.stringify({ Path: this.getCurrentPath(), Items: selectedItems }) }, function (data) {
+                $.post(this.apiUrl, { id: this.thisId, command: "@Command.Delete", parameters: JSON.stringify({ Path: this.getCurrentPath(), Items: selectedItems }) }, function (data) {
                     self.#WaitingPanel();
                     self.#fillFolderContent(data);
                 }, 'json');
@@ -856,7 +856,7 @@
             }
 
             let firstItemName = selectedItems[0].split("\\").pop();
-            let newName = prompt("Please enter new name:", firstItemName);
+            let newName = prompt("@Model.Config.Language.RenameMessage", firstItemName);
             if (!newName) {
                 return;
             }
@@ -869,7 +869,7 @@
                 for (let i = 0; i < allItems.length; i++) {
                     let element = allItems[i];
                     if (element.toLowerCase() === (currentPath + newName).toLowerCase()) {
-                        if (confirm("An item with '" + newName + "' already exist, do you want to overwrite?")) {
+                        if (confirm("'" + newName + "' @Model.Config.Language.ItemAlreadyExistMessage")) {
                             break;
                         } else {
                             return;
@@ -879,7 +879,7 @@
 
             let self = this;
             this.#WaitingPanel();
-            $.post(this.apiUrl, { id: this.thisId, command: "rename", parameters: JSON.stringify({ Path: currentPath, Items: selectedItems, NewName: newName }) }, function (data) {
+            $.post(this.apiUrl, { id: this.thisId, command: "@Command.Rename", parameters: JSON.stringify({ Path: currentPath, Items: selectedItems, NewName: newName }) }, function (data) {
                 self.#WaitingPanel();
                 self.#fillFolderContent(data);
             }, 'json');
@@ -893,7 +893,7 @@
 
             let zipFileName = selectedItems[0].split("\\").pop() + ".zip";
             if (selectedItems.length > 1) {
-                zipFileName = prompt("Please enter Zip file name:", zipFileName);
+                zipFileName = prompt("@Model.Config.Language.ZipFileNameMessage", zipFileName);
                 if (!zipFileName) {
                     return;
                 }
@@ -901,7 +901,7 @@
 
             let self = this;
             this.#WaitingPanel();
-            $.post(this.apiUrl, { id: this.thisId, command: "zip", parameters: JSON.stringify({ Path: this.getCurrentPath(), Items: selectedItems, FileName: zipFileName }) }, function (data) {
+            $.post(this.apiUrl, { id: this.thisId, command: "@Command.Zip", parameters: JSON.stringify({ Path: this.getCurrentPath(), Items: selectedItems, FileName: zipFileName }) }, function (data) {
                 self.#WaitingPanel();
                 self.#fillFolderContent(data);
             }, 'json');
@@ -915,7 +915,7 @@
 
             let self = this;
             this.#WaitingPanel();
-            $.post(this.apiUrl, { id: this.thisId, command: "unzip", parameters: JSON.stringify({ Path: this.getCurrentPath(), Items: selectedItems }) }, function (data) {
+            $.post(this.apiUrl, { id: this.thisId, command: "@Command.Unzip", parameters: JSON.stringify({ Path: this.getCurrentPath(), Items: selectedItems }) }, function (data) {
                 self.#WaitingPanel();
                 self.#fillFolderContent(data);
             }, 'json');
@@ -928,7 +928,7 @@
             }
 
             for (let i = 0; i < selectedItems.length; i++) {
-                window.open(`${this.apiUrl}?id=${this.thisId}&command=getfilecontent&parameters=${selectedItems[i]}`, '_blank');
+                window.open(`${this.apiUrl}?id=${this.thisId}&command=@Command.GetFileContent&parameters=${selectedItems[i]}`, '_blank');
             }
         }
 
@@ -939,7 +939,7 @@
             }
 
             for (let i = 0; i < selectedItems.length; i++) {
-                window.open(`${this.apiUrl}?id=${this.thisId}&command=download&parameters=${selectedItems[i]}`, '_blank');
+                window.open(`${this.apiUrl}?id=${this.thisId}&command=@Command.Download&parameters=${selectedItems[i]}`, '_blank');
             }
         }
 
@@ -950,7 +950,7 @@
             }
 
             for (let i = 0; i < selectedItems.length; i++) {
-                window.open(`${this.apiUrl}?id=${this.thisId}&command=view&parameters=${selectedItems[i]}`, '_blank');
+                window.open(`${this.apiUrl}?id=${this.thisId}&command=@Command.View&parameters=${selectedItems[i]}`, '_blank');
             }
         }
 
@@ -975,7 +975,7 @@
                 this.pasteButton.removeAttribute('disabled');
 
             let pasteContextMenu = this.contextMenu.items.filter(function (el) {
-                return el && el.text.includes('Paste');
+                return el && el.text.includes('@Model.Config.Language.Paste');
             });
             pasteContextMenu[0].disabled = false;
         }
@@ -991,7 +991,7 @@
                 this.pasteButton.removeAttribute('disabled');
 
             let pasteContextMenu = this.contextMenu.items.filter(function (el) {
-                return el && el.text.includes('Paste');
+                return el && el.text.includes('@Model.Config.Language.Paste');
             });
             pasteContextMenu[0].disabled = false;
         }
@@ -1012,7 +1012,7 @@
                         for (let i = 0; i < allItems.length; i++) {
                             let element = allItems[i];
                             if (element.toLowerCase() === (currentPath + newName).toLowerCase()) {
-                                if (confirm("Some item(s) already exist, do you want to overwrite?")) {
+                                if (confirm("@Model.Config.Language.OverrideConfirmationMessage")) {
                                     breakLoop = true;
                                     break;
                                 } else {
@@ -1059,7 +1059,7 @@
 
             let closeBtn = document.createElement('button');
             closeBtn.classList.add('close-button');
-            closeBtn.innerText = 'Close';
+            closeBtn.innerText = '@Model.Config.Language.Close';
             uploadPanel.appendChild(closeBtn);
             closeBtn.addEventListener('click', (e) => {
                 uploadPanel.remove();
@@ -1071,7 +1071,7 @@
             //init DropZone (Uploader)-------------------------------------
             Dropzone.autoDiscover = false;
             let dropZone = new Dropzone(uploadPanel, {
-                url: this.apiUrl + `?id=${this.thisId}&command=upload&parameters=${this.getCurrentPath()}`,
+                url: this.apiUrl + `?id=${this.thisId}&command=@Command.Upload&parameters=${this.getCurrentPath()}`,
                 parallelUploads: @Model.Config.ParallelUploads,
                 chunking: @Model.Config.Chunking,
                 chunkSize: @Model.Config.ChunkSizeByte,  // bytes

@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 
 namespace HGO.ASPNetCore.FileManager.Models.Langugage
 {
@@ -34,8 +36,23 @@ namespace HGO.ASPNetCore.FileManager.Models.Langugage
         string MenuBar { get; }
         string ContextMenu { get; }
         string FilePreview { get; }
+        string CreateDate { get; }
+        string ModifiedDate { get; }
+        string Name { get; }
+        string Size { get; }
+        string Back { get; }
+        string Up { get; }
+        string Close { get; }
+
 
         // Notifications And Messages
         string NoItemsSelectedMessage { get; }
+        string EnterNewFolderNameMessage { get; }
+        string EnterNewFileNameMessage { get; }
+        string DeleteConfirmationMessage { get; }
+        string RenameMessage { get; }
+        string ItemAlreadyExistMessage { get; }
+        string ZipFileNameMessage { get; }
+        string OverrideConfirmationMessage { get; }
     }
 }

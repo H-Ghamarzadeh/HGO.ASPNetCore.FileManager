@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace HGO.ASPNetCore.FileManager.Models.Langugage
 {
-    public class CustomLanguage : ILanguage
+    public class CustomLanguage : LanguageBase, ILanguage
     {
         public string Browse { get; set; } = "*Not Defined*";
 
@@ -61,5 +61,33 @@ namespace HGO.ASPNetCore.FileManager.Models.Langugage
         public string FilePreview { get; set; } = "*Not Defined*";
 
         public string NoItemsSelectedMessage { get; set; } = "*Not Defined*";
+
+        public string CreateDate { get; set; } = "*Not Defined*";
+
+        public string ModifiedDate { get; set; } = "*Not Defined*";
+
+        public string Name { get; set; } = "*Not Defined*";
+
+        public string Size { get; set; } = "*Not Defined*";
+
+        public string Back { get; set; } = "*Not Defined*";
+
+        public string Up { get; set; } = "*Not Defined*";
+
+        public string Close { get; set; } = "*Not Defined*";
+
+        public string EnterNewFolderNameMessage { get; set; } = "*Not Defined*";
+
+        public string EnterNewFileNameMessage { get; set; } = "*Not Defined*";
+
+        public string DeleteConfirmationMessage { get; set; } = "*Not Defined*";
+
+        public string RenameMessage { get; set; } = "*Not Defined*";
+
+        public string ItemAlreadyExistMessage { get; set; } = "*Not Defined*";
+
+        public string ZipFileNameMessage { get; set; } = "*Not Defined*";
+
+        public string OverrideConfirmationMessage { get; set; } = "*Not Defined*";
     }
 }
