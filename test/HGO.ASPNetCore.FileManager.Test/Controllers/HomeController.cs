@@ -2,6 +2,7 @@ using HGO.ASPNetCore.FileManager.Test.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 using HGO.ASPNetCore.FileManager.CommandsProcessor;
+using HGO.ASPNetCore.FileManager.Enums;
 
 namespace HGO.ASPNetCore.FileManager.Test.Controllers
 {
@@ -33,7 +34,7 @@ namespace HGO.ASPNetCore.FileManager.Test.Controllers
         }
 
         [HttpPost, HttpGet]
-        public async Task<IActionResult> HgoApi(string id, string command, string parameters, IFormFile file)
+        public async Task<IActionResult> HgoApi(string id, Command command, string parameters, IFormFile file)
         {
             return await _processor.ProcessCommandAsync(id, command, parameters, file);
         }

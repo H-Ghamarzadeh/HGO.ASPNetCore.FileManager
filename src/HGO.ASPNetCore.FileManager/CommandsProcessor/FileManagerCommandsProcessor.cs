@@ -12,6 +12,7 @@ using SharpCompress.Writers;
 using HGO.ASPNetCore.FileManager.ViewComponents;
 using SharpCompress.Compressors.Deflate;
 using System.Text;
+using HGO.ASPNetCore.FileManager.Enums;
 
 namespace HGO.ASPNetCore.FileManager.CommandsProcessor;
 
@@ -29,10 +30,10 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
         _session = httpContextAccessor.HttpContext.Session;
     }
 
-    public async Task<IActionResult> ProcessCommandAsync(string id, string command, string parameters, IFormFile file)
+    public async Task<IActionResult> ProcessCommandAsync(string id, Command command, string parameters, IFormFile file)
     {
 
-        if (string.IsNullOrWhiteSpace(command))
+        if (command == Command.Unknown)
         {
             return new ContentResult()
             {
@@ -41,7 +42,7 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
         }
 
         var disabledFunctions = FileManagerComponent.ConfigStorage[id].DisabledFunctions;
-        if (disabledFunctions.Any(p=> p.ToLower().Trim() == command.ToLower().Trim()))
+        if (disabledFunctions.Contains(command))
         {
             return new ContentResult()
             {
@@ -54,55 +55,55 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
             var result = new ContentResult();
             try
             {
-                switch (command.ToLower().Trim())
+                switch (command)
                 {
-                    case "getfoldercontent":
+                    case Command.GetFolderContent:
                         result.Content = GetContent(id, parameters);
                         return result;
-                    case "search":
+                    case Command.Search:
                         result.Content = Search(id, JsonConvert.DeserializeObject<SearchCommandParameters>(parameters));
                         return result;
-                    case "createnewfolder":
+                    case Command.CreateNewFolder:
                         result.Content = CreateNewFolder(id,
                             JsonConvert.DeserializeObject<CreateNewFolderCommandParameters>(parameters));
                         return result;
-                    case "createnewfile":
+                    case Command.CreateNewFile:
                         result.Content = CreateNewFile(id,
                             JsonConvert.DeserializeObject<CreateNewFileCommandParameters>(parameters));
                         return result;
-                    case "delete":
+                    case Command.Delete:
                         result.Content = Delete(id,
                             JsonConvert.DeserializeObject<DeleteCommandParameters>(parameters));
                         return result;
-                    case "rename":
+                    case Command.Rename:
                         result.Content = Rename(id,
                             JsonConvert.DeserializeObject<RenameCommandParameters>(parameters));
                         return result;
-                    case "zip":
+                    case Command.Zip:
                         result.Content = Zip(id,
                             JsonConvert.DeserializeObject<ZipCommandParameters>(parameters));
                         return result;
-                    case "unzip":
+                    case Command.Unzip:
                         result.Content = UnZip(id,
                             JsonConvert.DeserializeObject<UnZipCommandParameters>(parameters));
                         return result;
-                    case "copy":
-                    case "cut":
-                        result.Content = CopyCutItems(id, command.ToLower(),
+                    case Command.Copy:
+                    case Command.Cut:
+                        result.Content = CopyCutItems(id, command,
                             JsonConvert.DeserializeObject<CopyCutCommandParameters>(parameters));
                         return result;
-                    case "editfile":
+                    case Command.EditFile:
                         return EditFile(id,
                             JsonConvert.DeserializeObject<EditFileCommandParameters>(parameters));
-                    case "download":
+                    case Command.Download:
                         return Download(id, parameters, false);
-                    case "view":
+                    case Command.View:
                         return Download(id, parameters, true);
-                    case "getfilecontent":
+                    case Command.GetFileContent:
                         return GetFileContent(id, parameters);
-                    case "upload":
+                    case Command.Upload:
                         return Upload(id, parameters, file);
-                    case "filepreview":
+                    case Command.FilePreview:
                         return FilePreview(id, parameters);
                     default:
                         result.Content = JsonConvert.SerializeObject(new { Error = "Unknown command!" });
@@ -545,7 +546,7 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
         return GetContent(id, commandParameters.Path);
     }
 
-    private string CopyCutItems(string id, string action, CopyCutCommandParameters commandParameters)
+    private string CopyCutItems(string id, Command action, CopyCutCommandParameters commandParameters)
     {
         var physicalRootPath = GetCurrentSessionPhysicalRootPath(id);
         if (string.IsNullOrWhiteSpace(physicalRootPath))
@@ -567,11 +568,11 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
 
             if (File.Exists(physicalItemPathToCopy))
             {
-                if (action.Trim().ToLower() == "copy")
+                if (action == Command.Copy)
                 {
                     File.Copy(physicalItemPathToCopy, Path.Combine(physicalPath, Path.GetFileName(physicalItemPathToCopy)), true);
                 }
-                else if (action.Trim().ToLower() == "cut")
+                else if (action == Command.Cut)
                 {
                     File.Move(physicalItemPathToCopy, Path.Combine(physicalPath, Path.GetFileName(physicalItemPathToCopy)), true);
                 }
@@ -579,7 +580,7 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
             else if (Directory.Exists(physicalItemPathToCopy))
             {
                 Utils.CopyDirectory(physicalItemPathToCopy, physicalPath, true);
-                if (action.Trim().ToLower() == "cut")
+                if (action == Command.Cut)
                 {
                     Directory.Delete(physicalItemPathToCopy, true);
                 }
@@ -732,7 +733,7 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
     private IActionResult Upload(string id, string path, IFormFile file)
     {
         var storageSizeLimit = FileManagerComponent.ConfigStorage[id].StorageMaxSizeMByte;
-        if (storageSizeLimit > 0 && storageSizeLimit < GetRootFolderSize(id) + (file.Length /1024 /1024))
+        if (storageSizeLimit > 0 && storageSizeLimit < GetRootFolderSize(id) + (file.Length / 1024 / 1024))
         {
             return new ContentResult()
             {

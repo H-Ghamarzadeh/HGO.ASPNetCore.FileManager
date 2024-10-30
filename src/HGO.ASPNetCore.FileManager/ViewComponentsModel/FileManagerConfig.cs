@@ -1,4 +1,6 @@
-﻿namespace HGO.ASPNetCore.FileManager.ViewComponentsModel
+﻿using HGO.ASPNetCore.FileManager.Enums;
+
+namespace HGO.ASPNetCore.FileManager.ViewComponentsModel
 {
     public class FileManagerConfig
     {
@@ -57,7 +59,7 @@
         /// "ToggleView", "Browse", "Reload", "Breadcrumb", "FoldersTree", "MenuBar",
         /// "ContextMenu", "FilePreview", "View"
         /// </summary>
-        public List<string> DisabledFunctions { get; set; } = new List<string>();
+        public List<Command> DisabledFunctions { get; set; } = new List<Command>();
 
         /// <summary>
         /// Compression Level: from 0 (fastest) to 9 (best compression)

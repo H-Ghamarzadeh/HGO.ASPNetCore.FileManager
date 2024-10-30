@@ -1,5 +1,7 @@
 ﻿using HGO.ASPNetCore.FileManager.CommandsProcessor;
+using HGO.ASPNetCore.FileManager.Enums;
 using Microsoft.AspNetCore.Mvc;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace HGO.ASPNetCore.FileManager.RazorPages.Test.Controllers
 {
@@ -13,7 +15,7 @@ namespace HGO.ASPNetCore.FileManager.RazorPages.Test.Controllers
         }
 
         [HttpPost, HttpGet]
-        public async Task<IActionResult> Index(string id, string command, string parameters, IFormFile file)
+        public async Task<IActionResult> Index(string id, Command command, string parameters, IFormFile file)
         {
             return await _processor.ProcessCommandAsync(id, command, parameters, file);
         }
