@@ -15,6 +15,11 @@ namespace HGO.ASPNetCore.FileManager.Helpers
                        .ToDictionary(e => e.ToString(), e => Convert.ToInt32(e));
         }
 
+        public static Dictionary<string, int> GetEnumListAsDictionary<T>(List<T> values) where T : Enum
+        {
+            return values.ToDictionary(e => e.ToString(), e => Convert.ToInt32(e));
+        }
+
         //public static void GenerateEnumDefinition<T>(string filePath) where T : Enum
         //{
         //    var enumValues = Enum.GetValues(typeof(T)).Cast<T>();

@@ -89,7 +89,7 @@ namespace HGO.ASPNetCore.FileManager
                     "<script src='hgofilemanager/toastify/toastify.js'></script>\r\n";
             }
 
-            scripts += "<script src='hgofilemanager/HgoFileManager.js'></script>\r\n";
+            //scripts += "<script src='hgofilemanager/HgoFileManager.js'></script>\r\n";
             return new HtmlString(scripts);
         }
 

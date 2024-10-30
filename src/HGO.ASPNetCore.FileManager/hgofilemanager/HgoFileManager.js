@@ -1,4 +1,6 @@
-﻿class HgoFileManager {
+﻿
+
+class HgoFileManager {
     thisId;
     apiUrl;
     config;
