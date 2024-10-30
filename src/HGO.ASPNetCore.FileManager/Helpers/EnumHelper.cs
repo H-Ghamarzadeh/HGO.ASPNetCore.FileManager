@@ -34,19 +34,19 @@ namespace HGO.ASPNetCore.FileManager.Helpers
         //    File.WriteAllText(filePath, sb.ToString());
         //}
 
-        public static void GenerateEnumDefinition<T>(string outputPath)
-        {
-            var enumValues = Enum.GetValues(typeof(T));
-            var enumDefinition = "export enum Functions {\n";
+        //public static void GenerateEnumDefinition<T>(string outputPath)
+        //{
+        //    var enumValues = Enum.GetValues(typeof(T));
+        //    var enumDefinition = "export enum Functions {\n";
 
-            foreach (var value in enumValues)
-            {
-                enumDefinition += $"    {value} = '{value}',\n";
-            }
-            enumDefinition += "}\n";
+        //    foreach (var value in enumValues)
+        //    {
+        //        enumDefinition += $"    {value} = '{value}',\n";
+        //    }
+        //    enumDefinition += "}\n";
 
-            // Write the enum definition to the specified path
-            File.WriteAllText(outputPath, enumDefinition);
-        }
+        //    // Write the enum definition to the specified path
+        //    File.WriteAllText(outputPath, enumDefinition);
+        //}
     }
 }
