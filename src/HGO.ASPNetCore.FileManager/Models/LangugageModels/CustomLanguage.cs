@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace HGO.ASPNetCore.FileManager.Models.Langugage
+namespace HGO.ASPNetCore.FileManager.Models.LangugageModels
 {
     public class CustomLanguage : LanguageBase, ILanguage
     {

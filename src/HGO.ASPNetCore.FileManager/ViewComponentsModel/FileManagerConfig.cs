@@ -1,6 +1,6 @@
 ﻿using HGO.ASPNetCore.FileManager.Enums;
-using HGO.ASPNetCore.FileManager.Models.Langugage;
-using HGO.ASPNetCore.FileManager.Models.Langugage.BuiltIn;
+using HGO.ASPNetCore.FileManager.Models.LangugageModels;
+using HGO.ASPNetCore.FileManager.Models.LangugageModels.BuiltIn;
 
 namespace HGO.ASPNetCore.FileManager.ViewComponentsModel
 {
@@ -61,7 +61,7 @@ namespace HGO.ASPNetCore.FileManager.ViewComponentsModel
         /// "ToggleView", "Browse", "Reload", "Breadcrumb", "FoldersTree", "MenuBar",
         /// "ContextMenu", "FilePreview", "View"
         /// </summary>
-        public List<Command> DisabledFunctions { get; set; } = new List<Command>();
+        public HashSet<Command> DisabledFunctions { get; set; } = new HashSet<Command>();
 
         /// <summary>
         /// Compression Level: from 0 (fastest) to 9 (best compression)

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace HGO.ASPNetCore.FileManager.Models.Langugage.BuiltIn
+namespace HGO.ASPNetCore.FileManager.Models.LangugageModels.BuiltIn
 {
     public class EnglishLanguage : LanguageBase, ILanguage
     {

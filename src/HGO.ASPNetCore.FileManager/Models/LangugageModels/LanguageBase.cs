@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Web;
 
-namespace HGO.ASPNetCore.FileManager.Models.Langugage
+namespace HGO.ASPNetCore.FileManager.Models.LangugageModels
 {
     public abstract class LanguageBase
     {

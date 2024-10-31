@@ -203,7 +203,7 @@
     @if (!Model.Config.DisabledFunctions.Contains(Command.Search))
     {
         <text>
-                    this.addInputToMenu('Search ...', (e) => { if (e.keyCode == 13) this.search(e.currentTarget.value); }, 'search-box');
+                    this.addInputToMenu('@Model.Config.Language.Search', (e) => { if (e.keyCode == 13) this.search(e.currentTarget.value); }, 'search-box');
         </text>
     }
 
@@ -220,13 +220,13 @@
             let self = this;
             let menuItems = [];
 
-    @if (Model.Config.DisabledFunctions.Contains(Command.Browse))
+    @if (!Model.Config.DisabledFunctions.Contains(Command.Browse))
     {
         <text>
                     menuItems.push({ text: '<i class="fa-solid fa-turn-up"></i> @Model.Config.Language.Up', onclick: function (e) { self.goUpFolder(); } });
         </text>
     }
-    @if (Model.Config.DisabledFunctions.Contains(Command.Reload))
+    @if (!Model.Config.DisabledFunctions.Contains(Command.Reload))
     {
         <text>
                     menuItems.push({ text: '<i class="fa-solid fa-repeat"></i> @Model.Config.Language.Reload', onclick: function (e) { self.getFolderContent(); } });
@@ -238,13 +238,13 @@
                     menuItems.push(null);
         </text>
     }
-    @if (Model.Config.DisabledFunctions.Contains(Command.Copy))
+    @if (!Model.Config.DisabledFunctions.Contains(Command.Copy))
     {
         <text>
                     menuItems.push({ text: '<i class="fa-solid fa-copy"></i> @Model.Config.Language.Copy', onclick: function (e) { self.copyItems(); } });
         </text>
     }
-    @if (Model.Config.DisabledFunctions.Contains(Command.Cut))
+    @if (!Model.Config.DisabledFunctions.Contains(Command.Cut))
     {
         <text>
                     menuItems.push({ text: '<i class="fa-solid fa-scissors"></i> @Model.Config.Language.Cut', onclick: function (e) { self.cutItems(); } });
@@ -572,7 +572,7 @@
                 jsTreeNodes.push({ 'text': folder.FolderName, 'state': { 'opened': false, 'selected': false } });
 
                 let fsItemDiv = document.createElement('div');
-                fsItemDiv.setAttribute('title', ' @Model.Config.Language.Name: ' + folder.FolderName + '\n @Model.Config.Language.CreateDate: ' + folder.CreateDate + '\n @Model.Config.Language.ModifiedDate: ' + folder.ModifiedDate);
+                fsItemDiv.setAttribute('title', 'a @Model.Config.Language.Name: ' + folder.FolderName + '\n @Model.Config.Language.CreateDate: ' + folder.CreateDate + '\n @Model.Config.Language.ModifiedDate: ' + folder.ModifiedDate);
                 fsItemDiv.setAttribute('path', folder.VirtualPath);
                 fsItemDiv.setAttribute('item-type', 'folder');
                 fsItemDiv.classList.add('fsitem');
@@ -974,6 +974,7 @@
             if (this.pasteButton)
                 this.pasteButton.removeAttribute('disabled');
 
+            console.log(this.contextMenu);
             let pasteContextMenu = this.contextMenu.items.filter(function (el) {
                 return el && el.text.includes('@Model.Config.Language.Paste');
             });

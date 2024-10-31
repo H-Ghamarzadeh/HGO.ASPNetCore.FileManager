@@ -1,5 +1,5 @@
 ﻿@using HGO.ASPNetCore.FileManager.Enums
-@using HGO.ASPNetCore.FileManager.Models.Language.BuiltIn
+@using HGO.ASPNetCore.FileManager.Models.LangugageModels.BuiltIn
 @using HGO.ASPNetCore.FileManager.ViewComponentsModel
 
 @{
@@ -16,41 +16,10 @@
        ApiEndPoint = Url.Action("HgoApi"),
        Config = new FileManagerConfig()
        {
-           DisabledFunctions = new List<Command>(){
-        Command.Copy,
-        Command.Cut,
-        Command.Delete,
-        }
-        ,
-           Language = new TurkishLanguage()
-           // CompressionLevel = 9,
-           // StorageMaxSizeMByte = 10,
-           // DisabledFunctions = new List<string>()
-           //  {
-           //      // you can disable the following functions
-           //      "Search",
-           //     "CreateNewFolder",
-           //     "CreateNewFile",
-           //     "Delete",
-           //     "Rename",
-           //     "Zip",
-           //     "Unzip",
-           //     "Copy",
-           //     "Cut",
-           //     "EditFile",
-           //     "Download",
-           //     "GetFileContent",
-           //     "Upload",
-           //     "ToggleView",
-           //     "Browse",
-           //     "Reload",
-           //     "Breadcrumb",
-           //     "FoldersTree",
-           //     "MenuBar",
-           //     "ContextMenu",
-           //     "FilePreview",
-           //     "View"
-           // }
+        DisabledFunctions = new HashSet<Command>(){
+            Command.Delete,
+        },
+        Language = new TurkishLanguage(),
 
        }
    })
