@@ -33,8 +33,11 @@ jobs:
 
       - name: Create new Git tag if none exists
         run: |
-          if [ "${{ env.TAG }}" == "0.0.0" ]; then
-            VERSION=$(grep -oP '(?<=<Version>).*?(?=</Version>)' src/HGO.ASPNetCore.FileManager/HGO.ASPNetCore.FileManager.csproj)
+          VERSION=$(grep -oP '(?<=<Version>).*?(?=</Version>)' src/HGO.ASPNetCore.FileManager/HGO.ASPNetCore.FileManager.csproj)
+          # Check if the tag already exists
+          if git rev-parse "$VERSION" >/dev/null 2>&1; then
+            echo "Tag $VERSION already exists. Skipping tag creation."
+          else
             git tag "$VERSION"
             git push origin "$VERSION"
           fi
