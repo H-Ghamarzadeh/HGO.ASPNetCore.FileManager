@@ -61,10 +61,10 @@ namespace HGO.ASPNetCore.FileManager
                 scripts +=
                     "<script src='hgofilemanager/lozad.js/lozad.min.js'></script>\r\n";
             }
-            if (!excludelist.Any(p => p.ToLower() == "jsTree"))
+            if (!excludelist.Any(p => p.ToLower() == "jstree"))
             {
                 scripts +=
-                    "<script src='hgofilemanager/jsTree/jstree.min.js'></script>\r\n";
+                    "<script src='hgofilemanager/jstree/jstree.min.js'></script>\r\n";
             }
             if (!excludelist.Any(p => p.ToLower() == "viselect"))
             {
@@ -105,10 +105,10 @@ namespace HGO.ASPNetCore.FileManager
             }
 
             var styles = "";
-            if (!excludelist.Any(p => p.ToLower() == "jsTree"))
+            if (!excludelist.Any(p => p.ToLower() == "jstree"))
             {
                 styles +=
-                    "<link rel='stylesheet' href='hgofilemanager/jsTree/themes/default/style.min.css' type='text/css' />\r\n";
+                    "<link rel='stylesheet' href='hgofilemanager/jstree/themes/default/style.min.css' type='text/css' />\r\n";
             }
             if (!excludelist.Any(p => p.ToLower() == "dropzone"))
             {
