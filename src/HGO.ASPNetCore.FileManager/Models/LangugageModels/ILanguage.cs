@@ -16,6 +16,7 @@ namespace HGO.ASPNetCore.FileManager.Models.LangugageModels
         string Paste { get; }
         string Rename { get; }
         string Edit { get; }
+        string Save { get; }
         string Delete { get; }
         string CreateNewFolder { get; }
         string NewFolderPlaceHolder { get; }
@@ -38,7 +39,8 @@ namespace HGO.ASPNetCore.FileManager.Models.LangugageModels
         string FilePreview { get; }
         string CreateDate { get; }
         string ModifiedDate { get; }
-        string Name { get; }
+        string FileName { get; }
+        string FolderName { get; }
         string Size { get; }
         string Back { get; }
         string Up { get; }

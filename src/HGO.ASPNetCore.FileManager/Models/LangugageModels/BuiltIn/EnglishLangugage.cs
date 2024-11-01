@@ -14,6 +14,7 @@ namespace HGO.ASPNetCore.FileManager.Models.LangugageModels.BuiltIn
         public string Paste { get; } = "Paste";
         public string Rename { get; } = "Rename";
         public string Edit { get; } = "Edit";
+        public string Save { get; } = "Save";
         public string Delete { get; } = "Delete";
         public string CreateNewFolder { get; } = "Create New Folder";
         public string CreateNewFile { get; } = "Create New File";
@@ -35,13 +36,10 @@ namespace HGO.ASPNetCore.FileManager.Models.LangugageModels.BuiltIn
         public string NewFolderPlaceHolder { get; } = "New Folder";
         public string NewFilePlaceHolder { get; } = "New Text.txt";
         public string NoItemsSelectedMessage { get; } = "Please select your desired item(s).";
-
         public string CreateDate { get; } = "Create Date";
-
         public string ModifiedDate { get; } = "Modified Date";
-
-        public string Name { get; } = "Name";
-
+        public string FileName { get; } = "Dosya Adı";
+        public string FolderName { get; } = "Klasör Adı";
         public string Size { get; } = "Size";
         public string Back { get; } = "Back";
         public string Up { get; } = "Up";

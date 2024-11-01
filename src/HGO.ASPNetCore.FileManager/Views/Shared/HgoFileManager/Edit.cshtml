@@ -1,9 +1,13 @@
-﻿@using Microsoft.AspNetCore.Http
+﻿@using HGO.ASPNetCore.FileManager.Enums
+@using HGO.ASPNetCore.FileManager.Models.LangugageModels
+@using HGO.ASPNetCore.FileManager.ViewModels
+@using Microsoft.AspNetCore.Http
 @model dynamic
 
 @{
     Layout = null;
     bool darkMode = ViewContext.HttpContext.Session.GetString("HgoFileManagerTheme") == "Dark";
+    var viewModel = TempData["model"] as EditViewModel;
 }
 
 <!DOCTYPE html>
@@ -11,7 +15,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@TempData["FileName"]</title>
+    <title>@viewModel.FileName</title>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/codemirror.min.css" type="text/css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/addon/search/matchesonscrollbar.min.css" type="text/css" />
@@ -97,13 +101,13 @@
 </head>
 <body>
     <div class="header">
-        <span>File Name: @TempData["FileFullPath"]</span>
+        <span>@viewModel.Language.FileName: @viewModel.FileFullPath</span>
         <div>
-            <button class="saveBtn" onclick="SaveDocument()">Save</button>
-            <button class="closeBtn" onclick="window.close()">Close</button>
+            <button class="saveBtn" onclick="SaveDocument()">@viewModel.Language.Save</button>
+            <button class="closeBtn" onclick="window.close()">@viewModel.Language.Close</button>
         </div>
     </div>
-    <textarea id="code-editor">@TempData["FileData"]</textarea>
+    <textarea id="code-editor">@viewModel.FileData</textarea>
 
     <script type="text/javascript">
         CodeMirror.commands.autocomplete = function (cm) {
@@ -131,7 +135,7 @@
         function SaveDocument() {
             let content = editor.getValue();
 
-            $.post('@Context.Request.Path', { id: '@TempData["Id"]', command: "editfile", parameters: JSON.stringify({ FilePath: '@TempData["FileFullPath"].ToString().Replace("\\", "\\\\")', Data: content }) }, function (data) {
+            $.post('@Context.Request.Path', { id: '@viewModel.Id', command: "@Command.EditFile", parameters: JSON.stringify({ FilePath: '@viewModel.FileFullPath.ToString().Replace("\\", "\\\\")', Data: content }) }, function (data) {
                 if (data.message === 'OK') {
                     window.close();
                 } else {

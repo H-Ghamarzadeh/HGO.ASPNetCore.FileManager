@@ -572,7 +572,7 @@
                 jsTreeNodes.push({ 'text': folder.FolderName, 'state': { 'opened': false, 'selected': false } });
 
                 let fsItemDiv = document.createElement('div');
-                fsItemDiv.setAttribute('title', 'a @Model.Config.Language.Name: ' + folder.FolderName + '\n @Model.Config.Language.CreateDate: ' + folder.CreateDate + '\n @Model.Config.Language.ModifiedDate: ' + folder.ModifiedDate);
+                fsItemDiv.setAttribute('title', '@Model.Config.Language.FolderName: ' + folder.FolderName + '\n' + '@Model.Config.Language.CreateDate: ' + folder.CreateDate + '\n' + '@Model.Config.Language.ModifiedDate: ' + folder.ModifiedDate);
                 fsItemDiv.setAttribute('path', folder.VirtualPath);
                 fsItemDiv.setAttribute('item-type', 'folder');
                 fsItemDiv.classList.add('fsitem');
@@ -604,7 +604,7 @@
             data.Files.forEach((file) => {
 
                 let fsItemDiv = document.createElement('div');
-                fsItemDiv.setAttribute('title', ' @Model.Config.Language.Name: ' + file.FileName + '\n @Model.Config.Language.Size: ' + file.FileSize + '\n @Model.Config.Language.CreateDate: ' + file.CreateDate + '\n @Model.Config.Language.ModifiedDate: ' + file.ModifiedDate);
+                fsItemDiv.setAttribute('title', '@Model.Config.Language.FileName: ' + file.FileName + '\n' + '@Model.Config.Language.Size: ' + file.FileSize + '\n' + '@Model.Config.Language.CreateDate: ' + file.CreateDate + '\n' + '@Model.Config.Language.ModifiedDate: ' + file.ModifiedDate);
                 fsItemDiv.setAttribute('path', file.VirtualPath);
                 fsItemDiv.setAttribute('item-type', 'file');
                 fsItemDiv.classList.add('fsitem');

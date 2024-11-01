@@ -19,6 +19,7 @@ namespace HGO.ASPNetCore.FileManager.Models.LangugageModels
         public string Rename { get; set; } = "*Not Defined*";
 
         public string Edit { get; set; } = "*Not Defined*";
+        public string Save { get; set; } = "*Not Defined*";
 
         public string Delete { get; set; } = "*Not Defined*";
 
@@ -66,7 +67,9 @@ namespace HGO.ASPNetCore.FileManager.Models.LangugageModels
 
         public string ModifiedDate { get; set; } = "*Not Defined*";
 
-        public string Name { get; set; } = "*Not Defined*";
+        public string FileName { get; set; } = "*Not Defined*";
+
+        public string FolderName { get; set; } = "*Not Defined*";
 
         public string Size { get; set; } = "*Not Defined*";
 

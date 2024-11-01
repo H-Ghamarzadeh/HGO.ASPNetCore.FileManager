@@ -13,6 +13,7 @@ using HGO.ASPNetCore.FileManager.ViewComponents;
 using SharpCompress.Compressors.Deflate;
 using System.Text;
 using HGO.ASPNetCore.FileManager.Enums;
+using HGO.ASPNetCore.FileManager.ViewModels;
 
 namespace HGO.ASPNetCore.FileManager.CommandsProcessor;
 
@@ -657,15 +658,21 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
             };
         }
 
+        EditViewModel viewModel = new EditViewModel()
+        {
+            Id = id,
+            FileFullPath = filePath,
+            FileName = Path.GetFileName(physicalPath),
+            FileData = File.ReadAllText(physicalPath),
+            Language = FileManagerComponent.ConfigStorage[id].Language,
+        };
+
         var result = new ViewResult()
         {
             ViewName = "HgoFileManager/Edit",
-            TempData = new TempDataDictionary(_httpContextAccessor.HttpContext, _tempDataProvider)
+            TempData = new TempDataDictionary(_httpContextAccessor.HttpContext, _tempDataProvider),
         };
-        result.TempData["Id"] = id;
-        result.TempData["FileFullPath"] = filePath;
-        result.TempData["FileName"] = Path.GetFileName(physicalPath);
-        result.TempData["FileData"] = File.ReadAllText(physicalPath);
+        result.TempData["model"] = viewModel;
 
         return result;
     }
