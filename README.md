@@ -5,7 +5,7 @@ YigitGnc.HGO.ASPNetCore.FileManager is an "enriched" fork of HGO.ASPNetCore.File
 [![NuGet version (HGO.ASPNetCore.FileManager)](https://img.shields.io/nuget/v/HGO.ASPNetCore.FileManager)](https://www.nuget.org/packages/HGO.ASPNetCore.FileManager/)
 ![NuGet Downloads](https://img.shields.io/nuget/dt/Hgo.ASPNetCore.FileManager?style=flat&color=%23238636)
 
-# **[Online Demo](https://filemanager.ghamarzadeh.com/)**
+# **[Online Demo](https://filemanager.yigitgenc.com/)**
 
 ![HGO.ASPNetCore.FileManager](https://github.com/yigitgnc/HGO.ASPNetCore.FileManager/blob/master/HGO.ASPNetCore.FileManager.png?raw=true "HGO.ASPNetCore.FileManager")
 
