@@ -1,7 +1,6 @@
 ﻿using HGO.ASPNetCore.FileManager.CommandsProcessor;
 using HGO.ASPNetCore.FileManager.Enums;
 using Microsoft.AspNetCore.Mvc;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace HGO.ASPNetCore.FileManager.RazorPages.Test.Controllers
 {
