@@ -10,22 +10,31 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: '6.0.x'
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.0.x'
 
-    - name: Restore dependencies
-      run: dotnet restore
+      - name: Restore dependencies
+        run: dotnet restore
 
-    - name: Build
-      run: dotnet build --configuration Release
+      - name: Build
+        run: dotnet build --configuration Release
 
-    - name: Pack
-      run: dotnet pack --configuration Release --output ./output
+      - name: Pack
+        run: dotnet pack --configuration Release --output ./output
 
-    - name: Publish to NuGet
-      run: dotnet nuget push ./output/*.nupkg -s https://api.nuget.org/v3/index.json -k ${{ secrets.NUGET_API_KEY }}
+      - name: Publish to NuGet
+        if: success() && env.NUGET_API_KEY != ''
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: |
+          if ls ./output/*.nupkg 1> /dev/null 2>&1; then
+            dotnet nuget push ./output/*.nupkg --source https://api.nuget.org/v3/index.json --api-key $NUGET_API_KEY
+          else
+            echo "No NuGet packages found to publish."
+            exit 1
+          fi
