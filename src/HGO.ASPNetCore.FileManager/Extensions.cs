@@ -16,7 +16,7 @@ namespace HGO.ASPNetCore.FileManager
     {
         public static void AddHgoFileManager(this IServiceCollection services)
         {
-            services.AddControllersWithViews().AddRazorRuntimeCompilation(c=> c.FileProviders.Add(new EmbeddedFileProvider(typeof(FileManagerComponent)
+            services.AddControllersWithViews().AddRazorRuntimeCompilation(c => c.FileProviders.Add(new EmbeddedFileProvider(typeof(FileManagerComponent)
                 .GetTypeInfo().Assembly, "HGO.ASPNetCore.FileManager")));
             services.AddSession();
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
