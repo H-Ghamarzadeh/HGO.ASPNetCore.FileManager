@@ -77,23 +77,14 @@ namespace HGO.ASPNetCore.FileManager.ViewComponentsModel
             }
         }
 
-        private ILanguage _language = new EnglishLanguage();
-
         /// <summary>
-        /// Default is new EnglishLanguage();
+        /// Language For UI Default is (Built-In) new EnglishLanguage();
+        /// Built-In alternative: TurkishLanguage();
+        /// or CustomLanguage() for setting custom properties...
         /// </summary>
-        public ILanguage Language
-        {
-            get { return _language; }
-            set
-            {
-                //if (value is custom)
-                //{
-                //    value = 
-                //}
-                _language = value;
-            }
-        }
+        public ILanguage Language { get; set; } = new EnglishLanguage();
+
+
 
     }
 }
