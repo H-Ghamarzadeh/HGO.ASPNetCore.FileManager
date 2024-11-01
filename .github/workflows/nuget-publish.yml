@@ -18,28 +18,38 @@ jobs:
         with:
           dotnet-version: '6.0.x'
 
-      - name: Get latest Git tag
-        id: get_tag
+      - name: Increment Version
+        id: increment_version
         run: |
-          TAG=$(git describe --tags $(git rev-list --tags --max-count=1) || echo "0.0.0")
-          echo "TAG=$TAG" >> $GITHUB_ENV
+          # Read the current version from the .csproj file
+          CURRENT_VERSION=$(grep -oP '(?<=<Version>).*?(?=</Version>)' src/HGO.ASPNetCore.FileManager/HGO.ASPNetCore.FileManager.csproj)
 
-      - name: Update version in .csproj
-        run: |
-          VERSION=${{ env.TAG }}
-          # Use sed to replace the <Version> value in the .csproj file
-          sed -i 's|<Version>.*</Version>|<Version>'"$VERSION"'</Version>|' src/HGO.ASPNetCore.FileManager/HGO.ASPNetCore.FileManager.csproj
-        shell: bash
+          # Split version into its components
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT_VERSION"
 
-      - name: Create new Git tag if none exists
+          # Increment the patch version (or change this logic as needed)
+          NEW_PATCH=$((PATCH + 1))
+          NEW_VERSION="$MAJOR.$MINOR.$NEW_PATCH"
+
+          # Update the .csproj file with the new version
+          sed -i "s|<Version>$CURRENT_VERSION</Version>|<Version>$NEW_VERSION</Version>|" src/HGO.ASPNetCore.FileManager/HGO.ASPNetCore.FileManager.csproj
+
+          echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
+
+      - name: Check for existing tags
+        id: check_tags
         run: |
-          VERSION=$(grep -oP '(?<=<Version>).*?(?=</Version>)' src/HGO.ASPNetCore.FileManager/HGO.ASPNetCore.FileManager.csproj)
-          # Check if the tag already exists
-          if git rev-parse "$VERSION" >/dev/null 2>&1; then
-            echo "Tag $VERSION already exists. Skipping tag creation."
+          TAG_EXISTS=$(git tag --list "${{ env.NEW_VERSION }}" | wc -l)
+          echo "TAG_EXISTS=$TAG_EXISTS" >> $GITHUB_ENV
+
+      - name: Create new Git tag if it doesn't exist
+        run: |
+          if [ "${{ env.TAG_EXISTS }}" -eq 0 ]; then
+            echo "Creating new tag ${{ env.NEW_VERSION }}"
+            git tag "${{ env.NEW_VERSION }}"
+            git push origin "${{ env.NEW_VERSION }}"
           else
-            git tag "$VERSION"
-            git push origin "$VERSION"
+            echo "Tag ${{ env.NEW_VERSION }} already exists. Skipping tag creation."
           fi
 
       - name: Restore dependencies
