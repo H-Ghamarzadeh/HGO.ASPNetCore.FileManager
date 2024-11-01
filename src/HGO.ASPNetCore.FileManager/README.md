@@ -4,6 +4,8 @@ HGO.ASPNetCore.FileManager is a free, open source, feature rich and easy to use 
 # **[Online Demo](https://filemanager.ghamarzadeh.com/)**
 
 ## Features:
+-  Multi Language Support
+-  Enum Member Access for type safety
 -  Manage server's files from client side
 -  Copy & cut & paste functionality
 -  Compress & extract archive files (Rar, Zip, Tar, Tar.GZip, Tar.BZip2, Tar.LZip, Tar.XZ, GZip, 7Zip)

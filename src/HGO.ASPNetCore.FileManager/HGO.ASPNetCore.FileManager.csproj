@@ -24,16 +24,18 @@
 		<LangVersion>latest</LangVersion>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 		<Title>yigitgnc/HGO.ASPNetCore.FileManager</Title>
-		<PackageProjectUrl>https://github.com/H-Ghamarzadeh/HGO.ASPNetCore.FileManager</PackageProjectUrl>
-		<RepositoryUrl>https://github.com/H-Ghamarzadeh/HGO.ASPNetCore.FileManager</RepositoryUrl>
+		<PackageProjectUrl>https://github.com/yigitgnc/HGO.ASPNetCore.FileManager</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/yigitgnc/HGO.ASPNetCore.FileManager</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
 		<NeutralLanguage>en</NeutralLanguage>
 		<PackageIcon>Logo.png</PackageIcon>
 		<AssemblyOriginatorKeyFile>HGO.ASPNetCore.FileManager.snk</AssemblyOriginatorKeyFile>
-		<Version>1.0.7</Version>
+		<Version>1.0.8</Version>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
-		<PackageId>$(AssemblyName)</PackageId>
+		<PackageId>YigitGnc.$(AssemblyName)</PackageId>
+		<AssemblyVersion>1.0.0.0</AssemblyVersion>
+		<FileVersion>1.0.0.0</FileVersion>
 	</PropertyGroup>
 
 	<ItemGroup>
