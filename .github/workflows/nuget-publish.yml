@@ -3,57 +3,52 @@ name: Publish NuGet Package
 on:
   push:
     branches:
-      - nuget 
+      - nuget
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: '6.0.x'
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '6.0.x'
 
-    - name: Get and Increment Version
-      id: increment_version
-      run: |
-        # Read the current version from VERSION.txt
-        VERSION=$(cat VERSION.txt)
-        
-        # Split the version into MAJOR.MINOR.PATCH
-        IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
-        
-        # Increment the PATCH version
-        PATCH=$((PATCH + 1))
-        NEW_VERSION="$MAJOR.$MINOR.$PATCH"
-        
-        # Update VERSION.txt with the new version
-        echo "$NEW_VERSION" > VERSION.txt
-        echo "VERSION=$NEW_VERSION" >> $GITHUB_ENV
+      - name: Get latest Git tag
+        id: get_tag
+        run: |
+          TAG=$(git describe --tags $(git rev-list --tags --max-count=1) || echo "0.0.0")
+          echo "TAG=$TAG" >> $GITHUB_ENV
 
-    - name: Commit Updated Version
-      run: |
-        git config --local user.name "github-actions[bot]"
-        git config --local user.email "github-actions[bot]@users.noreply.github.com"
-        git add VERSION.txt
-        git commit -m "Increment version to ${{ env.VERSION }}"
-        git push origin nuget
+      - name: Update version in .csproj
+        run: |
+          VERSION=${{ env.TAG }}
+          # Use sed to replace the <Version> value in the .csproj file
+          sed -i 's|<Version>.*</Version>|<Version>'"$VERSION"'</Version>|' HGO.ASPNetCore.FileManager.csproj
+        shell: bash
 
-    - name: Restore dependencies
-      run: dotnet restore
+      - name: Create new Git tag if none exists
+        run: |
+          if [ "${{ env.TAG }}" == "0.0.0" ]; then
+            VERSION=$(grep -oP '(?<=<Version>).*?(?=</Version>)' YourProject.csproj)
+            git tag "$VERSION"
+            git push origin "$VERSION"
+          fi
 
-    - name: Build
-      run: dotnet build --configuration Release /p:Version=${{ env.VERSION }}
+      - name: Restore dependencies
+        run: dotnet restore
 
-    - name: Pack
-      run: dotnet pack --configuration Release --output ./output /p:Version=${{ env.VERSION }}
+      - name: Build
+        run: dotnet build --configuration Release
 
-    - name: Publish to NuGet
-      env:
-        NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
-      run: dotnet nuget push ./output/*.nupkg -s https://api.nuget.org/v3/index.json -k $NUGET_API_KEY
-      if: success()
+      - name: Pack
+        run: dotnet pack --configuration Release --output ./output
+
+      - name: Publish to NuGet
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: dotnet nuget push ./output/*.nupkg -s https://api.nuget.org/v3/index.json -k $NUGET_API_KEY
