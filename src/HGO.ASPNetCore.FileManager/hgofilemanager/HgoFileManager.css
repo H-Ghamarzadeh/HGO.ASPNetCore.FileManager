@@ -1,4 +1,10 @@
-﻿/*---- main continer start ----------------------*/
+﻿#loadingScripts {
+    width: 40px;
+    top: 40%;
+    left: 50%;
+    position: absolute;
+}
+/*---- main continer start ----------------------*/
 .hgo-fm-wrapper {
     border: solid 1px #e3e3e3;
     border-radius: 7px;
@@ -117,6 +123,7 @@
     align-items: center;
     justify-content: space-between;
 }
+
 @media screen and (max-width: 992px) {
     .hgo-fm-menu {
         flex-wrap: wrap !important;
@@ -128,67 +135,67 @@
         }
 }
 
-    .hgo-fm-menu .button-continer {
-        display: flex;
-        flex-direction: row;
-        justify-content: flex-start;
-        flex-wrap: wrap;
-        align-content: center;
-        align-items: center;
-    }
+.hgo-fm-menu .button-continer {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    align-content: center;
+    align-items: center;
+}
 
-    .hgo-fm-menu .input-continer {
-        display: flex;
-        flex-grow: 1;
-        flex-direction: row;
-        align-items: center;
-        flex-wrap: wrap;
-        justify-content: space-between;
-        align-content: center;
-    }
+.hgo-fm-menu .input-continer {
+    display: flex;
+    flex-grow: 1;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-content: center;
+}
 
-    .hgo-fm-menu input {
-        border-radius: 30px;
-        box-shadow: 0 3px 20px 0 rgba(0,0,0,.07);
-        border: solid 1px #fff;
-        background-color: #fff;
-        padding: 3px 10px;
-        color: #727272;
-        flex: auto;
+.hgo-fm-menu input {
+    border-radius: 30px;
+    box-shadow: 0 3px 20px 0 rgba(0,0,0,.07);
+    border: solid 1px #fff;
+    background-color: #fff;
+    padding: 3px 10px;
+    color: #727272;
+    flex: auto;
+    transition: all .25s linear;
+    margin: 3px;
+}
+
+    .hgo-fm-menu input:focus-visible {
+        border: solid 1px #aab9ff;
         transition: all .25s linear;
-        margin: 3px;
+        outline: none;
     }
 
-        .hgo-fm-menu input:focus-visible {
-            border: solid 1px #aab9ff;
-            transition: all .25s linear;
-            outline: none;
-        }
+.hgo-fm-menu hr {
+    height: 12px;
+    width: 1px;
+    margin: 0px 3px;
+}
 
-    .hgo-fm-menu hr {
-        height: 12px;
-        width: 1px;
-        margin: 0px 3px;
-    }
+.hgo-fm-menu button {
+    border-radius: 5px;
+    border: solid 1px #d1d1d1;
+    margin: 3px;
+    transition: all .25s linear;
+    color: #3e5a70;
+    font-size: 16px;
+}
 
-    .hgo-fm-menu button {
-        border-radius: 5px;
-        border: solid 1px #d1d1d1;
-        margin: 3px;
+    .hgo-fm-menu button:hover:enabled {
+        background: rgba(46, 115, 252, 0.11);
+        border: 1px solid rgb(0 93 255 / 36%);
         transition: all .25s linear;
-        color: #3e5a70;
-        font-size: 16px;
     }
 
-        .hgo-fm-menu button:hover:enabled {
-            background: rgba(46, 115, 252, 0.11);
-            border: 1px solid rgb(0 93 255 / 36%);
-            transition: all .25s linear;
-        }
-
-        .hgo-fm-menu button:disabled {
-            color: #cdcdcd;
-        }
+    .hgo-fm-menu button:disabled {
+        color: #cdcdcd;
+    }
 /*---- Menu/Nav Bar end ----------------------*/
 
 /*---- footer breadcrumb start ----------------------*/

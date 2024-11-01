@@ -42,59 +42,110 @@ namespace HGO.ASPNetCore.FileManager
             var excludelist = new List<string>();
             if (exclude is { Length: > 0 })
             {
-                excludelist.AddRange(exclude);
+                excludelist.AddRange(exclude.Select(e => e.ToLower())); // Normalize to lowercase for easier comparison
             }
 
-            var scripts = "";
-            if (!excludelist.Any(p => p.ToLower() == "js.cookie"))
-            {
-                scripts +=
-                    "<script src='hgofilemanager/js.cookie/js.cookie.js'></script>\r\n";
-            }
-            if (!excludelist.Any(p => p.ToLower() == "fontawesome"))
-            {
-                scripts +=
-                    "<script src='hgofilemanager/fontawesome/js/fontawesome.min.js'></script>\r\n";
-            }
-            if (!excludelist.Any(p => p.ToLower() == "lozad.js"))
-            {
-                scripts +=
-                    "<script src='hgofilemanager/lozad.js/lozad.min.js'></script>\r\n";
-            }
-            if (!excludelist.Any(p => p.ToLower() == "jstree"))
-            {
-                scripts +=
-                    "<script src='hgofilemanager/jstree/jstree.min.js'></script>\r\n";
-            }
-            if (!excludelist.Any(p => p.ToLower() == "viselect"))
-            {
-                scripts +=
-                    "<script src='hgofilemanager/viselect/viselect.js'></script>\r\n";
-            }
-            if (!excludelist.Any(p => p.ToLower() == "split.js"))
-            {
-                scripts +=
-                    "<script src='hgofilemanager/split.js/split.js'></script>\r\n";
-            }
-            if (!excludelist.Any(p => p.ToLower() == "dropzone"))
-            {
-                scripts +=
-                    "<script src='hgofilemanager/dropzone/dropzone.js'></script>\r\n";
-            }
-            if (!excludelist.Any(p => p.ToLower() == "context-js"))
-            {
-                scripts +=
-                    "<script src='hgofilemanager/context-js/context/context.min.js'></script>\r\n";
-            }
-            if (!excludelist.Any(p => p.ToLower() == "toastify"))
-            {
-                scripts +=
-                    "<script src='hgofilemanager/toastify/toastify.js'></script>\r\n";
-            }
+            // Convert the exclusion list to a JavaScript array
+            var excludeArrayJs = string.Join(", ", excludelist.Select(e => $"'{e}'"));
 
-            //scripts += "<script src='hgofilemanager/HgoFileManager.js'></script>\r\n";
+            var scripts = $@"
+    <script>
+        window.scriptsLoaded = false;
+        var excludeList = [{excludeArrayJs}]; // Exclusion list passed from C#
+
+        if (typeof jQuery === 'undefined') {{var script = document.createElement('script');
+            script.src = 'hgofilemanager/jquery/dist/jquery.min.js';
+            script.onload = function() {{loadLibraries();
+            }};
+            document.head.appendChild(script);
+        }} else {{loadLibraries();
+        }}
+
+        function loadLibraries() {{
+            var librariesToLoad = [
+                {{ src: 'hgofilemanager/js.cookie/js.cookie.js', callback: onJsCookieLoaded }},
+                {{ src: 'hgofilemanager/fontawesome/js/fontawesome.min.js', callback: onFontAwesomeLoaded }},
+                {{ src: 'hgofilemanager/lozad.js/lozad.min.js', callback: onLozadLoaded }},
+                {{ src: 'hgofilemanager/jstree/jstree.min.js', callback: onJstreeLoaded }},
+                {{ src: 'hgofilemanager/viselect/viselect.js', callback: onViselectLoaded }},
+                {{ src: 'hgofilemanager/split.js/split.js', callback: onSplitLoaded }},
+                {{ src: 'hgofilemanager/dropzone/dropzone.js', callback: onDropzoneLoaded }},
+                {{ src: 'hgofilemanager/context-js/context/context.min.js', callback: onContextJsLoaded }},
+                {{ src: 'hgofilemanager/toastify/toastify.js', callback: onToastifyLoaded }}
+            ];
+
+            loadNextLibrary(librariesToLoad, 0);
+        }}
+
+        function loadNextLibrary(libraries, index) {{
+            if (index < libraries.length) {{
+                var library = libraries[index];
+                // Check if the library is excluded
+                if (!excludeList.includes(library.src.split('/').pop().toLowerCase())) {{
+                    var script = document.createElement('script');
+                    script.src = library.src;
+                    script.onload = function() {{
+                        if (library.callback) {{
+                            library.callback();
+                        }}
+                        loadNextLibrary(libraries, index + 1); // Load the next library
+                    }};
+                    document.head.appendChild(script);
+                }} else {{
+                    loadNextLibrary(libraries, index + 1); // Skip this library and load the next
+                }}
+            }} else {{
+                window.scriptsLoaded = true; // All libraries loaded
+                onAllLibrariesLoaded(); // You can call a function here that needs all libraries
+            }}
+        }}
+
+        // Callbacks for individual libraries
+        function onJsCookieLoaded() {{
+            console.log('js-cookie loaded');
+        }}
+
+        function onFontAwesomeLoaded() {{
+            console.log('Font Awesome loaded');
+        }}
+
+        function onLozadLoaded() {{
+            console.log('Lozad.js loaded');
+        }}
+
+        function onJstreeLoaded() {{
+            console.log('jsTree loaded');
+        }}
+
+        function onViselectLoaded() {{
+            console.log('viSelect loaded');
+        }}
+
+        function onSplitLoaded() {{
+            console.log('split.js loaded');
+        }}
+
+        function onDropzoneLoaded() {{
+            console.log('Dropzone.js loaded');
+        }}
+
+        function onContextJsLoaded() {{
+            console.log('context-js loaded');
+        }}
+
+        function onToastifyLoaded() {{
+            console.log('Toastify.js loaded');
+        }}
+
+        function onAllLibrariesLoaded() {{
+            console.log('All libraries loaded');
+            // This is where you can execute any code that depends on all libraries being loaded
+        }}
+    </script>";
+
             return new HtmlString(scripts);
         }
+
 
         public static HtmlString RenderHgoFileManagerCss(this RazorPageBase razorPage, bool darkMode = false, string[]? exclude = null)
         {

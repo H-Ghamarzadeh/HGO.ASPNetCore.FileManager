@@ -2,7 +2,11 @@
 @using HGO.ASPNetCore.FileManager.Enums
 @using HGO.ASPNetCore.FileManager.Helpers
 
-<div id="@Model.Id"></div>
+
+
+<img id="loadingScripts" src="/hgofilemanager/images/loading.gif" alt="loading...">
+<div id="@Model.Id" style="display: none;">
+</div>
 
 <script type="text/javascript">
     class HgoFileManager {
@@ -1089,6 +1093,17 @@
 
     document.addEventListener('DOMContentLoaded', function () {
         // new HgoFileManager('@Model.Id', '@Model.ApiEndPoint', JSON.parse('@Json.Serialize(Model.Config)'));
-        new HgoFileManager();
+        var instanceInterval = setInterval(()=>{
+        if(window.scriptsLoaded){
+            new HgoFileManager();
+            clearInterval(instanceInterval);
+            
+            $("#loadingScripts").fadeOut( "fast", function() {
+                // setTimeout(()=>{                    
+                    $("#@Model.Id").fadeIn("fast");
+                // },3000);
+            });
+        }
+        },100);
     }, false);
 </script>
