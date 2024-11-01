@@ -1,12 +1,13 @@
-# HGO.ASPNetCore.FileManager (Free & Open Source File Explorer for ASP.Net Core 6+)
-HGO.ASPNetCore.FileManager is a free, open source, feature rich and easy to use file explorer/manager component for ASP.Net Core 6 and above with MIT license!
+# YigitGnc.HGO.ASPNetCore.FileManager (Free & Open Source File Explorer for ASP.Net Core 6+)
+
+YigitGnc.HGO.ASPNetCore.FileManager is an "enriched" fork of HGO.ASPNetCore.FileManager free, open source, feature rich and easy to use file explorer/manager component for ASP.Net Core 6 and above with MIT license!
 
 [![NuGet version (HGO.ASPNetCore.FileManager)](https://img.shields.io/nuget/v/HGO.ASPNetCore.FileManager)](https://www.nuget.org/packages/HGO.ASPNetCore.FileManager/)
 ![NuGet Downloads](https://img.shields.io/nuget/dt/Hgo.ASPNetCore.FileManager?style=flat&color=%23238636)
 
 # **[Online Demo](https://filemanager.ghamarzadeh.com/)**
 
-![HGO.ASPNetCore.FileManager](https://github.com/H-Ghamarzadeh/HGO.ASPNetCore.FileManager/blob/master/HGO.ASPNetCore.FileManager.png?raw=true "HGO.ASPNetCore.FileManager")
+![HGO.ASPNetCore.FileManager](https://github.com/yigitgnc/HGO.ASPNetCore.FileManager/blob/master/HGO.ASPNetCore.FileManager.png?raw=true "HGO.ASPNetCore.FileManager")
 
 ## Features:
 -  Multi Language Support
@@ -24,18 +25,18 @@ HGO.ASPNetCore.FileManager is a free, open source, feature rich and easy to use 
 -  Ability to control disk space usage
 -  and more ...
 
-![HGO.ASPNetCore.FileManager Light Mode](https://github.com/H-Ghamarzadeh/HGO.ASPNetCore.FileManager/blob/master/Light-min.png?raw=true "HGO.ASPNetCore.FileManager Light Mode")
-![HGO.ASPNetCore.FileManager Dark Mode](https://github.com/H-Ghamarzadeh/HGO.ASPNetCore.FileManager/blob/master/Dark-min.png?raw=true "HGO.ASPNetCore.FileManager Dark Mode")
+![HGO.ASPNetCore.FileManager Light Mode](https://github.com/yigitgnc/HGO.ASPNetCore.FileManager/blob/master/Light-min.png?raw=true "HGO.ASPNetCore.FileManager Light Mode")
+![HGO.ASPNetCore.FileManager Dark Mode](https://github.com/yigitgnc/HGO.ASPNetCore.FileManager/blob/master/Dark-min.png?raw=true "HGO.ASPNetCore.FileManager Dark Mode")
 
 ## How to Install:
-At first you should install  [HGO.ASPNetCore.FileManager from NuGet](https://www.nuget.org/packages/HGO.ASPNetCore.FileManager):
+At first you should install  [YigitGnc.HGO.ASPNetCore.FileManager from NuGet](https://www.nuget.org/packages/YigitGnc.HGO.ASPNetCore.FileManager/):
 ```
-Install-Package HGO.ASPNetCore.FileManager
+Install-Package YigitGnc.HGO.ASPNetCore.FileManager
 ```
 Or via the .NET Core command line interface:
 
 ```cs
-dotnet add package HGO.ASPNetCore.FileManager
+dotnet add package YigitGnc.HGO.ASPNetCore.FileManager
 ```
 Either commands, from Package Manager Console or .NET Core CLI, will download and install HGO.ASPNetCore.FileManager and all required dependencies.
 Now you need to add HGO.ASPNetCore.FileManager to the ASP.NET Core services container. Open `Program.cs` and insert the marked lines into `Program.cs` file:
@@ -81,7 +82,7 @@ app.Run();
 Now you need to create an `Action Method` to handle server side operations, so open (or create) a `Controller` class and add the following action method:
 ```cs
 [HttpPost, HttpGet]
-public async Task<IActionResult> HgoApi(string id, string command, string parameters, IFormFile file)
+public async Task<IActionResult> HgoApi(string id, Command command, string parameters, IFormFile file)
 {
     return await _processor.ProcessCommandAsync(id, command, parameters, file);
 }
@@ -98,12 +99,18 @@ public HomeController(IFileManagerCommandsProcessor processor)
 Now you can add `HGO.ASPNetCore.FileManager` component view to any razor page or view you want:
 ```cs
 <div style="height: 550px; margin-bottom:20px">
-   @await Component.InvokeAsync("FileManagerComponent", new FileManagerModel()
+    @await Component.InvokeAsync("FileManagerComponent", new FileManagerModel()
     {
-        Id = "FM1", //an application-wide unique ID
-        RootFolder = AppDomain.CurrentDomain.BaseDirectory, //your desired path on server
-        ApiEndPoint = Url.Action("HgoApi"), //Url of previously created action method
-        Config = new FileManagerConfig() // othe configuration 
+       Id = "FM1",
+       RootFolder = AppDomain.CurrentDomain.BaseDirectory,
+       ApiEndPoint = Url.Action("HgoApi"),
+       Config = new FileManagerConfig()
+       {
+           DisabledFunctions = new HashSet<Command>(){
+        Command.Delete,
+        },
+           Language = new TurkishLanguage(),
+       }
     })
 </div>
 ```
@@ -139,8 +146,9 @@ Also you need to reference HGO.ASPNetCore.FileManager JavaScript and CSS files t
         </main>
     </div>
 
-    @*HGO.AspNetCore.FileManager depends on jQuery, so you need to add jQuery reference before*@
+    @*HGO.AspNetCore.FileManager depends on jQuery, so you need to add jQuery reference before (If you don't it will automatically add jquery in newer versions) *@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    
     @*----------------------------------*@
 
     @*HGO.AspNetCore.FileManager Scripts*@
@@ -150,15 +158,15 @@ Also you need to reference HGO.ASPNetCore.FileManager JavaScript and CSS files t
 </html>
 ```
 For more information please check the following sample projects:
-- [ASP.Net Core MVC](https://github.com/H-Ghamarzadeh/HGO.ASPNetCore.FileManager/tree/master/test/HGO.ASPNetCore.FileManager.Test)
-- [ASP.Net Core Razor Pages](https://github.com/H-Ghamarzadeh/HGO.ASPNetCore.FileManager/tree/master/test/HGO.ASPNetCore.FileManager.RazorPages.Test)
+- [ASP.Net Core MVC](https://github.com/yigitgnc/HGO.ASPNetCore.FileManager/tree/master/test/HGO.ASPNetCore.FileManager.Test)
+- [ASP.Net Core Razor Pages](https://github.com/yigitgnc/HGO.ASPNetCore.FileManager/tree/master/test/HGO.ASPNetCore.FileManager.RazorPages.Test)
 
 ## See installation guide on YouTube:
 [![Hgo.ASPNetCore.FileManager Installation guide in ASP.Net Core MVC project](https://i.ytimg.com/vi/_1bZYUQm3wc/hq720.jpg)](https://www.youtube.com/watch?v=_1bZYUQm3wc)
 [![Hgo.ASPNetCore.FileManager Installation guide in ASP.Net Core Razor Pages project](https://i.ytimg.com/vi/kDlHLdVtrMc/hq720.jpg)](https://www.youtube.com/watch?v=kDlHLdVtrMc)
 
 ### Note:
-HGO.ASPNetCore.FileManager depends on jQuery library, so you need reference jQuery library before calling `RenderHgoFileManagerJavaScripts()`
+HGO.ASPNetCore.FileManager depends on jQuery library, so you need reference jQuery library before calling `RenderHgoFileManagerJavaScripts()` (If you don't it will automatically add jquery in newer versions)
 
 ### Third-party JS libraries which I used in this project:
 - [context-js](https://github.com/heapoverride/context-js)
