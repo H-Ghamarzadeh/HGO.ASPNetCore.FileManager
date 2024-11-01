@@ -13,7 +13,7 @@
 		<ProduceReferenceAssembly>False</ProduceReferenceAssembly>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
 		<SignAssembly>True</SignAssembly>
-		<Authors>SeyedHadi GhamarzadehOsgouei</Authors>
+		<Authors>SeyedHadi GhamarzadehOsgouei, YigitGenc</Authors>
 		<Description>HGO.ASPNetCore.FileManager is a free, open source, feature rich and easy to use file explorer/manager component for ASP.Net Core 6 and above with MIT license!</Description>
 		<Copyright>Copyright SeyedHadi GhamarzadehOsgouei</Copyright>
 		<PackageTags>ASP.NetFileManager, ASP.NetFileExplorer, ASP.NetCoreFileManager, ASP.NetCoreFileExplorer, ASP.NetUploadFile, ASP.NetCoreUploadFile, FileManager, FileExplorer, UploadFile, DownloadFile</PackageTags>
@@ -23,7 +23,7 @@
 		<EnableNETAnalyzers>False</EnableNETAnalyzers>
 		<LangVersion>latest</LangVersion>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-		<Title>HGO.ASPNetCore.FileManager</Title>
+		<Title>yigitgnc/HGO.ASPNetCore.FileManager</Title>
 		<PackageProjectUrl>https://github.com/H-Ghamarzadeh/HGO.ASPNetCore.FileManager</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/H-Ghamarzadeh/HGO.ASPNetCore.FileManager</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
@@ -33,6 +33,7 @@
 		<Version>1.0.7</Version>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+		<PackageId>$(AssemblyName)</PackageId>
 	</PropertyGroup>
 
 	<ItemGroup>
