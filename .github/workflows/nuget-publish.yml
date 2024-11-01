@@ -28,7 +28,7 @@ jobs:
         run: |
           VERSION=${{ env.TAG }}
           # Use sed to replace the <Version> value in the .csproj file
-          sed -i 's|<Version>.*</Version>|<Version>'"$VERSION"'</Version>|' HGO.ASPNetCore.FileManager.csproj
+          sed -i 's|<Version>.*</Version>|<Version>'"$VERSION"'</Version>|' src/HGO.ASPNetCore.FileManager.csproj
         shell: bash
 
       - name: Create new Git tag if none exists
