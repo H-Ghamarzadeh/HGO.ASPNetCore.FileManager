@@ -34,7 +34,7 @@ jobs:
       - name: Create new Git tag if none exists
         run: |
           if [ "${{ env.TAG }}" == "0.0.0" ]; then
-            VERSION=$(grep -oP '(?<=<Version>).*?(?=</Version>)' YourProject.csproj)
+            VERSION=$(grep -oP '(?<=<Version>).*?(?=</Version>)' src/HGO.ASPNetCore.FileManager/HGO.ASPNetCore.FileManager.csproj)
             git tag "$VERSION"
             git push origin "$VERSION"
           fi
