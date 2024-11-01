@@ -11,7 +11,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HGO.ASPNetCore.FileManager"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HGO.ASPNetCore.FileManager.Test", "test\HGO.ASPNetCore.FileManager.Test\HGO.ASPNetCore.FileManager.Test.csproj", "{702E8C81-3C29-4593-B993-97EBCF9D4F29}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HGO.ASPNetCore.FileManager.RazorPages.Test", "test\HGO.ASPNetCore.FileManager.RazorPages.Test\HGO.ASPNetCore.FileManager.RazorPages.Test.csproj", "{7361A23C-9CC6-4D8D-877A-A1D52E09FBDA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HGO.ASPNetCore.FileManager.RazorPages.Test", "test\HGO.ASPNetCore.FileManager.RazorPages.Test\HGO.ASPNetCore.FileManager.RazorPages.Test.csproj", "{7361A23C-9CC6-4D8D-877A-A1D52E09FBDA}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{40285782-4E50-4869-B47E-36ADE97A953F}"
+	ProjectSection(SolutionItems) = preProject
+		VERSION.txt = VERSION.txt
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

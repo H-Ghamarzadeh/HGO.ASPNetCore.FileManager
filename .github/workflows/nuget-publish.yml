@@ -10,31 +10,50 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+    - name: Checkout code
+      uses: actions/checkout@v2
 
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v3
-        with:
-          dotnet-version: '8.0.x'
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '6.0.x'
 
-      - name: Restore dependencies
-        run: dotnet restore
+    - name: Get and Increment Version
+      id: increment_version
+      run: |
+        # Read the current version from VERSION.txt
+        VERSION=$(cat VERSION.txt)
+        
+        # Split the version into MAJOR.MINOR.PATCH
+        IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
+        
+        # Increment the PATCH version
+        PATCH=$((PATCH + 1))
+        NEW_VERSION="$MAJOR.$MINOR.$PATCH"
+        
+        # Update VERSION.txt with the new version
+        echo "$NEW_VERSION" > VERSION.txt
+        echo "VERSION=$NEW_VERSION" >> $GITHUB_ENV
 
-      - name: Build
-        run: dotnet build --configuration Release
+    - name: Commit Updated Version
+      run: |
+        git config --local user.name "github-actions[bot]"
+        git config --local user.email "github-actions[bot]@users.noreply.github.com"
+        git add VERSION.txt
+        git commit -m "Increment version to ${{ env.VERSION }}"
+        git push origin nuget
 
-      - name: Pack
-        run: dotnet pack --configuration Release --output ./output
+    - name: Restore dependencies
+      run: dotnet restore
 
-      - name: Publish to NuGet
-        if: success() && env.NUGET_API_KEY != ''
-        env:
-          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
-        run: |
-          if ls ./output/*.nupkg 1> /dev/null 2>&1; then
-            dotnet nuget push ./output/*.nupkg --source https://api.nuget.org/v3/index.json --api-key $NUGET_API_KEY
-          else
-            echo "No NuGet packages found to publish."
-            exit 1
-          fi
+    - name: Build
+      run: dotnet build --configuration Release /p:Version=${{ env.VERSION }}
+
+    - name: Pack
+      run: dotnet pack --configuration Release --output ./output /p:Version=${{ env.VERSION }}
+
+    - name: Publish to NuGet
+      env:
+        NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+      run: dotnet nuget push ./output/*.nupkg -s https://api.nuget.org/v3/index.json -k $NUGET_API_KEY
+      if: success()

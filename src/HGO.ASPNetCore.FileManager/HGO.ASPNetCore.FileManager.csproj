@@ -30,7 +30,6 @@
 		<NeutralLanguage>en</NeutralLanguage>
 		<PackageIcon>Logo.png</PackageIcon>
 		<AssemblyOriginatorKeyFile>HGO.ASPNetCore.FileManager.snk</AssemblyOriginatorKeyFile>
-		<Version>1.0.8</Version>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
 		<PackageId>YigitGnc.$(AssemblyName)</PackageId>
