@@ -13,11 +13,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HGO.ASPNetCore.FileManager.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HGO.ASPNetCore.FileManager.RazorPages.Test", "test\HGO.ASPNetCore.FileManager.RazorPages.Test\HGO.ASPNetCore.FileManager.RazorPages.Test.csproj", "{7361A23C-9CC6-4D8D-877A-A1D52E09FBDA}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{40285782-4E50-4869-B47E-36ADE97A953F}"
-	ProjectSection(SolutionItems) = preProject
-		VERSION.txt = VERSION.txt
-	EndProjectSection
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

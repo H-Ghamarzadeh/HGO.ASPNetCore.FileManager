@@ -52,6 +52,14 @@ jobs:
             echo "Tag ${{ env.NEW_VERSION }} already exists. Skipping tag creation."
           fi
 
+      - name: Commit version change
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+          git add src/HGO.ASPNetCore.FileManager/HGO.ASPNetCore.FileManager.csproj
+          git commit -m "Bump version to ${{ env.NEW_VERSION }}"
+          git push origin nuget
+
       - name: Restore dependencies
         run: dotnet restore
 
