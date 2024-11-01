@@ -9,6 +9,8 @@ HGO.ASPNetCore.FileManager is a free, open source, feature rich and easy to use 
 ![HGO.ASPNetCore.FileManager](https://github.com/H-Ghamarzadeh/HGO.ASPNetCore.FileManager/blob/master/HGO.ASPNetCore.FileManager.png?raw=true "HGO.ASPNetCore.FileManager")
 
 ## Features:
+-  Multi Language Support
+-  Enum Member Access for type safety
 -  Manage server's files from client side
 -  Copy & cut & paste functionality
 -  Compress & extract archive files (Rar, Zip, Tar, Tar.GZip, Tar.BZip2, Tar.LZip, Tar.XZ, GZip, 7Zip)
@@ -122,10 +124,17 @@ Also you need to reference HGO.ASPNetCore.FileManager JavaScript and CSS files t
         <main role="main" class="pb-3">
              @await Component.InvokeAsync("FileManagerComponent", new FileManagerModel()
               {
-                  Id = "FM1", //an application-wide unique ID
-                  RootFolder = AppDomain.CurrentDomain.BaseDirectory, //your desired path on server
-                  ApiEndPoint = Url.Action("HgoApi"), //Url of previously created action method
-                  Config = new FileManagerConfig() // othe configuration 
+                   Id = "FM1",
+                   RootFolder = AppDomain.CurrentDomain.BaseDirectory,
+                   ApiEndPoint = Url.Action("HgoApi"),
+                   Config = new FileManagerConfig()
+                   {
+                        DisabledFunctions = new HashSet<Command>()
+                        {
+                        Command.Delete,
+                        },
+                       Language = new TurkishLanguage(),
+                   }
               })
         </main>
     </div>
