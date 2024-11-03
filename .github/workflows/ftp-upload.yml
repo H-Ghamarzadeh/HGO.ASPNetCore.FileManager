@@ -1,0 +1,38 @@
+name: Build and FTP Upload
+
+on:
+  push:
+    branches:
+      - master 
+
+jobs:
+  ftp_deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v2
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore dependencies for specific project
+        run: dotnet restore test/HGO.ASPNetCore.FileManager.Test/HGO.ASPNetCore.FileManager.Test.csproj
+
+      - name: Build the specific project
+        run: dotnet build test/HGO.ASPNetCore.FileManager.Test/HGO.ASPNetCore.FileManager.Test.csproj --configuration Release 
+
+      - name: Publish the specific project
+        run: dotnet publish test/HGO.ASPNetCore.FileManager.Test/HGO.ASPNetCore.FileManager.Test.csproj --configuration Release --output ./publish 
+
+      - name: Upload to FTP server
+        uses: SamKirkland/FTP-Deploy-Action@4.3.0
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./publish
+          server-dir: ${{ secrets.FTP_SERVER_DIR }}
+          protocol: ftps
