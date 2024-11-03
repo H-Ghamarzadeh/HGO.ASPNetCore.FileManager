@@ -29,7 +29,8 @@ jobs:
 
       - name: Create app_offline.htm
         run: |
-          echo "" > app_offline.htm
+          mkdir -p tmp
+          echo "" > tmp/app_offline.htm
 
       - name: Upload app_offline.htm
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
@@ -37,7 +38,7 @@ jobs:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: ./
+          local-dir: ./tmp/
           server-dir: ${{ secrets.FTP_SERVER_DIR }}
           protocol: ftps
 
