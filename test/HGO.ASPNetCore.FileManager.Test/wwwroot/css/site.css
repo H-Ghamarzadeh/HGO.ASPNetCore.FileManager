@@ -44,3 +44,15 @@ body {
     ::-webkit-scrollbar-thumb:hover {
         background: #555;
     }
+
+@media only screen and (max-width: 410px) {
+    .navbar-brand {
+        width: 100%;
+        text-align: center;
+        padding-left: 0px !important;
+        margin: 0px !important;
+    }
+    .navbar-toggler{
+        width:100%;
+    }
+}

@@ -11,10 +11,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v2
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
 
@@ -36,3 +36,5 @@ jobs:
           local-dir: ./publish/
           server-dir: ${{ secrets.FTP_SERVER_DIR }}
           protocol: ftps
+          passive: true
+          incremental-only: true
