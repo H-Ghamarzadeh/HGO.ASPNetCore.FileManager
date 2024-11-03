@@ -1,69 +1,69 @@
-# name: Publish NuGet and GitHub Package
+name: Publish NuGet and GitHub Package
 
-# on:
-#   push:
-#     branches:
-#       - nuget
+on:
+  push:
+    branches:
+      - nuget
 
-# jobs:
-#   build:
-#     runs-on: ubuntu-latest
+jobs:
+  build:
+    runs-on: ubuntu-latest
 
-#     steps:
-#       - name: Checkout code
-#         uses: actions/checkout@v2
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-#       - name: Setup .NET
-#         uses: actions/setup-dotnet@v2
-#         with:
-#           dotnet-version: '8.0.x'
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v2
+        with:
+          dotnet-version: '8.0.x'
 
-#       - name: Increment Version
-#         id: increment_version
-#         run: |
-#           CURRENT_VERSION=$(grep -oP '(?<=<Version>).*?(?=</Version>)' src/HGO.ASPNetCore.FileManager/HGO.ASPNetCore.FileManager.csproj)
-#           IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT_VERSION"
-#           NEW_PATCH=$((PATCH + 1))
-#           NEW_VERSION="$MAJOR.$MINOR.$NEW_PATCH"
-#           sed -i "s|<Version>$CURRENT_VERSION</Version>|<Version>$NEW_VERSION</Version>|" src/HGO.ASPNetCore.FileManager/HGO.ASPNetCore.FileManager.csproj
-#           echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
+      - name: Increment Version
+        id: increment_version
+        run: |
+          CURRENT_VERSION=$(grep -oP '(?<=<Version>).*?(?=</Version>)' src/HGO.ASPNetCore.FileManager/HGO.ASPNetCore.FileManager.csproj)
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT_VERSION"
+          NEW_PATCH=$((PATCH + 1))
+          NEW_VERSION="$MAJOR.$MINOR.$NEW_PATCH"
+          sed -i "s|<Version>$CURRENT_VERSION</Version>|<Version>$NEW_VERSION</Version>|" src/HGO.ASPNetCore.FileManager/HGO.ASPNetCore.FileManager.csproj
+          echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
 
-#       - name: Check for existing tags
-#         id: check_tags
-#         run: |
-#           TAG_EXISTS=$(git tag --list "${{ env.NEW_VERSION }}" | wc -l)
-#           echo "TAG_EXISTS=$TAG_EXISTS" >> $GITHUB_ENV
+      - name: Check for existing tags
+        id: check_tags
+        run: |
+          TAG_EXISTS=$(git tag --list "${{ env.NEW_VERSION }}" | wc -l)
+          echo "TAG_EXISTS=$TAG_EXISTS" >> $GITHUB_ENV
 
-#       - name: Create new Git tag if it doesn't exist
-#         run: |
-#           if [ "${{ env.TAG_EXISTS }}" -eq 0 ]; then
-#             git config user.name "github-actions[bot]"
-#             git config user.email "github-actions[bot]@users.noreply.github.com"
-#             git commit -am "Bump version to ${{ env.NEW_VERSION }}"
-#             git tag "${{ env.NEW_VERSION }}"
-#             git push origin "${{ env.NEW_VERSION }}"
-#             git push
-#           else
-#             echo "Tag ${{ env.NEW_VERSION }} already exists. Skipping tag creation."
-#           fi
+      - name: Create new Git tag if it doesn't exist
+        run: |
+          if [ "${{ env.TAG_EXISTS }}" -eq 0 ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git commit -am "Bump version to ${{ env.NEW_VERSION }}"
+            git tag "${{ env.NEW_VERSION }}"
+            git push origin "${{ env.NEW_VERSION }}"
+            git push
+          else
+            echo "Tag ${{ env.NEW_VERSION }} already exists. Skipping tag creation."
+          fi
 
-#       - name: Restore dependencies
-#         run: dotnet restore
+      - name: Restore dependencies
+        run: dotnet restore
 
-#       - name: Build
-#         run: dotnet build --configuration Release
+      - name: Build
+        run: dotnet build --configuration Release
 
-#       - name: Pack
-#         run: dotnet pack --configuration Release --output ./output
+      - name: Pack
+        run: dotnet pack --configuration Release --output ./output
 
-#       # Publish to NuGet.org
-#       - name: Publish to NuGet
-#         env:
-#           NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
-#         run: dotnet nuget push ./output/*.nupkg -s https://api.nuget.org/v3/index.json -k $NUGET_API_KEY
+      # Publish to NuGet.org
+      - name: Publish to NuGet
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: dotnet nuget push ./output/*.nupkg -s https://api.nuget.org/v3/index.json -k $NUGET_API_KEY
 
-#       # Publish to GitHub Packages
-#       - name: Publish to GitHub Packages
-#         env:
-#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#         run: dotnet nuget push ./output/*.nupkg -s "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" -k $GITHUB_TOKEN
+      # Publish to GitHub Packages
+      - name: Publish to GitHub Packages
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: dotnet nuget push ./output/*.nupkg -s "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" -k $GITHUB_TOKEN
