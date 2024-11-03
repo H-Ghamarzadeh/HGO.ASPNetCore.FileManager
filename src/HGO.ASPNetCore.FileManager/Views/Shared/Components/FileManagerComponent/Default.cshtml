@@ -1090,9 +1090,9 @@
             let dropZone = new Dropzone(uploadPanel, {
                 url: this.apiUrl + `?id=${this.thisId}&command=@Command.Upload&parameters=${this.getCurrentPath()}`,
                 parallelUploads: @Model.Config.ParallelUploads,
-                chunking: @Model.Config.Chunking,
+                chunking: @Model.Config.Chunking.ToString().ToLower(),
                 chunkSize: @Model.Config.ChunkSizeByte,  // bytes
-                retryChunks: @Model.Config.RetryChunks,
+                retryChunks: @Model.Config.RetryChunks.ToString().ToLower(),
                 retryChunksLimit: @Model.Config.RetryChunksLimit,
                 maxFilesize: @Model.Config.MaxFileSizeToUploadMByte, // mega bytes
                 acceptedFiles: '@Model.Config.AcceptedFiles', //'.png,.pdf'
