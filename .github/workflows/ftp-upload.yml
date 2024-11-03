@@ -29,8 +29,7 @@ jobs:
 
       - name: Create app_offline.htm
         run: |
-          mkdir -p tmp
-          echo "" > tmp/app_offline.htm
+          mkdir -p tmp && echo "<html><head><title>Maintenance</title><style>body{font-family:Arial,sans-serif;background-color:#f4f4f4;color:#333;text-align:center;padding:50px;}h1{color:#d9534f;}p{font-size:18px;margin-top:20px;}.container{background-color:#fff;border-radius:8px;box-shadow:0 0 10px rgba(0,0,0,0.1);padding:20px;display:inline-block;margin-top:20px;}</style></head><body><div class='container'><h1>We'll Be Right Back!</h1><p>Our application is currently undergoing scheduled maintenance.</p><p>We expect to be back in a maximum of 10 minutes.</p></div></body></html>" > tmp/app_offline.htm
 
       - name: Upload app_offline.htm
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
