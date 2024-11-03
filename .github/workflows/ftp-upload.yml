@@ -27,8 +27,25 @@ jobs:
       - name: Publish the specific project
         run: dotnet publish test/HGO.ASPNetCore.FileManager.Test/HGO.ASPNetCore.FileManager.Test.csproj --configuration Release --output ./publish 
 
+      - name: Create app_offline.htm
+        run: |
+          echo "" > app_offline.htm
+
+      - name: Upload app_offline.htm
+        uses: SamKirkland/FTP-Deploy-Action@4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./
+          server-dir: ${{ secrets.FTP_SERVER_DIR }}
+          protocol: ftps
+
+      - name: Wait for 5 seconds
+        run: sleep 5
+
       - name: Upload to FTP server
-        uses: SamKirkland/FTP-Deploy-Action@4.3.0
+        uses: SamKirkland/FTP-Deploy-Action@4.3.5
         with:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
@@ -36,5 +53,3 @@ jobs:
           local-dir: ./publish/
           server-dir: ${{ secrets.FTP_SERVER_DIR }}
           protocol: ftps
-          passive: true
-          incremental-only: true
