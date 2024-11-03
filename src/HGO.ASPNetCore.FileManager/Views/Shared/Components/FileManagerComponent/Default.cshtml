@@ -264,7 +264,7 @@
     @if (!Model.Config.DisabledFunctions.Contains(Command.CreateNewFolder))
     {
         <text>
-                    menuItems.push({ text: '<i class="fa-solid fa-folder-plus"></i> @Model.Config.Language.CreateNewFile', onclick: function (e) { self.createNewFolder(); } });
+                    menuItems.push({ text: '<i class="fa-solid fa-folder-plus"></i> @Model.Config.Language.CreateNewFolder', onclick: function (e) { self.createNewFolder(); } });
         </text>
     }
     @if (!Model.Config.DisabledFunctions.Contains(Command.CreateNewFile))
@@ -486,9 +486,21 @@
     @if (!Model.Config.DisabledFunctions.Contains(Command.FoldersTree))
     {
         <text>
-                    Split([jsTreeDiv, this.jsSelectContinerDiv], {
-                        sizes: [20, 80],
-                    });
+            let sizes;
+
+            if (window.innerWidth > 1024) { // Large screens
+                            sizes = [20, 80];
+            } else if (window.innerWidth > 600) { // Medium screens
+                            sizes = [30, 70];
+            } else { // Small screens
+                            sizes = [45, 55];
+            }
+
+            Split([jsTreeDiv, this.jsSelectContinerDiv], {
+            sizes: sizes,
+            gutterSize: 5, // Optional: adjust gutter size if needed
+            });
+
         </text>
     }
                                 }

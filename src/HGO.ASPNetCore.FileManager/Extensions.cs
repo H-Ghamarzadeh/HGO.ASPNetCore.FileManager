@@ -54,7 +54,7 @@ namespace HGO.ASPNetCore.FileManager
         var excludeList = [{excludeArrayJs}]; // Exclusion list passed from C#
 
         if (typeof jQuery === 'undefined') {{var script = document.createElement('script');
-            script.src = 'hgofilemanager/jquery/dist/jquery.min.js';
+            script.src = '/hgofilemanager/jquery/dist/jquery.min.js';
             script.onload = function() {{loadLibraries();
             }};
             document.head.appendChild(script);
@@ -63,15 +63,15 @@ namespace HGO.ASPNetCore.FileManager
 
         function loadLibraries() {{
             var librariesToLoad = [
-                {{ src: 'hgofilemanager/js.cookie/js.cookie.js', callback: onJsCookieLoaded }},
-                {{ src: 'hgofilemanager/fontawesome/js/fontawesome.min.js', callback: onFontAwesomeLoaded }},
-                {{ src: 'hgofilemanager/lozad.js/lozad.min.js', callback: onLozadLoaded }},
-                {{ src: 'hgofilemanager/jstree/jstree.min.js', callback: onJstreeLoaded }},
-                {{ src: 'hgofilemanager/viselect/viselect.js', callback: onViselectLoaded }},
-                {{ src: 'hgofilemanager/split.js/split.js', callback: onSplitLoaded }},
-                {{ src: 'hgofilemanager/dropzone/dropzone.js', callback: onDropzoneLoaded }},
-                {{ src: 'hgofilemanager/context-js/context/context.min.js', callback: onContextJsLoaded }},
-                {{ src: 'hgofilemanager/toastify/toastify.js', callback: onToastifyLoaded }}
+                {{ src: '/hgofilemanager/js.cookie/js.cookie.js', callback: onJsCookieLoaded }},
+                {{ src: '/hgofilemanager/fontawesome/js/fontawesome.min.js', callback: onFontAwesomeLoaded }},
+                {{ src: '/hgofilemanager/lozad.js/lozad.min.js', callback: onLozadLoaded }},
+                {{ src: '/hgofilemanager/jstree/jstree.min.js', callback: onJstreeLoaded }},
+                {{ src: '/hgofilemanager/viselect/viselect.js', callback: onViselectLoaded }},
+                {{ src: '/hgofilemanager/split.js/split.js', callback: onSplitLoaded }},
+                {{ src: '/hgofilemanager/dropzone/dropzone.js', callback: onDropzoneLoaded }},
+                {{ src: '/hgofilemanager/context-js/context/context.min.js', callback: onContextJsLoaded }},
+                {{ src: '/hgofilemanager/toastify/toastify.js', callback: onToastifyLoaded }}
             ];
 
             loadNextLibrary(librariesToLoad, 0);
@@ -159,42 +159,42 @@ namespace HGO.ASPNetCore.FileManager
             if (!excludelist.Any(p => p.ToLower() == "jstree"))
             {
                 styles +=
-                    "<link rel='stylesheet' href='hgofilemanager/jstree/themes/default/style.min.css' type='text/css' />\r\n";
+                    "<link rel='stylesheet' href='/hgofilemanager/jstree/themes/default/style.min.css' type='text/css' />\r\n";
             }
             if (!excludelist.Any(p => p.ToLower() == "dropzone"))
             {
                 styles +=
-                    "<link rel='stylesheet' href='hgofilemanager/dropzone/dropzone.css' type='text/css' />\r\n";
+                    "<link rel='stylesheet' href='/hgofilemanager/dropzone/dropzone.css' type='text/css' />\r\n";
             }
             if (!excludelist.Any(p => p.ToLower() == "fontawesome"))
             {
                 styles +=
-                    "<link rel='stylesheet' href='hgofilemanager/fontawesome/css/all.min.css' type='text/css' />\r\n";
+                    "<link rel='stylesheet' href='/hgofilemanager/fontawesome/css/all.min.css' type='text/css' />\r\n";
             }
             if (!excludelist.Any(p => p.ToLower() == "context-js"))
             {
                 if (darkMode)
                 {
                     styles +=
-                        "<link rel='stylesheet' href='hgofilemanager/context-js/context/skins/kali_dark.css' type='text/css' />\r\n";
+                        "<link rel='stylesheet' href='/hgofilemanager/context-js/context/skins/kali_dark.css' type='text/css' />\r\n";
                 }
                 else
                 {
                     styles +=
-                        "<link rel='stylesheet' href='hgofilemanager/context-js/context/skins/kali_light.css' type='text/css' />\r\n";
+                        "<link rel='stylesheet' href='/hgofilemanager/context-js/context/skins/kali_light.css' type='text/css' />\r\n";
                 }
             }
             if (!excludelist.Any(p => p.ToLower() == "toastify"))
             {
                 styles +=
-                    "<link rel='stylesheet' href='hgofilemanager/toastify/toastify.css' type='text/css' />\r\n";
+                    "<link rel='stylesheet' href='/hgofilemanager/toastify/toastify.css' type='text/css' />\r\n";
             }
 
-            styles += "<link rel='stylesheet' href='hgofilemanager/HgoFileManager.css' type='text/css' />\r\n";
+            styles += "<link rel='stylesheet' href='/hgofilemanager/HgoFileManager.css' type='text/css' />\r\n";
 
             if (darkMode)
             {
-                styles += "<link rel='stylesheet' href='hgofilemanager/HgoFileManager-dark.css' type='text/css' />\r\n";
+                styles += "<link rel='stylesheet' href='/hgofilemanager/HgoFileManager-dark.css' type='text/css' />\r\n";
                 razorPage.ViewContext.HttpContext.Session.SetString("HgoFileManagerTheme", "Dark");
             }
 

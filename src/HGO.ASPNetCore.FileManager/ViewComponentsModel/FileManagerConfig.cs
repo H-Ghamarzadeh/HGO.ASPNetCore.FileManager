@@ -1,6 +1,6 @@
 ﻿using HGO.ASPNetCore.FileManager.Enums;
-using HGO.ASPNetCore.FileManager.Models.LangugageModels;
-using HGO.ASPNetCore.FileManager.Models.LangugageModels.BuiltIn;
+using HGO.ASPNetCore.FileManager.Models.LanguageModels;
+using HGO.ASPNetCore.FileManager.Models.LanguageModels.BuiltIn;
 
 namespace HGO.ASPNetCore.FileManager.ViewComponentsModel
 {

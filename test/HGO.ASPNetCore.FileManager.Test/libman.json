@@ -1,0 +1,10 @@
+{
+  "version": "1.0",
+  "defaultProvider": "cdnjs",
+  "libraries": [
+    {
+      "library": "bootstrap-select@1.14.0-beta3",
+      "destination": "wwwroot/lib/bootstrap-select/"
+    }
+  ]
+}

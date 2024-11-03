@@ -3,6 +3,10 @@ using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 using HGO.ASPNetCore.FileManager.CommandsProcessor;
 using HGO.ASPNetCore.FileManager.Enums;
+using HGO.ASPNetCore.FileManager.Models.LanguageModels;
+using HGO.ASPNetCore.FileManager.Models.LanguageModels.BuiltIn;
+using HGO.ASPNetCore.FileManager.ViewComponentsModel;
+using System.Reflection;
 
 namespace HGO.ASPNetCore.FileManager.Test.Controllers
 {
@@ -17,9 +21,55 @@ namespace HGO.ASPNetCore.FileManager.Test.Controllers
             _processor = processor;
         }
 
+        [HttpGet]
         public IActionResult Index()
         {
-            return View();
+            var config = new FileManagerConfig()
+            {
+                Language = new EnglishLanguage()
+            };
+
+            return View(config);
+        }
+
+        [HttpPost]
+        public IActionResult Index(FileManagerConfig config, string Language)
+        {
+            // Check if the language type string is provided and not null
+            if (!string.IsNullOrEmpty(Language))
+            {
+                // Attempt to get the type directly
+                var languageType = Type.GetType(Language);
+
+                // If null, try searching across all loaded assemblies
+                if (languageType == null)
+                {
+                    // Get all assemblies currently loaded in the application domain
+                    var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+                    foreach (var assembly in assemblies)
+                    {
+                        languageType = assembly.GetType(Language);
+                        if (languageType != null && typeof(ILanguage).IsAssignableFrom(languageType))
+                        {
+                            break;
+                        }
+                    }
+                }
+
+                // Check if the languageType was successfully found and create an instance if so
+                if (languageType != null && typeof(ILanguage).IsAssignableFrom(languageType))
+                {
+                    config.Language = (ILanguage)Activator.CreateInstance(languageType);
+                }
+                else
+                {
+                    // Log or handle the failure case
+                    _logger.LogWarning("Language type '{Language}' could not be found or is not assignable to ILanguage.", Language);
+                }
+            }
+
+
+            return View(config);
         }
 
         public IActionResult Privacy()

@@ -1,4 +1,4 @@
-﻿using HGO.ASPNetCore.FileManager.Models.LangugageModels;
+﻿using HGO.ASPNetCore.FileManager.Models.LanguageModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;

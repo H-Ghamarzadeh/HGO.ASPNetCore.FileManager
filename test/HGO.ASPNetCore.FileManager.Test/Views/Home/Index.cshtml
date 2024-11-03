@@ -1,57 +1,185 @@
 ﻿@using HGO.ASPNetCore.FileManager.Enums
-@using HGO.ASPNetCore.FileManager.Models.LangugageModels.BuiltIn
+@using HGO.ASPNetCore.FileManager.Models.LanguageModels
+@using HGO.ASPNetCore.FileManager.Models.LanguageModels.BuiltIn
 @using HGO.ASPNetCore.FileManager.ViewComponentsModel
+@using System.Reflection
 
-@{
-    ViewData["Title"] = "Home Page";
+@model FileManagerConfig
+
+@section Styles {
+    <link href="~/lib/bootstrap-select/css/bootstrap-select.min.css" rel="stylesheet" />
 }
 
 <div class="text-center">
-    <h1 class="display-4">HGO ASP.Net Core File Manager Example</h1>
-    <div style="height: 550px; margin-bottom:20px">
-        @await Component.InvokeAsync("FileManagerComponent", new FileManagerModel()
-   {
-       Id = "FM1",
-       RootFolder = AppDomain.CurrentDomain.BaseDirectory,
-       ApiEndPoint = Url.Action("HgoApi"),
-       Config = new FileManagerConfig()
-       {
-           DisabledFunctions = new HashSet<Command>(){
-        Command.Delete,
-        },
-           Language = new TurkishLanguage(),
+    <h1>YigitGnc HGO ASP.Net Core File Manager Demo</h1>
+    <h5>
+        <a href="https://github.com/yigitgnc/HGO.ASPNetCore.FileManager" target="_blank" class="text-decoration-none text-info">YigitGnc.HGO.ASPNetCore.FileManager</a>
+        <br class="d-block d-md-none" />
+        is an "improved" fork of
+        <a href="https://github.com/H-Ghamarzadeh/HGO.ASPNetCore.FileManager" target="_blank" class="text-decoration-none text-info">HGO.ASPNetCore.FileManager</a>
+    </h5>
 
-       }
-   })
+    <div class="accordion mb-2">
+
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingOne">
+                <button class="accordion-button collapsed text-light" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne" style="background-color: #383838;">
+                    Edit &nbsp;<b style="color:seagreen">FileManagerConfig()</b>
+                </button>
+            </h2>
+            <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#accordionExample" style="background-color: #383838;">
+                <div class="accordion-body">
+                    <form method="post">
+                        <div class="row">
+
+                            <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xxl-2">
+                                <label class="text-nowrap">Storage Max Size (MB)</label>
+                                <input asp-for="StorageMaxSizeMByte" class="form-control text-center" />
+                            </div>
+
+                            <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xxl-2">
+                                <label class="text-nowrap">Compression Max Size (MB)</label>
+                                <input asp-for="CompressionMaxSizeMByte" class="form-control text-center" />
+                            </div>
+
+                            <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xxl-2">
+                                <label class="text-nowrap">Max File Size to Upload (MB)</label>
+                                <input asp-for="MaxFileSizeToUploadMByte" class="form-control text-center" />
+                            </div>
+
+                            <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xxl-2">
+                                <div class="form-check form-switch d-flex flex-column align-items-center justify-content-center ps-0">
+                                    <label class="form-check-label text-center mb-2" for="SwitchCheck_@nameof(Model.Chunking)">Chunking</label>
+                                    <input asp-for="Chunking" class="form-check-input ms-0" type="checkbox" id="SwitchCheck_@nameof(Model.Chunking)">
+                                </div>
+
+                            </div>
+
+                            <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xxl-2">
+                                <label>Chunk Size (Bytes)</label>
+                                <input asp-for="ChunkSizeByte" class="form-control text-center" />
+                            </div>
+
+                            <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xxl-2">
+                                <div class="form-check form-switch d-flex flex-column align-items-center justify-content-center ps-0">
+                                    <label class="form-check-label text-center mb-2" for="SwitchCheck_@nameof(Model.RetryChunks)">Retry Chunks</label>
+                                    <input asp-for="RetryChunks" class="form-check-input ms-0" type="checkbox" id="SwitchCheck_@nameof(Model.RetryChunks)">
+                                </div>
+                            </div>
+
+                            <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xxl-2">
+                                <label>Retry Chunks Limit</label>
+                                <input asp-for="RetryChunksLimit" class="form-control text-center" />
+                            </div>
+
+                            <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xxl-2">
+                                <label>Parallel Uploads</label>
+                                <input asp-for="ParallelUploads" class="form-control text-center" />
+                            </div>
+
+                            <div class="col-12 col-sm-6 col-md-4 col-lg-4 col-xxl-2">
+                                <label>Accepted Files</label>
+                                <input asp-for="AcceptedFiles" class="form-control text-center" />
+                            </div>
+
+                            <div class="col-12 col-sm-6 col-md-4 col-lg-4 col-xxl-2">
+                                <label class="text-nowrap">Compression Level</label>
+                                <input asp-for="CompressionLevel" class="form-control text-center" type="number" min="0" max="9" />
+                            </div>
+
+                            <div class="col-12 col-sm-12 col-md-8 col-lg-4 col-xl-4">
+                                <label>Language</label>
+
+
+                                <select asp-for="Language" class="form-select text-center">
+                                    @{
+                                        // Find all types implementing ILanguage
+                                        var languageTypes = Assembly.GetAssembly(typeof(ILanguage))
+                                        .GetTypes()
+                                        .Where(t => typeof(ILanguage).IsAssignableFrom(t) && !t.IsInterface && !t.IsAbstract);
+
+                                        foreach (var type in languageTypes)
+                                        {
+                                            <option value="@type.FullName">@type.FullName.Replace("HGO.ASPNetCore.FileManager.Models.", "")</option>
+                                        }
+                                    }
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row d-flex justify-content-center mt-3">
+                            <div class="col-12 col-sm-6">
+                                <label class="text-nowrap">Disabled Functions</label>
+                                <select class="selectpicker w-100" multiple data-live-search="true" name="config.DisabledFunctions">
+                                    @foreach (var command in Enum.GetValues(typeof(HGO.ASPNetCore.FileManager.Enums.Command)))
+                                    {
+                                        <!option value="@command"
+                                        @(Model.DisabledFunctions.Contains((HGO.ASPNetCore.FileManager.Enums.Command)command) ? "selected=\"selected\"" : "")>
+                                            @command
+                                        </!option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row px-3 pt-3">
+                            <button type="submit" class="btn btn-primary">Save Configuration</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <button onclick="getSelectedItems('file')" class="btn btn-success">Get Selected Files</button>
-    <button onclick="getSelectedItems('folder')" class="btn btn-success">Get Selected Folders</button>
-    <button onclick="AddNewItemToContextMenu()" class="btn btn-success">Add New Item To Context Menu</button>
-    <button onclick="AddNewButtonToMenu()" class="btn btn-success">Add New Button To Menu</button>
+    <div style="height: 70vh; margin-bottom:20px">
+        @await Component.InvokeAsync("FileManagerComponent",
+                 new FileManagerModel()
+        {
+            Id = "FM1",
+            RootFolder = "files",
+            ApiEndPoint = Url.Action("HgoApi"),
+            Config = Model
+        }
+                 )
+    </div>
 
-    <script>
-        function getSelectedItems(itemType) {
-            let fileManager = HgoFileManager.selectById("FM1");
-            let selections = fileManager.getSelectedItemsPath(itemType);
-            if (selections && selections.length > 0) {
-                alert(selections);
+    <button onclick="getSelectedItems('file')" class="btn btn-secondary">Get Selected Files</button>
+    <button onclick="getSelectedItems('folder')" class="btn btn-secondary">Get Selected Folders</button>
+    <button onclick="AddNewItemToContextMenu()" class="btn btn-secondary">Add New Item To Context Menu</button>
+    <button onclick="AddNewButtonToMenu()" class="btn btn-secondary">Add New Button To Menu</button>
+
+    @section Scripts {
+        <script>
+            function getSelectedItems(itemType) {
+                let fileManager = HgoFileManager.selectById("FM1");
+                let selections = fileManager.getSelectedItemsPath(itemType);
+                if (selections && selections.length > 0) {
+                    alert(selections);
+                }
+                else {
+                    fileManager.showToastify("Please select an item");
+                }
             }
-            else {
-                fileManager.showToastify("Please select an item");
+
+            function AddNewButtonToMenu() {
+                let fileManager = HgoFileManager.selectById("FM1");
+                fileManager.addButtonToMenu("Open 'refs' Folder", (e) => fileManager.getFolderContent('Root\\refs'));
+                alert('New button has been added to menu!');
             }
-        }
 
-        function AddNewButtonToMenu() {
-            let fileManager = HgoFileManager.selectById("FM1");
-            fileManager.addButtonToMenu("Open 'refs' Folder", (e) => fileManager.getFolderContent('Root\\refs'));
-            alert('New button has been added to menu!');
-        }
+            function AddNewItemToContextMenu() {
+                let fileManager = HgoFileManager.selectById("FM1");
+                fileManager.contextMenu.items.push({ text: 'Hello', onclick: (e) => alert('Hello!') });
+                alert('New item has been added to context menu!');
+            }
+        </script>
 
-        function AddNewItemToContextMenu() {
-            let fileManager = HgoFileManager.selectById("FM1");
-            fileManager.contextMenu.items.push({ text: 'Hello', onclick: (e) => alert('Hello!') });
-            alert('New item has been added to context menu!');
-        }
-    </script>
+        <script src="~/lib/bootstrap-select/js/bootstrap-select.min.js"></script>
+
+        <script>
+            $(function () {
+                $('.selectpicker').selectpicker();
+            });
+
+        </script>
+    }
 </div>

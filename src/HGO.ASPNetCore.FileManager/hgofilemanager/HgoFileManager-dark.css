@@ -4,6 +4,11 @@
     background-color: #565656;
 }
 
+    .hgo-fm-menu input {
+        color: #fff;
+        background-color: #383838
+    }
+    
     .hgo-fm-menu input:focus-visible {
         border: solid 1px #0025cf;
     }
