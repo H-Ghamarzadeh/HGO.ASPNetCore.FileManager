@@ -2,6 +2,6 @@
 
 internal class CopyCutCommandParameters
 {
-    public string Path { get; set; }
-    public List<string> Items { get; set; }
+    public string Path { get; set; } = null!;
+    public List<string> Items { get; set; } = null!;
 }

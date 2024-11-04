@@ -35,7 +35,7 @@ namespace HGO.ASPNetCore.FileManager.ViewComponents
             }
 
             //Add root path to session
-            _httpContextAccessor.HttpContext.Session.SetString(RootPathSessionKey + model.Id, model.RootFolder);
+            _httpContextAccessor.HttpContext?.Session.SetString(RootPathSessionKey + model.Id, model.RootFolder);
 
             //return component view
             return View(model);

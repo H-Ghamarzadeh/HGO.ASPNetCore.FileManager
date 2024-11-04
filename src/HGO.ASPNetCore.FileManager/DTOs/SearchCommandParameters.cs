@@ -2,7 +2,7 @@
 {
     internal class SearchCommandParameters
     {
-        public string Path { get; set; }
-        public string Query { get; set; }
+        public string Path { get; set; } = null!;
+        public string Query { get; set; } = null!;
     }
 }
