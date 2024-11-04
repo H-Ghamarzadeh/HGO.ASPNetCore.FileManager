@@ -52,16 +52,6 @@ namespace HGO.ASPNetCore.FileManager.Models.LanguageModels.BuiltIn
         public string ZipFileNameMessage { get; } = "Please enter Zip file name:";
         public string OverrideConfirmationMessage { get; } = "Some item(s) already exist, do you want to overwrite?";
 
-        public string UnknownCommandErrorMessage { get; } = "Unknown command.";
-        public string InvalidRootPathErrorMessage { get; } = "Invalid root path.";
-        public string NotEnoughSpaceErrorMessage { get; } = "Not enough space.";
-        public string TooBigErrorMessage { get; } = "File is too big."!;
-        public string ActionDisabledErrorMessage { get; } = "Action is disabled.";
-        public string NotFoundErrorMessage { get; } = "File not found.";
-        public string IsNotEditableFileErrorMessage { get; } = "File is not editable.";
-        public string FilesNotAcceptedErrorMessage { get; } = "Files not accepted.";
-        public string FileAlreadyExistsErrorMessage { get; } = "File already exists.";
-
         // Dropzone-related messages in English
         public string DictDefaultMessage { get; } = "Drag files here or click to upload";
         public string DictFallbackMessage { get; } = "Your browser does not support file uploads.";

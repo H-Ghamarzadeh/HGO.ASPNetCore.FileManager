@@ -59,7 +59,7 @@ namespace HGO.ASPNetCore.FileManager.Test.Controllers
                 // Check if the languageType was successfully found and create an instance if so
                 if (languageType != null && typeof(ILanguage).IsAssignableFrom(languageType))
                 {
-                    config.Language = Activator.CreateInstance(languageType) as ILanguage ?? new EnglishLanguage();
+                    config.Language = (ILanguage)Activator.CreateInstance(languageType);
                 }
                 else
                 {
