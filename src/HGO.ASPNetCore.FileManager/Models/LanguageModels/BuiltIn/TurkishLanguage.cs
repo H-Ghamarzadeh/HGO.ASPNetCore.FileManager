@@ -1,14 +1,10 @@
 ﻿using HGO.ASPNetCore.FileManager.Models.LanguageModels;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace HGO.ASPNetCore.FileManager.Models.LanguageModels.BuiltIn
 {
     public sealed class TurkishLanguage : LanguageBase, ILanguage
     {
+#pragma warning disable CS0108 // Member hides inherited member; missing new keyword
         public string Browse { get; } = "Gözat";
         public string Copy { get; } = "Kopyala";
         public string Cut { get; } = "Kes";
@@ -37,14 +33,10 @@ namespace HGO.ASPNetCore.FileManager.Models.LanguageModels.BuiltIn
         public string NewFolderPlaceHolder { get; } = "Yeni Klasör";
         public string NewFilePlaceHolder { get; } = "Yeni Metin.txt";
         public string NoItemsSelectedMessage { get; } = "Lütfen istediğiniz öğeyi(leri) seçin.";
-
         public string CreateDate { get; } = "Oluşturma Tarihi";
-
         public string ModifiedDate { get; } = "Değiştirilme Tarihi";
-
         public string FileName { get; } = "Dosya Adı";
         public string FolderName { get; } = "Klasör Adı";
-
         public string Size { get; } = "Boyut";
         public string Back { get; } = "Geri";
         public string Up { get; } = "Yukarı";
@@ -56,6 +48,17 @@ namespace HGO.ASPNetCore.FileManager.Models.LanguageModels.BuiltIn
         public string ItemAlreadyExistMessage { get; } = "zaten var, üzerine yazmak ister misiniz?";
         public string ZipFileNameMessage { get; } = "Lütfen Zip dosyası adını girin:";
         public string OverrideConfirmationMessage { get; } = "Bazı öğeler zaten var, üzerine yazmak ister misiniz?";
+
+        // Dropzone-related messages in Turkish
+        public string DictDefaultMessage { get; } = "Dosyaları buraya sürükleyin veya yüklemek için tıklayın";
+        public string DictFallbackMessage { get; } = "Tarayıcınız dosya yüklemeyi desteklemiyor.";
+        public string DictFallbackText { get; } = "Eski tarayıcıları kullanıyorsunuz, lütfen dosyalarınızı manuel olarak yükleyin.";
+        public string DictFileTooBig { get; } = "Dosya çok büyük ({{filesize}}MiB). Maksimum dosya boyutu: {{maxFilesize}}MiB.";
+        public string DictInvalidFileType { get; } = "Bu dosya türüne izin verilmiyor.";
+        public string DictResponseError { get; } = "Sunucu {{statusCode}} hata yanıtı verdi.";
+        public string DictCancelUpload { get; } = "Yüklemeyi iptal et";
+        public string DictCancelUploadConfirmation { get; } = "Bu yüklemeyi iptal etmek istediğinizden emin misiniz?";
+        public string DictRemoveFile { get; } = "Dosyayı kaldır";
+        public string DictMaxFilesExceeded { get; } = "Daha fazla dosya yükleyemezsiniz.";
     }
 }
-

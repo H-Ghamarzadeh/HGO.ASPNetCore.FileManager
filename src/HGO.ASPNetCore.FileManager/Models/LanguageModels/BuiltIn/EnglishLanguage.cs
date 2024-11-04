@@ -1,13 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace HGO.ASPNetCore.FileManager.Models.LanguageModels.BuiltIn
 {
+    /// <summary>
+    /// English language
+    /// </summary>
     public class EnglishLanguage : LanguageBase, ILanguage
     {
+#pragma warning disable CS0108 // Member hides inherited member; missing new keyword
         public string Browse { get; } = "Browse";
         public string Copy { get; } = "Copy";
         public string Cut { get; } = "Cut";
@@ -51,6 +51,17 @@ namespace HGO.ASPNetCore.FileManager.Models.LanguageModels.BuiltIn
         public string ItemAlreadyExistMessage { get; } = "already exist, do you want to overwrite?";
         public string ZipFileNameMessage { get; } = "Please enter Zip file name:";
         public string OverrideConfirmationMessage { get; } = "Some item(s) already exist, do you want to overwrite?";
-    }
 
+        // Dropzone-related messages in English
+        public string DictDefaultMessage { get; } = "Drag files here or click to upload";
+        public string DictFallbackMessage { get; } = "Your browser does not support file uploads.";
+        public string DictFallbackText { get; } = "Please use a fallback form to upload your files.";
+        public string DictFileTooBig { get; } = "File is too big ({{filesize}}MiB). Max filesize: {{maxFilesize}}MiB.";
+        public string DictInvalidFileType { get; } = "You cannot upload files of this type.";
+        public string DictResponseError { get; } = "Server responded with {{statusCode}} code.";
+        public string DictCancelUpload { get; } = "Cancel upload";
+        public string DictCancelUploadConfirmation { get; } = "Are you sure you want to cancel this upload?";
+        public string DictRemoveFile { get; } = "Remove file";
+        public string DictMaxFilesExceeded { get; } = "You cannot upload any more files.";
+    }
 }
