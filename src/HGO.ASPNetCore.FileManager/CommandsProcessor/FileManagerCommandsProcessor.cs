@@ -170,6 +170,8 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
 
         result.Files.AddRange(Utils.GetFiles(physicalPath, "*.*", SearchOption.TopDirectoryOnly)
             .Select(p => p.GetFileDetail(physicalRootPath)));
+
+
         result.Folders.AddRange(Utils.GetDirectories(physicalPath, "*.*", SearchOption.TopDirectoryOnly)
             .OrderBy(p => p).Select(p => p.GetFolderDetail(physicalRootPath)));
 
