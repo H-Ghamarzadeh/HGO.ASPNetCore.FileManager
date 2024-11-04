@@ -38,7 +38,7 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
         {
             return new ContentResult()
             {
-                Content = JsonConvert.SerializeObject(new { Error = "Unknown command!" })
+                Content = JsonConvert.SerializeObject(new { Error = FileManagerComponent.ConfigStorage[id].Language.UnknownCommandErrorMessage })
             };
         }
 
@@ -47,7 +47,7 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
         {
             return new ContentResult()
             {
-                Content = JsonConvert.SerializeObject(new { Error = "This action has been disabled!" })
+                Content = JsonConvert.SerializeObject(new { Error = FileManagerComponent.ConfigStorage[id].Language.ActionDisabledErrorMessage })
             };
         }
 
@@ -107,7 +107,7 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
                     case Command.FilePreview:
                         return FilePreview(id, parameters);
                     default:
-                        result.Content = JsonConvert.SerializeObject(new { Error = "Unknown command!" });
+                        result.Content = JsonConvert.SerializeObject(new { Error = FileManagerComponent.ConfigStorage[id].Language.UnknownCommandErrorMessage });
                         return result;
                 }
             }
@@ -153,7 +153,7 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
         var physicalRootPath = GetCurrentSessionPhysicalRootPath(id);
         if (string.IsNullOrWhiteSpace(physicalRootPath))
         {
-            throw new Exception("Invalid Root Path!");
+            throw new Exception(FileManagerComponent.ConfigStorage[id].Language.InvalidRootPathErrorMessage);
         }
 
         var physicalPath = virtualPath.ConvertVirtualToPhysicalPath(physicalRootPath);
@@ -181,7 +181,7 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
         var physicalRootPath = GetCurrentSessionPhysicalRootPath(id);
         if (string.IsNullOrWhiteSpace(physicalRootPath))
         {
-            throw new Exception("Invalid Root Path!");
+            throw new Exception(FileManagerComponent.ConfigStorage[id].Language.InvalidRootPathErrorMessage);
         }
 
         var physicalPath = commandParameters.Path.ConvertVirtualToPhysicalPath(physicalRootPath);
@@ -230,7 +230,7 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
         var physicalRootPath = GetCurrentSessionPhysicalRootPath(id);
         if (string.IsNullOrWhiteSpace(physicalRootPath))
         {
-            throw new Exception("Invalid Root Path!");
+            throw new Exception(FileManagerComponent.ConfigStorage[id].Language.InvalidRootPathErrorMessage);
         }
 
         var physicalPath = commandParameters.Path.ConvertVirtualToPhysicalPath(physicalRootPath);
@@ -260,7 +260,7 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
         var physicalRootPath = GetCurrentSessionPhysicalRootPath(id);
         if (string.IsNullOrWhiteSpace(physicalRootPath))
         {
-            throw new Exception("Invalid Root Path!");
+            throw new Exception(FileManagerComponent.ConfigStorage[id].Language.InvalidRootPathErrorMessage);
         }
 
         var physicalPath = commandParameters.Path.ConvertVirtualToPhysicalPath(physicalRootPath);
@@ -291,7 +291,7 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
         var physicalRootPath = GetCurrentSessionPhysicalRootPath(id);
         if (string.IsNullOrWhiteSpace(physicalRootPath))
         {
-            throw new Exception("Invalid Root Path!");
+            throw new Exception(FileManagerComponent.ConfigStorage[id].Language.InvalidRootPathErrorMessage);
         }
 
         var physicalPath = commandParameters.Path.ConvertVirtualToPhysicalPath(physicalRootPath);
@@ -327,7 +327,7 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
         var physicalRootPath = GetCurrentSessionPhysicalRootPath(id);
         if (string.IsNullOrWhiteSpace(physicalRootPath))
         {
-            throw new Exception("Invalid Root Path!");
+            throw new Exception(FileManagerComponent.ConfigStorage[id].Language.InvalidRootPathErrorMessage);
         }
 
         var physicalPath = commandParameters.Path.ConvertVirtualToPhysicalPath(physicalRootPath);
@@ -396,13 +396,13 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
         var rootFolderSize = GetRootFolderSize(id);
         if (storageSizeLimit > 0 && storageSizeLimit < rootFolderSize)
         {
-            throw new Exception("There is no more storage space to perform this action!");
+            throw new Exception(FileManagerComponent.ConfigStorage[id].Language.NotEnoughSpaceErrorMessage);
         }
 
         var physicalRootPath = GetCurrentSessionPhysicalRootPath(id);
         if (string.IsNullOrWhiteSpace(physicalRootPath))
         {
-            throw new Exception("Invalid Root Path!");
+            throw new Exception(FileManagerComponent.ConfigStorage[id].Language.InvalidRootPathErrorMessage);
         }
 
         var physicalPath = commandParameters.Path.ConvertVirtualToPhysicalPath(physicalRootPath);
@@ -448,13 +448,13 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
             {
                 if (compressionMaxSize < allFilesSize)
                 {
-                    throw new Exception("Selected File/Folder(s) size is too large!");
+                    throw new Exception(FileManagerComponent.ConfigStorage[id].Language.TooBigErrorMessage);
                 }
             }
 
             if (storageSizeLimit > 0 && storageSizeLimit < rootFolderSize + allFilesSize)
             {
-                throw new Exception("There is no more storage space to perform this action!");
+                throw new Exception(FileManagerComponent.ConfigStorage[id].Language.NotEnoughSpaceErrorMessage);
             }
         }
 
@@ -495,13 +495,13 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
         var rootFolderSize = GetRootFolderSize(id);
         if (storageSizeLimit > 0 && storageSizeLimit < rootFolderSize)
         {
-            throw new Exception("There is no more storage space to perform this action!");
+            throw new Exception(FileManagerComponent.ConfigStorage[id].Language.NotEnoughSpaceErrorMessage);
         }
 
         var physicalRootPath = GetCurrentSessionPhysicalRootPath(id);
         if (string.IsNullOrWhiteSpace(physicalRootPath))
         {
-            throw new Exception("Invalid Root Path!");
+            throw new Exception(FileManagerComponent.ConfigStorage[id].Language.InvalidRootPathErrorMessage);
         }
 
         var physicalPath = commandParameters.Path.ConvertVirtualToPhysicalPath(physicalRootPath);
@@ -521,7 +521,7 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
 
             if (storageSizeLimit < rootFolderSize + allFilesSize)
             {
-                throw new Exception("There is no more storage space to perform this action!");
+                throw new Exception(FileManagerComponent.ConfigStorage[id].Language.NotEnoughSpaceErrorMessage);
             }
         }
 
@@ -532,15 +532,13 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
 
             if (File.Exists(zipArchivePhysicalPath))
             {
-                using (Stream stream = File.OpenRead(zipArchivePhysicalPath))
-                using (var reader = ReaderFactory.Open(stream))
+                using Stream stream = File.OpenRead(zipArchivePhysicalPath);
+                using var reader = ReaderFactory.Open(stream);
+                reader.WriteAllToDirectory(physicalPath, new ExtractionOptions()
                 {
-                    reader.WriteAllToDirectory(physicalPath, new ExtractionOptions()
-                    {
-                        ExtractFullPath = true,
-                        Overwrite = true,
-                    });
-                }
+                    ExtractFullPath = true,
+                    Overwrite = true,
+                });
             }
         }
 
@@ -552,7 +550,7 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
         var physicalRootPath = GetCurrentSessionPhysicalRootPath(id);
         if (string.IsNullOrWhiteSpace(physicalRootPath))
         {
-            throw new Exception("Invalid Root Path!");
+            throw new Exception(FileManagerComponent.ConfigStorage[id].Language.InvalidRootPathErrorMessage);
         }
 
         var physicalPath = commandParameters.Path.ConvertVirtualToPhysicalPath(physicalRootPath);
@@ -598,7 +596,7 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
         {
             return new ContentResult()
             {
-                Content = "Invalid Root Path!",
+                Content = FileManagerComponent.ConfigStorage[id].Language.InvalidRootPathErrorMessage,
                 StatusCode = 500//server error
             };
         }
@@ -609,7 +607,7 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
         {
             return new ContentResult()
             {
-                Content = "Your requested resource was not found!",
+                Content = FileManagerComponent.ConfigStorage[id].Language.NotFoundErrorMessage, //FileManagerComponent.ConfigStorage[id].Language.NotFoundErrorMessage,
                 StatusCode = 404 //not found
             };
         }
@@ -633,7 +631,7 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
         {
             return new ContentResult()
             {
-                Content = "Invalid Root Path!",
+                Content = FileManagerComponent.ConfigStorage[id].Language.InvalidRootPathErrorMessage,
                 StatusCode = 500//server error
             };
         }
@@ -644,7 +642,7 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
         {
             return new ContentResult()
             {
-                Content = "Your requested resource was not found!",
+                Content = FileManagerComponent.ConfigStorage[id].Language.NotFoundErrorMessage,
                 StatusCode = 404 //not found
             };
         }
@@ -653,12 +651,12 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
         {
             return new ContentResult()
             {
-                Content = Path.GetFileName(physicalPath) + " is not editable file!",
+                Content = Path.GetFileName(physicalPath) + FileManagerComponent.ConfigStorage[id].Language.IsNotEditableFileErrorMessage,
                 StatusCode = 400 //bad Request
             };
         }
 
-        EditViewModel viewModel = new EditViewModel()
+        EditViewModel viewModel = new()
         {
             Id = id,
             FileFullPath = filePath,
@@ -687,7 +685,7 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
             {
                 Content = JsonConvert.SerializeObject(new
                 {
-                    message = "There is no more storage space to perform this action!"
+                    message = FileManagerComponent.ConfigStorage[id].Language.NotEnoughSpaceErrorMessage,
                 })
             };
         }
@@ -699,7 +697,7 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
             {
                 Content = JsonConvert.SerializeObject(new
                 {
-                    message = "Invalid Root Path!"
+                    message = FileManagerComponent.ConfigStorage[id].Language.InvalidRootPathErrorMessage
                 })
             };
         }
@@ -712,7 +710,7 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
             {
                 Content = JsonConvert.SerializeObject(new
                 {
-                    message = "Your requested resource was not found!"
+                    message = FileManagerComponent.ConfigStorage[id].Language.NotFoundErrorMessage
                 })
             };
         }
@@ -744,7 +742,7 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
         {
             return new ContentResult()
             {
-                Content = "There is no more storage space to perform this action!",
+                Content = FileManagerComponent.ConfigStorage[id].Language.NotEnoughSpaceErrorMessage,
                 StatusCode = 400
             };
         }
@@ -754,7 +752,7 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
         {
             return new ContentResult()
             {
-                Content = "File is too large!",
+                Content = FileManagerComponent.ConfigStorage[id].Language.TooBigErrorMessage,
                 StatusCode = 400
             };
         }
@@ -767,7 +765,7 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
             {
                 return new ContentResult()
                 {
-                    Content = $"'{fileExt}' files are not accepted!",
+                    Content = $"'{fileExt}' {FileManagerComponent.ConfigStorage[id].Language.FilesNotAcceptedErrorMessage}",
                     StatusCode = 400
                 };
             }
@@ -778,7 +776,7 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
         {
             return new ContentResult()
             {
-                Content = "Invalid Root Path!",
+                Content = FileManagerComponent.ConfigStorage[id].Language.InvalidRootPathErrorMessage,
                 StatusCode = 400
             };
         }
@@ -798,7 +796,7 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
             {
                 return new ContentResult()
                 {
-                    Content = "File already exist",
+                    Content = FileManagerComponent.ConfigStorage[id].Language.FileAlreadyExistsErrorMessage,
                     StatusCode = 400
                 };
             }
@@ -817,7 +815,7 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
         {
             return new ContentResult()
             {
-                Content = "Invalid Root Path!",
+                Content = FileManagerComponent.ConfigStorage[id].Language.InvalidRootPathErrorMessage,
                 StatusCode = 500//server error
             };
         }
@@ -828,7 +826,7 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
         {
             return new ContentResult()
             {
-                Content = "Your requested resource was not found!",
+                Content = FileManagerComponent.ConfigStorage[id].Language.NotFoundErrorMessage,
                 StatusCode = 404 //not found
             };
         }

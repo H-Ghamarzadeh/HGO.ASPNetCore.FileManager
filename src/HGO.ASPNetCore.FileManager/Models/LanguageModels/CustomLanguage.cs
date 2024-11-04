@@ -48,6 +48,16 @@
         public string ItemAlreadyExistMessage { get; set; } = "*Not Defined*";
         public string ZipFileNameMessage { get; set; } = "*Not Defined*";
         public string OverrideConfirmationMessage { get; set; } = "*Not Defined*";
+        public string UnknownCommandErrorMessage { get; set; } = "*Not Defined*";
+        public string InvalidRootPathErrorMessage { get; set; } = "*Not Defined*";
+        public string NotEnoughSpaceErrorMessage { get; set; } = "*Not Defined*";
+        public string TooBigErrorMessage { get; set; } = "*Not Defined*";
+        public string ActionDisabledErrorMessage { get; set; } = "*Not Defined*";
+        public string NotFoundErrorMessage { get; set; } = "*Not Defined*";
+        public string IsNotEditableFileErrorMessage { get; set; } = "*Not Defined*";
+        public string FilesNotAcceptedErrorMessage { get; set; } = "*Not Defined*";
+        public string FileAlreadyExistsErrorMessage { get; set; } = "*Not Defined*";
+
 
         // Dropzone-related messages
         public string DictDefaultMessage { get; set; } = "*Not Defined*";

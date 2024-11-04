@@ -144,6 +144,52 @@ namespace HGO.ASPNetCore.FileManager.Models.LanguageModels
         /// <summary>Confirmation message for overwriting existing items.</summary>
         public string OverrideConfirmationMessage { get; } = null!;
 
+        /// <summary>
+        /// Message shown when an unknown command is entered.
+        /// </summary>
+        public string UnknownCommandErrorMessage { get; } = null!;
+
+        /// <summary>
+        /// Message shown when the root path is invalid.
+        /// </summary>
+        public string InvalidRootPathErrorMessage { get; } = null!;
+
+        /// <summary>
+        /// Message shown when there is not enough space.
+        /// </summary>
+        public string NotEnoughSpaceErrorMessage { get; } = null!;
+
+        /// <summary>
+        /// Message shown when a file is too big to perform specified action.
+        /// </summary>
+        /// 
+        public string TooBigErrorMessage { get; } = null!;
+
+        /// <summary>
+        /// Message shown when an action is disabled.
+        /// </summary>
+        public string ActionDisabledErrorMessage { get; } = null!;
+
+        /// <summary>
+        /// Message shown when a file is not found.
+        /// </summary>
+        public string NotFoundErrorMessage { get; } = null!;
+
+        /// <summary>
+        /// Message shown when a file is not editable.
+        /// </summary>
+        public string IsNotEditableFileErrorMessage { get; } = null!;
+
+        /// <summary>
+        /// Message shown when a file is not accepted.
+        /// </summary>
+        public string FilesNotAcceptedErrorMessage { get; } = null!;
+
+        /// <summary>
+        /// Message shown when a file already exists.
+        /// </summary>
+        public string FileAlreadyExistsErrorMessage { get; } = null!;
+
         // Dropzone-related messages
 
         /// <summary>Default message for the Dropzone area.</summary>
