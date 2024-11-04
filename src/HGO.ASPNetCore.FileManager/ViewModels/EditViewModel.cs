@@ -14,10 +14,10 @@ namespace HGO.ASPNetCore.FileManager.ViewModels
         //result.TempData["FileName"] = Path.GetFileName(physicalPath);
         //result.TempData["FileData"] = File.ReadAllText(physicalPath);
 
-        public required string Id { get; set; }
-        public required string FileFullPath { get; set; }
-        public required string FileName { get; set; }
-        public required string FileData { get; set; }
-        public required ILanguage Language { get; set; }
+        public string Id { get; set; }
+        public string FileFullPath { get; set; }
+        public string FileName { get; set; }
+        public string FileData { get; set; }
+        public ILanguage Language { get; set; }
     }
 }
