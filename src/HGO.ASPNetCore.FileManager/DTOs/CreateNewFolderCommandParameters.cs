@@ -2,6 +2,6 @@
 
 internal class CreateNewFolderCommandParameters
 {
-    public string Path { get; set; }
-    public string FolderName { get; set; }
+    public string Path { get; set; } = string.Empty;
+    public string FolderName { get; set; } = string.Empty;
 }

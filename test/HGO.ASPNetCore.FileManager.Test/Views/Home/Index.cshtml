@@ -100,7 +100,7 @@
 
                                         foreach (var type in languageTypes)
                                         {
-                                            <option value="@type.FullName">@type.FullName.Replace("HGO.ASPNetCore.FileManager.Models.", "")</option>
+                                            <option value="@type.FullName">@type.FullName?.Replace("HGO.ASPNetCore.FileManager.Models.", "")</option>
                                         }
                                     }
                                 </select>
