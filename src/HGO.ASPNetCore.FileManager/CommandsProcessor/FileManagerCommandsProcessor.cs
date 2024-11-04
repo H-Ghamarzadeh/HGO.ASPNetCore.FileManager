@@ -28,7 +28,7 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
     {
         _httpContextAccessor = httpContextAccessor;
         _tempDataProvider = tempDataProvider;
-        _session = httpContextAccessor.HttpContext.Session;
+        _session = httpContextAccessor.HttpContext?.Session;
     }
 
     public async Task<IActionResult> ProcessCommandAsync(string id, Command command, string parameters, IFormFile file)
@@ -62,40 +62,40 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
                         result.Content = GetContent(id, parameters);
                         return result;
                     case Command.Search:
-                        result.Content = Search(id, JsonConvert.DeserializeObject<SearchCommandParameters>(parameters));
+                        result.Content = Search(id, JsonConvert.DeserializeObject<SearchCommandParameters>(parameters) ?? new());
                         return result;
                     case Command.CreateNewFolder:
                         result.Content = CreateNewFolder(id,
-                            JsonConvert.DeserializeObject<CreateNewFolderCommandParameters>(parameters));
+                            JsonConvert.DeserializeObject<CreateNewFolderCommandParameters>(parameters) ?? new());
                         return result;
                     case Command.CreateNewFile:
                         result.Content = CreateNewFile(id,
-                            JsonConvert.DeserializeObject<CreateNewFileCommandParameters>(parameters));
+                            JsonConvert.DeserializeObject<CreateNewFileCommandParameters>(parameters) ?? new());
                         return result;
                     case Command.Delete:
                         result.Content = Delete(id,
-                            JsonConvert.DeserializeObject<DeleteCommandParameters>(parameters));
+                            JsonConvert.DeserializeObject<DeleteCommandParameters>(parameters) ?? new());
                         return result;
                     case Command.Rename:
                         result.Content = Rename(id,
-                            JsonConvert.DeserializeObject<RenameCommandParameters>(parameters));
+                            JsonConvert.DeserializeObject<RenameCommandParameters>(parameters) ?? new());
                         return result;
                     case Command.Zip:
                         result.Content = Zip(id,
-                            JsonConvert.DeserializeObject<ZipCommandParameters>(parameters));
+                            JsonConvert.DeserializeObject<ZipCommandParameters>(parameters) ?? new());
                         return result;
                     case Command.Unzip:
                         result.Content = UnZip(id,
-                            JsonConvert.DeserializeObject<UnZipCommandParameters>(parameters));
+                            JsonConvert.DeserializeObject<UnZipCommandParameters>(parameters) ?? new());
                         return result;
                     case Command.Copy:
                     case Command.Cut:
                         result.Content = CopyCutItems(id, command,
-                            JsonConvert.DeserializeObject<CopyCutCommandParameters>(parameters));
+                            JsonConvert.DeserializeObject<CopyCutCommandParameters>(parameters) ?? new());
                         return result;
                     case Command.EditFile:
                         return EditFile(id,
-                            JsonConvert.DeserializeObject<EditFileCommandParameters>(parameters));
+                            JsonConvert.DeserializeObject<EditFileCommandParameters>(parameters) ?? new());
                     case Command.Download:
                         return Download(id, parameters, false);
                     case Command.View:
@@ -135,7 +135,7 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
             return null;
         }
 
-        return Path.GetFullPath(_session.GetString(sessionKey).Trim());
+        return Path.GetFullPath(_session.GetString(sessionKey)?.Trim() ?? "");
     }
 
     private long GetRootFolderSize(string id)
@@ -166,12 +166,14 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
         var result = new GetContentResultModel()
         {
             CurrentPath = physicalPath.ConvertPhysicalToVirtualPath(physicalRootPath),
+
+            Files = (List<FileDetail?>)Utils.GetFiles(physicalPath, "*.*", SearchOption.TopDirectoryOnly)
+            .Select(p => p.GetFileDetail(physicalRootPath)),
+
+            Folders = (List<FolderDetail?>)Utils.GetDirectories(physicalPath, "*.*", SearchOption.TopDirectoryOnly)
+            .OrderBy(p => p).Select(p => p.GetFolderDetail(physicalRootPath)),
         };
 
-        result.Files.AddRange(Utils.GetFiles(physicalPath, "*.*", SearchOption.TopDirectoryOnly)
-            .Select(p => p.GetFileDetail(physicalRootPath)));
-        result.Folders.AddRange(Utils.GetDirectories(physicalPath, "*.*", SearchOption.TopDirectoryOnly)
-            .OrderBy(p => p).Select(p => p.GetFolderDetail(physicalRootPath)));
 
         return result.ToString();
     }
@@ -206,6 +208,7 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
         {
             result.Files.AddRange(Utils.GetFiles(physicalPath, searchPattern, SearchOption.AllDirectories).OrderBy(p => p)
                 .Select(p => p.GetFileDetail(physicalRootPath)));
+
             result.Folders.AddRange(Utils.GetDirectories(physicalPath, searchPattern, SearchOption.AllDirectories)
                 .OrderBy(p => p).Select(p => p.GetFolderDetail(physicalRootPath)));
         }
@@ -217,9 +220,9 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
                 .OrderBy(p => p).Select(p => p.GetFolderDetail(physicalRootPath)));
 
             result.Files.RemoveAll(p =>
-                !p.FileName.Contains(searchPattern, StringComparison.InvariantCultureIgnoreCase));
+                p!.FileName.Contains(searchPattern, StringComparison.InvariantCultureIgnoreCase));
             result.Folders.RemoveAll(p =>
-                !p.FolderName.Contains(searchPattern, StringComparison.InvariantCultureIgnoreCase));
+                p!.FolderName.Contains(searchPattern, StringComparison.InvariantCultureIgnoreCase));
         }
 
         return result.ToString();
@@ -668,7 +671,7 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
         var result = new ViewResult()
         {
             ViewName = "HgoFileManager/Edit",
-            TempData = new TempDataDictionary(_httpContextAccessor.HttpContext, _tempDataProvider),
+            TempData = new TempDataDictionary(_httpContextAccessor.HttpContext!, _tempDataProvider),
         };
         result.TempData["model"] = viewModel;
 
@@ -789,8 +792,9 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
         }
 
         var filePath = Path.Combine(physicalPath, file.FileName);
-
-        if (File.Exists(filePath) && _httpContextAccessor.HttpContext.Request.Form.TryGetValue("dzchunkindex", out StringValues chunkIndex))
+        StringValues chunkIndex = "";
+        var gotChunkIndex = _httpContextAccessor.HttpContext?.Request.Query.TryGetValue("chunkIndex", out chunkIndex);
+        if (File.Exists(filePath) && (gotChunkIndex.HasValue ? gotChunkIndex.Value : false))
         {
             if (int.TryParse(chunkIndex.ToString(), out int idx) && idx == 0)
             {
