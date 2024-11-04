@@ -83,7 +83,7 @@ namespace HGO.ASPNetCore.FileManager
 
             var provider = new FileExtensionContentTypeProvider();
 
-            if (!provider.TryGetContentType(filePath, out string? contentType))
+            if (!provider.TryGetContentType(filePath, out string contentType))
             {
                 contentType = defaultContentType;
             }

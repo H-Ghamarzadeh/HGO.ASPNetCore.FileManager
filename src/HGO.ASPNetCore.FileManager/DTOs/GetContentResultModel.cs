@@ -4,9 +4,9 @@ namespace HGO.ASPNetCore.FileManager.DTOs
 {
     public class GetContentResultModel
     {
-        public List<FolderDetail?> Folders { get; set; } = new List<FolderDetail?>();
-        public List<FileDetail?> Files { get; set; } = new List<FileDetail?>();
-        public string CurrentPath { get; set; } = null!;
+        public List<FolderDetail> Folders { get; set; } = new List<FolderDetail>();
+        public List<FileDetail> Files { get; set; } = new List<FileDetail>();
+        public string CurrentPath { get; set; }
         public override string ToString()
         {
             return JsonConvert.SerializeObject(this);
@@ -15,18 +15,18 @@ namespace HGO.ASPNetCore.FileManager.DTOs
 
     public class FileDetail
     {
-        public string FileName { get; set; } = null!;
-        public string VirtualPath { get; set; } = null!;
-        public string FileSize { get; set; } = null!;
-        public string ModifiedDate { get; set; } = null!;
-        public string CreateDate { get; set; } = null!;
+        public string FileName { get; set; }
+        public string VirtualPath { get; set; }
+        public string FileSize { get; set; }
+        public string ModifiedDate { get; set; }
+        public string CreateDate { get; set; }
     }
 
     public class FolderDetail
     {
-        public string FolderName { get; set; } = null!;
-        public string VirtualPath { get; set; } = null!;
-        public string ModifiedDate { get; set; } = null!;
-        public string CreateDate { get; set; } = null!;
+        public string FolderName { get; set; }
+        public string VirtualPath { get; set; }
+        public string ModifiedDate { get; set; }
+        public string CreateDate { get; set; }
     }
 }

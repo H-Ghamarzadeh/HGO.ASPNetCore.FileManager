@@ -2,7 +2,7 @@
 
 internal class ZipCommandParameters
 {
-    public string Path { get; set; } = null!;
-    public List<string> Items { get; set; } = null!;
-    public string FileName { get; set; } = null!;
+    public string Path { get; set; }
+    public List<string> Items { get; set; }
+    public string FileName { get; set; }
 }
