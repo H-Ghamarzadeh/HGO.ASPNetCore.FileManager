@@ -10,7 +10,7 @@ namespace HGO.ASPNetCore.FileManager.ViewComponents
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
         private const string RootPathSessionKey = "HGO-FM-RootFolder";
-        public static Dictionary<string, FileManagerConfig> ConfigStorage = new Dictionary<string, FileManagerConfig>();
+        public static Dictionary<string, FileManagerConfig> ConfigStorage = [];
 
         public FileManagerComponent(IHttpContextAccessor httpContextAccessor)
         {

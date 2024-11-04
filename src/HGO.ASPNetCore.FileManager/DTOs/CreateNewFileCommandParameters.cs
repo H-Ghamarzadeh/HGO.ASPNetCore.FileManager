@@ -2,6 +2,6 @@
 
 internal class CreateNewFileCommandParameters
 {
-    public string Path { get; set; } = null!;
-    public string FileName { get; set; } = null!;
+    public string Path { get; set; }
+    public string FileName { get; set; }
 }
