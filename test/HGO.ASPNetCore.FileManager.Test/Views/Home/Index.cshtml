@@ -113,8 +113,7 @@
                                 <select class="selectpicker w-100" multiple data-live-search="true" name="config.DisabledFunctions">
                                     @foreach (var command in Enum.GetValues(typeof(HGO.ASPNetCore.FileManager.Enums.Command)))
                                     {
-                                        <!option value="@command"
-                                        @(Model.DisabledFunctions.Contains((HGO.ASPNetCore.FileManager.Enums.Command)command) ? "selected=\"selected\"" : "")>
+                                        <!option value="@command"@(Model.DisabledFunctions.Contains((HGO.ASPNetCore.FileManager.Enums.Command)command) ? "selected=\"selected\"" : "")>
                                             @command
                                         </!option>
                                     }

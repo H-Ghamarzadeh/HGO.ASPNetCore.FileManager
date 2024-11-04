@@ -1204,6 +1204,17 @@
             maxFilesize: @Model.Config.MaxFileSizeToUploadMByte, // mega bytes
             acceptedFiles: '@Model.Config.AcceptedFiles', //'.png,.pdf'
             paramName: 'file',
+
+            dictDefaultMessage: "@Model.Config.Language.DictDefaultMessage",
+            dictFallbackMessage: "@Model.Config.Language.DictFallbackMessage",
+            dictFallbackText: "@Model.Config.Language.DictFallbackText",
+            dictFileTooBig: "@Model.Config.Language.DictFileTooBig",
+            dictInvalidFileType: "@Model.Config.Language.DictInvalidFileType",
+            dictResponseError: "@Model.Config.Language.DictResponseError",
+            dictCancelUpload: "@Model.Config.Language.DictCancelUpload",
+            dictCancelUploadConfirmation: "@Model.Config.Language.DictCancelUploadConfirmation",
+            dictRemoveFile: "@Model.Config.Language.DictRemoveFile",
+            dictMaxFilesExceeded: "@Model.Config.Language.DictMaxFilesExceeded",
         });
     }
 }
