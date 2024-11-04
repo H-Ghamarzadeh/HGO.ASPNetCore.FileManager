@@ -136,53 +136,6 @@
         /// <summary>Confirmation message for overwriting existing items.</summary>
         string OverrideConfirmationMessage { get; }
 
-        /// <summary>
-        /// Message shown when an unknown command is entered.
-        /// </summary>
-        string UnknownCommandErrorMessage { get; }
-
-        /// <summary>
-        /// Message shown when an invalid root path is entered.
-        /// </summary>
-        string InvalidRootPathErrorMessage { get; }
-
-        /// <summary>
-        /// Message shown when not enough space is available.
-        /// </summary>
-        string NotEnoughSpaceErrorMessage { get; }
-
-        /// <summary>
-        /// Message shown when a file is too big to be uploaded.
-        /// </summary>
-        string TooBigErrorMessage { get; }
-
-        /// <summary>
-        /// Message shown when an action is disabled.
-        /// </summary>
-        string ActionDisabledErrorMessage { get; }
-
-        /// <summary>
-        /// Message shown when a file or folder is not found.
-        /// </summary>
-        string NotFoundErrorMessage { get; }
-
-        /// <summary>
-        /// Message shown when a file is not editable.
-        /// </summary>
-        string IsNotEditableFileErrorMessage { get; }
-
-        /// <summary>
-        /// Message shown when files are not accepted.
-        /// </summary>
-        string FilesNotAcceptedErrorMessage { get; }
-
-        /// <summary>
-        /// Message shown when a file already exists.
-        /// </summary>
-        string FileAlreadyExistsErrorMessage { get; }
-
-
-
         // Dropzone-related messages
 
         /// <summary>Default message for the Dropzone area.</summary>

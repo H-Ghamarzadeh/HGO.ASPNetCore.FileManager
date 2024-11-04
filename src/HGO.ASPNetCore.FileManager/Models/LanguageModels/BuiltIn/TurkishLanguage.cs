@@ -49,17 +49,6 @@ namespace HGO.ASPNetCore.FileManager.Models.LanguageModels.BuiltIn
         public string ZipFileNameMessage { get; } = "Lütfen Zip dosyası adını girin:";
         public string OverrideConfirmationMessage { get; } = "Bazı öğeler zaten var, üzerine yazmak ister misiniz?";
 
-        public string UnknownCommandErrorMessage { get; } = "Bilinmeyen komut.";
-        public string InvalidRootPathErrorMessage { get; } = "Geçersiz kök yol.";
-        public string NotEnoughSpaceErrorMessage { get; } = "Yetersiz alan.";
-        public string TooBigErrorMessage { get; } = "Dosya çok büyük."!;
-        public string ActionDisabledErrorMessage { get; } = "Eylem devre dışı.";
-        public string NotFoundErrorMessage { get; } = "Dosya bulunamadı.";
-        public string IsNotEditableFileErrorMessage { get; } = "Dosya düzenlenemez.";
-        public string FilesNotAcceptedErrorMessage { get; } = "Dosyalar kabul edilmiyor.";
-        public string FileAlreadyExistsErrorMessage { get; } = "Dosya zaten var.";
-
-
         // Dropzone-related messages in Turkish
         public string DictDefaultMessage { get; } = "Dosyaları buraya sürükleyin veya yüklemek için tıklayın";
         public string DictFallbackMessage { get; } = "Tarayıcınız dosya yüklemeyi desteklemiyor.";
