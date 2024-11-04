@@ -167,11 +167,11 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
         {
             CurrentPath = physicalPath.ConvertPhysicalToVirtualPath(physicalRootPath),
 
-            Files = (List<FileDetail?>)Utils.GetFiles(physicalPath, "*.*", SearchOption.TopDirectoryOnly)
-            .Select(p => p.GetFileDetail(physicalRootPath)),
+            Files = Utils.GetFiles(physicalPath, "*.*", SearchOption.TopDirectoryOnly)
+            .Select(p => p.GetFileDetail(physicalRootPath)).ToList(),
 
             Folders = (List<FolderDetail?>)Utils.GetDirectories(physicalPath, "*.*", SearchOption.TopDirectoryOnly)
-            .OrderBy(p => p).Select(p => p.GetFolderDetail(physicalRootPath)),
+            .OrderBy(p => p).Select(p => p.GetFolderDetail(physicalRootPath)).ToList(),
         };
 
 
@@ -220,9 +220,9 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
                 .OrderBy(p => p).Select(p => p.GetFolderDetail(physicalRootPath)));
 
             result.Files.RemoveAll(p =>
-                p!.FileName.Contains(searchPattern, StringComparison.InvariantCultureIgnoreCase));
+                !p!.FileName.Contains(searchPattern, StringComparison.InvariantCultureIgnoreCase));
             result.Folders.RemoveAll(p =>
-                p!.FolderName.Contains(searchPattern, StringComparison.InvariantCultureIgnoreCase));
+                !p!.FolderName.Contains(searchPattern, StringComparison.InvariantCultureIgnoreCase));
         }
 
         return result.ToString();

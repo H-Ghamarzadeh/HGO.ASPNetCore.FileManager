@@ -4,8 +4,8 @@ namespace HGO.ASPNetCore.FileManager.DTOs
 {
     public class GetContentResultModel
     {
-        public List<FolderDetail?> Folders { get; set; } = null!;
-        public List<FileDetail?> Files { get; set; } = null!;
+        public List<FolderDetail?> Folders { get; set; } = new List<FolderDetail?>();
+        public List<FileDetail?> Files { get; set; } = new List<FileDetail?>();
         public string CurrentPath { get; set; } = null!;
         public override string ToString()
         {
