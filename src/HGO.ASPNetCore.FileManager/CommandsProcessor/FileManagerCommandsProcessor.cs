@@ -166,12 +166,13 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
             physicalPath = physicalRootPath;
         }
 
+        var encryptionHelper = new FileEncryptionHelper(FileManagerComponent.ConfigStorage[id].EncryptionKey, FileManagerComponent.ConfigStorage[id].UseEncryption);
         var result = new GetContentResultModel()
         {
             CurrentPath = physicalPath.ConvertPhysicalToVirtualPath(physicalRootPath),
 
             Files = Utils.GetFiles(physicalPath, "*.*", SearchOption.TopDirectoryOnly)
-            .Select(p => p.GetFileDetail(physicalRootPath)).ToList(),
+            .Select(p => p.GetFileDetail(physicalRootPath, encryptionHelper)).ToList(),
 
             Folders = Utils.GetDirectories(physicalPath, "*.*", SearchOption.TopDirectoryOnly)
             .OrderBy(p => p).Select(p => p.GetFolderDetail(physicalRootPath)).ToList(),
@@ -206,11 +207,11 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
         {
             CurrentPath = physicalPath.ConvertPhysicalToVirtualPath(physicalRootPath),
         };
-
+        var encryptionHelper = new FileEncryptionHelper(FileManagerComponent.ConfigStorage[id].EncryptionKey, FileManagerComponent.ConfigStorage[id].UseEncryption);
         if (searchPattern.Contains("*"))
         {
             result.Files.AddRange(Utils.GetFiles(physicalPath, searchPattern, SearchOption.AllDirectories).OrderBy(p => p)
-                .Select(p => p.GetFileDetail(physicalRootPath)));
+                .Select(p => p.GetFileDetail(physicalRootPath, encryptionHelper)));
 
             result.Folders.AddRange(Utils.GetDirectories(physicalPath, searchPattern, SearchOption.AllDirectories)
                 .OrderBy(p => p).Select(p => p.GetFolderDetail(physicalRootPath)));
@@ -218,7 +219,7 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
         else
         {
             result.Files.AddRange(Utils.GetFiles(physicalPath, "*", SearchOption.AllDirectories).OrderBy(p => p)
-                .Select(p => p.GetFileDetail(physicalRootPath)));
+                .Select(p => p.GetFileDetail(physicalRootPath, encryptionHelper)));
             result.Folders.AddRange(Utils.GetDirectories(physicalPath, "*", SearchOption.AllDirectories)
                 .OrderBy(p => p).Select(p => p.GetFolderDetail(physicalRootPath)));
 

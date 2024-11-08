@@ -1,4 +1,6 @@
 ﻿using HGO.ASPNetCore.FileManager.DTOs;
+using HGO.ASPNetCore.FileManager.Helpers;
+using HGO.ASPNetCore.FileManager.ViewComponents;
 using Microsoft.AspNetCore.StaticFiles;
 
 namespace HGO.ASPNetCore.FileManager
@@ -122,15 +124,18 @@ namespace HGO.ASPNetCore.FileManager
             return false;
         }
 
-        public static FileDetail? GetFileDetail(this string filePath, string physicalRootPath, string rootName = "Root")
+        public static FileDetail? GetFileDetail(this string filePath, string physicalRootPath, FileEncryptionHelper encryptionHelper, string rootName = "Root")
         {
             if (!File.Exists(filePath)) return null;
+
+            Stream fileStream = File.OpenRead(filePath); // Decrypt directly into stream
+            Stream encryptionStream = encryptionHelper.DecryptStream(File.OpenRead(filePath)); // Decrypt directly into stream
 
             var fileDetail = new FileDetail();
 
             string[] sizes = { "B", "KB", "MB", "GB", "TB" };
             var fileInfo = new FileInfo(filePath);
-            double len = fileInfo.Length;
+            double len = encryptionStream.Length;
             var order = 0;
             while (len >= 1024 && order < sizes.Length - 1)
             {
@@ -143,6 +148,7 @@ namespace HGO.ASPNetCore.FileManager
             fileDetail.ModifiedDate = fileInfo.LastWriteTime.ToString("yyyy MMM dd - HH:mm");
             fileDetail.FileName = fileInfo.Name;
             fileDetail.VirtualPath = filePath.ConvertPhysicalToVirtualPath(physicalRootPath, rootName);
+            fileDetail.IsEncrypted = encryptionHelper.IsEncrypted(fileStream);
 
             return fileDetail;
         }

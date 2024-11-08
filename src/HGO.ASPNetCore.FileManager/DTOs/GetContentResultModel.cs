@@ -20,6 +20,7 @@ namespace HGO.ASPNetCore.FileManager.DTOs
         public string FileSize { get; set; } = string.Empty;
         public string ModifiedDate { get; set; } = string.Empty;
         public string CreateDate { get; set; } = string.Empty;
+        public bool IsEncrypted { get; set; } = false;
     }
 
     public class FolderDetail
