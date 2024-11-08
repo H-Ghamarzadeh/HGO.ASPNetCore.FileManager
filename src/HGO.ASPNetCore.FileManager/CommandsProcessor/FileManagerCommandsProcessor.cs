@@ -624,10 +624,16 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
 
         var fileStreamResult = new FileStreamResult(fileStream, Utils.GetMimeTypeForFileExtension(physicalPath));
 
-        if (view)
+        if (!view)
         {
             fileStreamResult.FileDownloadName = Path.GetFileName(physicalPath);
             fileStreamResult.EnableRangeProcessing = true;
+        }
+        else
+        {
+            // For viewing, we want the file to be rendered in the browser
+            fileStreamResult.FileDownloadName = null; // Don't set the filename for inline view
+            fileStreamResult.EnableRangeProcessing = false; // Range processing is usually for downloads
         }
 
         return fileStreamResult;
@@ -673,21 +679,21 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
         try
         {
             // Read and decrypt file content if encryption is enabled
-            if (FileManagerComponent.ConfigStorage[id].UseEncryption)
-            {
-                var encryptionHelper = new FileEncryptionHelper(FileManagerComponent.ConfigStorage[id].EncryptionKey, FileManagerComponent.ConfigStorage[id].UseEncryption);
+            //if (FileManagerComponent.ConfigStorage[id].UseEncryption)
+            //{
+            var encryptionHelper = new FileEncryptionHelper(FileManagerComponent.ConfigStorage[id].EncryptionKey, FileManagerComponent.ConfigStorage[id].UseEncryption);
 
-                using (var decryptedStream = encryptionHelper.DecryptStream(File.OpenRead(physicalPath)))
-                using (var reader = new StreamReader(decryptedStream, Encoding.UTF8)) // Use UTF-8 encoding to read the content
-                {
-                    fileData = reader.ReadToEnd();
-                }
-            }
-            else
+            using (var decryptedStream = encryptionHelper.DecryptStream(File.OpenRead(physicalPath)))
+            using (var reader = new StreamReader(decryptedStream, Encoding.UTF8)) // Use UTF-8 encoding to read the content
             {
-                // Read the file content normally if no encryption is used
-                fileData = File.ReadAllText(physicalPath, Encoding.UTF8); // Ensure UTF-8 encoding is used
+                fileData = reader.ReadToEnd();
             }
+            //}
+            //else
+            //{
+            //    // Read the file content normally if no encryption is used
+            //    fileData = File.ReadAllText(physicalPath, Encoding.UTF8); // Ensure UTF-8 encoding is used
+            //}
         }
         catch (Exception ex)
         {
@@ -869,18 +875,18 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
         // Encrypt and save the file
         using (var fileStream = new FileStream(filePath, FileMode.Append))
         {
-            if (FileManagerComponent.ConfigStorage[id].UseEncryption)
-            {
+            //if (FileManagerComponent.ConfigStorage[id].UseEncryption)
+            //{
                 var encryptionHelper = new FileEncryptionHelper(FileManagerComponent.ConfigStorage[id].EncryptionKey, FileManagerComponent.ConfigStorage[id].UseEncryption);
                 using (var encryptedStream = encryptionHelper.EncryptStream(file.OpenReadStream()))
                 {
                     encryptedStream.CopyTo(fileStream);
                 }
-            }
-            else
-            {
-                file.CopyTo(fileStream);
-            }
+            //}
+            //else
+            //{
+            //    file.CopyTo(fileStream);
+            //}
         }
 
         return new OkResult();

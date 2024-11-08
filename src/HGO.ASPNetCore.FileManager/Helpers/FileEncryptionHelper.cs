@@ -62,24 +62,43 @@ namespace HGO.ASPNetCore.FileManager.Helpers
         // Decrypts the input stream if encrypted, else returns the original stream
         public Stream DecryptStream(Stream inputStream)
         {
-            if (!_useEncryption && !IsEncrypted(inputStream))
-                return inputStream;
+            var outputStream = new MemoryStream();
+
+            if (!_useEncryption || !IsEncrypted(inputStream))
+            {
+                outputStream = new MemoryStream();
+                using (var reader = new StreamReader(inputStream, Encoding.UTF8))
+                using (var writer = new StreamWriter(outputStream, Encoding.UTF8, 1024, leaveOpen: true))
+                {
+                    while (!reader.EndOfStream)
+                    {
+                        var line = reader.ReadLine();
+                        if (line != null)
+                        {
+                            writer.WriteLine(line);
+                        }
+                    }
+                    writer.Flush();
+
+                    outputStream.Position = 0; // Reset position for reading
+                    return outputStream;
+                }
+            }    
 
             // Check for magic number to determine if the file is encrypted
-            if (_useEncryption && !IsEncrypted(inputStream))
+            if (!_useEncryption && IsEncrypted(inputStream))
             {
                 // Return a stream with an error message
                 var fileStream = new MemoryStream();
                 using (var writer = new StreamWriter(fileStream, Encoding.UTF8, leaveOpen: true))
                 {
-                    writer.Write("This file is encrypted but there is no decryption key provided.");
+                    writer.Write("This file is encrypted but cannot be decrypted. Please contact your administrator.");
                     writer.Flush();
                 }
                 fileStream.Position = 0; // Reset stream for reading
                 return fileStream;
             }
 
-            var outputStream = new MemoryStream();
 
             using (var aes = Aes.Create())
             {
