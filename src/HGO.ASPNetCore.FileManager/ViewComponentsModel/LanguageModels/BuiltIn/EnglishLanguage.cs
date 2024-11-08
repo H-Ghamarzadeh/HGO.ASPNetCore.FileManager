@@ -1,6 +1,7 @@
 ﻿using System;
+using HGO.ASPNetCore.FileManager.ViewComponentsModel.LanguageModels;
 
-namespace HGO.ASPNetCore.FileManager.Models.LanguageModels.BuiltIn
+namespace HGO.ASPNetCore.FileManager.ViewComponentsModel.LanguageModels.BuiltIn
 {
     /// <summary>
     /// English language

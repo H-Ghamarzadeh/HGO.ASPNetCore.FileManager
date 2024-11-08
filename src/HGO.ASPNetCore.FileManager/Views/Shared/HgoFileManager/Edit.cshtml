@@ -1,5 +1,4 @@
 ﻿@using HGO.ASPNetCore.FileManager.Enums
-@using HGO.ASPNetCore.FileManager.Models.LanguageModels
 @using HGO.ASPNetCore.FileManager.ViewModels
 @using Microsoft.AspNetCore.Http
 @model dynamic
@@ -15,7 +14,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@viewModel.FileName</title>
+    <title>@viewModel?.FileName</title>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/codemirror.min.css" type="text/css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/addon/search/matchesonscrollbar.min.css" type="text/css" />

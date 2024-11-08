@@ -1,6 +1,6 @@
-﻿using HGO.ASPNetCore.FileManager.Models.LanguageModels;
+﻿using HGO.ASPNetCore.FileManager.ViewComponentsModel.LanguageModels;
 
-namespace HGO.ASPNetCore.FileManager.Models.LanguageModels.BuiltIn
+namespace HGO.ASPNetCore.FileManager.ViewComponentsModel.LanguageModels.BuiltIn
 {
     public sealed class TurkishLanguage : LanguageBase, ILanguage
     {

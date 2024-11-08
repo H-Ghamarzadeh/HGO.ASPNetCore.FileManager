@@ -1,4 +1,4 @@
-﻿namespace HGO.ASPNetCore.FileManager.Models.LanguageModels
+﻿namespace HGO.ASPNetCore.FileManager.ViewComponentsModel.LanguageModels
 {
     /// <summary>
     /// Defines language-specific text for various UI elements and messages in the file manager.

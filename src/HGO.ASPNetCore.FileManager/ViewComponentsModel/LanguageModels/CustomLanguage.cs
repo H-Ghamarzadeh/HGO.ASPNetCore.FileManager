@@ -1,4 +1,4 @@
-﻿namespace HGO.ASPNetCore.FileManager.Models.LanguageModels
+﻿namespace HGO.ASPNetCore.FileManager.ViewComponentsModel.LanguageModels
 {
     public class CustomLanguage : LanguageBase, ILanguage
     {

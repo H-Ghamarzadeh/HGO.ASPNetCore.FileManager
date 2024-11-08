@@ -14,6 +14,7 @@ using SharpCompress.Compressors.Deflate;
 using System.Text;
 using HGO.ASPNetCore.FileManager.Enums;
 using HGO.ASPNetCore.FileManager.ViewModels;
+using HGO.ASPNetCore.FileManager.Helpers;
 
 namespace HGO.ASPNetCore.FileManager.CommandsProcessor;
 
@@ -597,78 +598,119 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
         var physicalRootPath = GetCurrentSessionPhysicalRootPath(id);
         if (string.IsNullOrWhiteSpace(physicalRootPath))
         {
-            return new ContentResult()
+            return new ContentResult
             {
                 Content = FileManagerComponent.ConfigStorage[id].Language.InvalidRootPathErrorMessage,
-                StatusCode = 500//server error
+                StatusCode = 500 // Internal Server Error
             };
         }
 
         var physicalPath = filePath.ConvertVirtualToPhysicalPath(physicalRootPath);
 
+        // Validate path security and existence
         if (!physicalPath.ToLower().StartsWith(physicalRootPath.ToLower()) || !File.Exists(physicalPath))
         {
-            return new ContentResult()
+            return new ContentResult
             {
-                Content = FileManagerComponent.ConfigStorage[id].Language.NotFoundErrorMessage, //FileManagerComponent.ConfigStorage[id].Language.NotFoundErrorMessage,
-                StatusCode = 404 //not found
+                Content = FileManagerComponent.ConfigStorage[id].Language.NotFoundErrorMessage,
+                StatusCode = 404 // Not Found
             };
         }
 
+        // Decrypt file if encryption is enabled
+        var encryptionHelper = new FileEncryptionHelper(FileManagerComponent.ConfigStorage[id].EncryptionKey, FileManagerComponent.ConfigStorage[id].UseEncryption);
+
+        Stream fileStream = encryptionHelper.DecryptStream(File.OpenRead(physicalPath)); // Decrypt directly into stream
+
+        var fileStreamResult = new FileStreamResult(fileStream, Utils.GetMimeTypeForFileExtension(physicalPath));
+
         if (view)
         {
-            return new FileStreamResult(File.OpenRead(physicalPath), Utils.GetMimeTypeForFileExtension(physicalPath));
+            fileStreamResult.FileDownloadName = Path.GetFileName(physicalPath);
+            fileStreamResult.EnableRangeProcessing = true;
         }
 
-        return new PhysicalFileResult(physicalPath, Utils.GetMimeTypeForFileExtension(physicalPath))
-        {
-            FileDownloadName = Path.GetFileName(physicalPath),
-            EnableRangeProcessing = true
-        };
+        return fileStreamResult;
+
     }
+
 
     private IActionResult GetFileContent(string id, string filePath)
     {
         var physicalRootPath = GetCurrentSessionPhysicalRootPath(id);
         if (string.IsNullOrWhiteSpace(physicalRootPath))
         {
-            return new ContentResult()
+            return new ContentResult
             {
                 Content = FileManagerComponent.ConfigStorage[id].Language.InvalidRootPathErrorMessage,
-                StatusCode = 500//server error
+                StatusCode = 500 // Internal Server Error
             };
         }
 
         var physicalPath = filePath.ConvertVirtualToPhysicalPath(physicalRootPath);
 
+        // Validate path security and existence
         if (!physicalPath.ToLower().StartsWith(physicalRootPath.ToLower()) || !File.Exists(physicalPath))
         {
-            return new ContentResult()
+            return new ContentResult
             {
                 Content = FileManagerComponent.ConfigStorage[id].Language.NotFoundErrorMessage,
-                StatusCode = 404 //not found
+                StatusCode = 404 // Not Found
             };
         }
 
+        // Check if the file is binary; if so, it’s not editable
         if (Utils.IsBinary(physicalPath))
         {
-            return new ContentResult()
+            return new ContentResult
             {
                 Content = Path.GetFileName(physicalPath) + FileManagerComponent.ConfigStorage[id].Language.IsNotEditableFileErrorMessage,
-                StatusCode = 400 //bad Request
+                StatusCode = 400 // Bad Request
             };
         }
 
-        EditViewModel viewModel = new()
+        string fileData = string.Empty;
+        try
+        {
+            // Read and decrypt file content if encryption is enabled
+            if (FileManagerComponent.ConfigStorage[id].UseEncryption)
+            {
+                var encryptionHelper = new FileEncryptionHelper(FileManagerComponent.ConfigStorage[id].EncryptionKey, FileManagerComponent.ConfigStorage[id].UseEncryption);
+
+                using (var decryptedStream = encryptionHelper.DecryptStream(File.OpenRead(physicalPath)))
+                using (var reader = new StreamReader(decryptedStream, Encoding.UTF8)) // Use UTF-8 encoding to read the content
+                {
+                    fileData = reader.ReadToEnd();
+                }
+            }
+            else
+            {
+                // Read the file content normally if no encryption is used
+                fileData = File.ReadAllText(physicalPath, Encoding.UTF8); // Ensure UTF-8 encoding is used
+            }
+        }
+        catch (Exception ex)
+        {
+            // Handle errors during decryption or reading
+            return new ContentResult
+            {
+                Content = $"Error reading file: {ex.Message}",
+                StatusCode = 500 // Internal Server Error
+            };
+        }
+
+        // Create and populate the view model
+        var viewModel = new EditViewModel
         {
             Id = id,
             FileFullPath = filePath,
             FileName = Path.GetFileName(physicalPath),
-            FileData = File.ReadAllText(physicalPath),
+            FileData = fileData,
             Language = FileManagerComponent.ConfigStorage[id].Language,
         };
 
-        var result = new ViewResult()
+        // Prepare the view result with the view model in TempData
+        var result = new ViewResult
         {
             ViewName = "HgoFileManager/Edit",
             TempData = new TempDataDictionary(_httpContextAccessor.HttpContext!, _tempDataProvider),
@@ -678,13 +720,14 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
         return result;
     }
 
+
     private IActionResult EditFile(string id, EditFileCommandParameters commandParameters)
     {
         var storageSizeLimit = FileManagerComponent.ConfigStorage[id].StorageMaxSizeMByte;
-        var fileContentSize = ASCIIEncoding.Unicode.GetByteCount(commandParameters.Data) / 1024 / 1024;
+        var fileContentSize = Encoding.Unicode.GetByteCount(commandParameters.Data) / 1024 / 1024;
         if (storageSizeLimit > 0 && storageSizeLimit < GetRootFolderSize(id) + fileContentSize)
         {
-            return new ContentResult()
+            return new ContentResult
             {
                 Content = JsonConvert.SerializeObject(new
                 {
@@ -696,7 +739,7 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
         var physicalRootPath = GetCurrentSessionPhysicalRootPath(id);
         if (string.IsNullOrWhiteSpace(physicalRootPath))
         {
-            return new ContentResult()
+            return new ContentResult
             {
                 Content = JsonConvert.SerializeObject(new
                 {
@@ -709,7 +752,7 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
 
         if (!physicalPath.ToLower().StartsWith(physicalRootPath.ToLower()) || !File.Exists(physicalPath))
         {
-            return new ContentResult()
+            return new ContentResult
             {
                 Content = JsonConvert.SerializeObject(new
                 {
@@ -720,15 +763,27 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
 
         try
         {
-            File.WriteAllText(physicalPath, commandParameters.Data);
-            return new ContentResult()
+            // Initialize encryption helper with the encryption key and usage flag from configuration
+            var encryptionHelper = new FileEncryptionHelper(
+                FileManagerComponent.ConfigStorage[id].EncryptionKey,
+                FileManagerComponent.ConfigStorage[id].UseEncryption
+            );
+
+            // Convert data to a stream and encrypt if encryption is enabled
+            using (var contentStream = encryptionHelper.EncryptStream(new MemoryStream(Encoding.Unicode.GetBytes(commandParameters.Data))))
+            using (var fileStream = new FileStream(physicalPath, FileMode.Create, FileAccess.Write))
+            {
+                contentStream.CopyTo(fileStream);
+            }
+
+            return new ContentResult
             {
                 Content = JsonConvert.SerializeObject(new { message = "OK" })
             };
         }
         catch (Exception e)
         {
-            return new ContentResult()
+            return new ContentResult
             {
                 Content = JsonConvert.SerializeObject(new
                 {
@@ -738,35 +793,40 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
         }
     }
 
-    private IActionResult Upload(string id, string path, IFormFile file)
+
+
+    public IActionResult Upload(string id, string path, IFormFile file)
     {
-        var storageSizeLimit = FileManagerComponent.ConfigStorage[id].StorageMaxSizeMByte;
-        if (storageSizeLimit > 0 && storageSizeLimit < GetRootFolderSize(id) + (file.Length / 1024 / 1024))
+        // Cache configuration
+        var fileSizeInMB = file.Length / 1024.0 / 1024.0;
+
+        // Validate storage size limit
+        if (FileManagerComponent.ConfigStorage[id].StorageMaxSizeMByte > 0 && FileManagerComponent.ConfigStorage[id].StorageMaxSizeMByte < GetRootFolderSize(id) + fileSizeInMB)
         {
-            return new ContentResult()
+            return new ContentResult
             {
                 Content = FileManagerComponent.ConfigStorage[id].Language.NotEnoughSpaceErrorMessage,
                 StatusCode = 400
             };
         }
 
-        var maxFileSizeToUpload = FileManagerComponent.ConfigStorage[id].MaxFileSizeToUploadMByte;
-        if (maxFileSizeToUpload > 0 && maxFileSizeToUpload < (file.Length / 1024 / 1024))
+        // Validate file size limit
+        if (FileManagerComponent.ConfigStorage[id].MaxFileSizeToUploadMByte > 0 && FileManagerComponent.ConfigStorage[id].MaxFileSizeToUploadMByte < fileSizeInMB)
         {
-            return new ContentResult()
+            return new ContentResult
             {
                 Content = FileManagerComponent.ConfigStorage[id].Language.TooBigErrorMessage,
                 StatusCode = 400
             };
         }
 
-        var acceptedFiles = FileManagerComponent.ConfigStorage[id].AcceptedFiles;
-        if (!string.IsNullOrWhiteSpace(acceptedFiles))
+        // Validate file extension
+        if (!string.IsNullOrWhiteSpace(FileManagerComponent.ConfigStorage[id].AcceptedFiles))
         {
             var fileExt = Path.GetExtension(file.FileName).ToLower().Trim();
-            if (!acceptedFiles.ToLower().Contains(fileExt))
+            if (!FileManagerComponent.ConfigStorage[id].AcceptedFiles.ToLower().Contains(fileExt))
             {
-                return new ContentResult()
+                return new ContentResult
                 {
                     Content = $"'{fileExt}' {FileManagerComponent.ConfigStorage[id].Language.FilesNotAcceptedErrorMessage}",
                     StatusCode = 400
@@ -774,10 +834,11 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
             }
         }
 
+        // Verify and prepare paths
         var physicalRootPath = GetCurrentSessionPhysicalRootPath(id);
         if (string.IsNullOrWhiteSpace(physicalRootPath))
         {
-            return new ContentResult()
+            return new ContentResult
             {
                 Content = FileManagerComponent.ConfigStorage[id].Language.InvalidRootPathErrorMessage,
                 StatusCode = 400
@@ -785,20 +846,19 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
         }
 
         var physicalPath = path.ConvertVirtualToPhysicalPath(physicalRootPath);
-
         if (!physicalPath.ToLower().StartsWith(physicalRootPath.ToLower()) || !Directory.Exists(physicalPath))
         {
             physicalPath = physicalRootPath;
         }
 
         var filePath = Path.Combine(physicalPath, file.FileName);
-        StringValues chunkIndex = "";
-        var gotChunkIndex = _httpContextAccessor.HttpContext?.Request.Query.TryGetValue("chunkIndex", out chunkIndex);
-        if (File.Exists(filePath) && (gotChunkIndex ?? false))
+
+        // Handle chunked uploads for existing files
+        if (File.Exists(filePath) && _httpContextAccessor.HttpContext?.Request.Query.TryGetValue("chunkIndex", out var chunkIndex) == true)
         {
             if (int.TryParse(chunkIndex.ToString(), out int idx) && idx == 0)
             {
-                return new ContentResult()
+                return new ContentResult
                 {
                     Content = FileManagerComponent.ConfigStorage[id].Language.FileAlreadyExistsErrorMessage,
                     StatusCode = 400
@@ -806,11 +866,27 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
             }
         }
 
-        using Stream fileStream = new FileStream(filePath, FileMode.Append);
-        file.CopyTo(fileStream);
+        // Encrypt and save the file
+        using (var fileStream = new FileStream(filePath, FileMode.Append))
+        {
+            if (FileManagerComponent.ConfigStorage[id].UseEncryption)
+            {
+                var encryptionHelper = new FileEncryptionHelper(FileManagerComponent.ConfigStorage[id].EncryptionKey, FileManagerComponent.ConfigStorage[id].UseEncryption);
+                using (var encryptedStream = encryptionHelper.EncryptStream(file.OpenReadStream()))
+                {
+                    encryptedStream.CopyTo(fileStream);
+                }
+            }
+            else
+            {
+                file.CopyTo(fileStream);
+            }
+        }
 
         return new OkResult();
     }
+
+
 
     private IActionResult FilePreview(string id, string filePath)
     {

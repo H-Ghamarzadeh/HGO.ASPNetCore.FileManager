@@ -1,6 +1,8 @@
 ﻿using HGO.ASPNetCore.FileManager.Enums;
-using HGO.ASPNetCore.FileManager.Models.LanguageModels;
-using HGO.ASPNetCore.FileManager.Models.LanguageModels.BuiltIn;
+using HGO.ASPNetCore.FileManager.ViewComponentsModel.LanguageModels;
+using HGO.ASPNetCore.FileManager.ViewComponentsModel.LanguageModels.BuiltIn;
+using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace HGO.ASPNetCore.FileManager.ViewComponentsModel
 {
@@ -84,7 +86,17 @@ namespace HGO.ASPNetCore.FileManager.ViewComponentsModel
         /// </summary>
         public ILanguage Language { get; set; } = new EnglishLanguage();
 
+        /// <summary>
+        /// Encryption key (EncryptionKey must be provided if UseEncryption is true.)
+        /// </summary>
+        [Required(ErrorMessage = "EncryptionKey must be provided if UseEncryption is true.")]
+        [JsonIgnore] //to prevent json serialization
+        public string EncryptionKey { get; set; } = string.Empty;
 
-
+        /// <summary>
+        /// Use encryption (EncryptionKey must be provided if UseEncryption is true.)
+        /// </summary>
+        public bool UseEncryption { get; set; } = false;
+        
     }
 }

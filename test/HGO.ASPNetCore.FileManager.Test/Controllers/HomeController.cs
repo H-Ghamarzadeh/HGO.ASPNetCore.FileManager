@@ -3,10 +3,10 @@ using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 using HGO.ASPNetCore.FileManager.CommandsProcessor;
 using HGO.ASPNetCore.FileManager.Enums;
-using HGO.ASPNetCore.FileManager.Models.LanguageModels;
-using HGO.ASPNetCore.FileManager.Models.LanguageModels.BuiltIn;
+using HGO.ASPNetCore.FileManager.ViewComponentsModel.LanguageModels.BuiltIn;
 using HGO.ASPNetCore.FileManager.ViewComponentsModel;
 using System.Reflection;
+using HGO.ASPNetCore.FileManager.ViewComponentsModel.LanguageModels;
 
 namespace HGO.ASPNetCore.FileManager.Test.Controllers
 {
@@ -26,7 +26,9 @@ namespace HGO.ASPNetCore.FileManager.Test.Controllers
         {
             var config = new FileManagerConfig()
             {
-                Language = new EnglishLanguage()
+                Language = new EnglishLanguage(),
+                UseEncryption = true,
+                EncryptionKey = "1234567890123456",
             };
 
             return View(config);

@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Web;
 
-namespace HGO.ASPNetCore.FileManager.Models.LanguageModels
+namespace HGO.ASPNetCore.FileManager.ViewComponentsModel.LanguageModels
 {
     /// <summary>
     /// Base class for all languages.

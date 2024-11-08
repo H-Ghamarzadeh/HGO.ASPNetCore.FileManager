@@ -1,5 +1,5 @@
-﻿using HGO.ASPNetCore.FileManager.Models.LanguageModels;
-using HGO.ASPNetCore.FileManager.Models.LanguageModels.BuiltIn;
+﻿using HGO.ASPNetCore.FileManager.ViewComponentsModel.LanguageModels.BuiltIn;
+using HGO.ASPNetCore.FileManager.ViewComponentsModel.LanguageModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
