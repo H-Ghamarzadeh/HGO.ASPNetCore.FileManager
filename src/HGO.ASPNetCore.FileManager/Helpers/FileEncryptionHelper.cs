@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.IO.Pipes;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -72,20 +71,6 @@ namespace HGO.ASPNetCore.FileManager.Helpers
                 return outputStream;
             }
 
-            // Check for magic number to determine if the file is encrypted
-            if (!_useEncryption && IsEncrypted(inputStream))
-            {
-                // Return a stream with an error message
-                var fileStream = new MemoryStream();
-                using (var writer = new StreamWriter(fileStream, Encoding.UTF8, leaveOpen: true))
-                {
-                    writer.Write("This file is encrypted but cannot be decrypted. Please contact your administrator.");
-                    writer.Flush();
-                }
-                fileStream.Position = 0; // Reset stream for reading
-                return fileStream;
-            }
-
             using (var aes = Aes.Create())
             {
                 aes.Key = _key;
@@ -115,6 +100,42 @@ namespace HGO.ASPNetCore.FileManager.Helpers
             // Check for magic number to determine if the file is encrypted
             byte[] fileMagicNumber = new byte[_magicNumber.Length];
             return inputStream.Read(fileMagicNumber, 0, fileMagicNumber.Length) == _magicNumber.Length && fileMagicNumber.SequenceEqual(_magicNumber);
+        }
+
+        // Method to save the stream to a file
+        public void SaveStreamToFile(Stream encryptedStream, string filePath)
+        {
+            // Ensure the file is not being used by another process
+            using (var fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None))
+            {
+                encryptedStream.CopyTo(fileStream);
+            }
+        }
+
+        // Example usage for encrypting and saving a file
+        public void EncryptAndSaveFile(string inputFilePath, string outputFilePath)
+        {
+            using (var inputFileStream = new FileStream(inputFilePath, FileMode.Open, FileAccess.Read))
+            {
+                // Encrypt the file
+                var encryptedStream = EncryptStream(inputFileStream);
+
+                // Save the encrypted stream to a file
+                SaveStreamToFile(encryptedStream, outputFilePath);
+            }
+        }
+
+        // Example usage for decrypting and saving a file
+        public void DecryptAndSaveFile(string inputFilePath, string outputFilePath)
+        {
+            using (var inputFileStream = new FileStream(inputFilePath, FileMode.Open, FileAccess.Read))
+            {
+                // Decrypt the file
+                var decryptedStream = DecryptStream(inputFileStream);
+
+                // Save the decrypted stream to a file
+                SaveStreamToFile(decryptedStream, outputFilePath);
+            }
         }
     }
 }
