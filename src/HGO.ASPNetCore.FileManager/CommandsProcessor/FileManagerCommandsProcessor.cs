@@ -15,6 +15,8 @@ using System.Text;
 using HGO.ASPNetCore.FileManager.Enums;
 using HGO.ASPNetCore.FileManager.ViewModels;
 using HGO.ASPNetCore.FileManager.Helpers;
+using System.IO;
+using System.IO.Pipes;
 
 namespace HGO.ASPNetCore.FileManager.CommandsProcessor;
 
@@ -718,22 +720,25 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
         string fileData = string.Empty;
         try
         {
-            // Read and decrypt file content if encryption is enabled
-            //if (FileManagerComponent.ConfigStorage[id].UseEncryption)
-            //{
             var encryptionHelper = new FileEncryptionHelper(FileManagerComponent.ConfigStorage[id].EncryptionKey, FileManagerComponent.ConfigStorage[id].UseEncryption);
 
             using (var decryptedStream = encryptionHelper.DecryptStream(File.OpenRead(physicalPath)))
             using (var reader = new StreamReader(decryptedStream, Encoding.UTF8)) // Use UTF-8 encoding to read the content
             {
-                fileData = reader.ReadToEnd();
+                // Read the decrypted file into a byte array
+                byte[] decryptedBytes;
+                using (var ms = new MemoryStream())
+                {
+                    decryptedStream.CopyTo(ms);
+                    decryptedBytes = ms.ToArray();
+                }
+
+                // Remove or replace null bytes (0x00) from the byte array
+                decryptedBytes = RemoveNullBytes(decryptedBytes);
+
+                // Convert the cleaned byte array back to a UTF-8 string
+                fileData = Encoding.UTF8.GetString(decryptedBytes);
             }
-            //}
-            //else
-            //{
-            //    // Read the file content normally if no encryption is used
-            //    fileData = File.ReadAllText(physicalPath, Encoding.UTF8); // Ensure UTF-8 encoding is used
-            //}
         }
         catch (Exception ex)
         {
@@ -917,11 +922,11 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
         {
             //if (FileManagerComponent.ConfigStorage[id].UseEncryption)
             //{
-                var encryptionHelper = new FileEncryptionHelper(FileManagerComponent.ConfigStorage[id].EncryptionKey, FileManagerComponent.ConfigStorage[id].UseEncryption);
-                using (var encryptedStream = encryptionHelper.EncryptStream(file.OpenReadStream()))
-                {
-                    encryptedStream.CopyTo(fileStream);
-                }
+            var encryptionHelper = new FileEncryptionHelper(FileManagerComponent.ConfigStorage[id].EncryptionKey, FileManagerComponent.ConfigStorage[id].UseEncryption);
+            using (var encryptedStream = encryptionHelper.EncryptStream(file.OpenReadStream()))
+            {
+                encryptedStream.CopyTo(fileStream);
+            }
             //}
             //else
             //{
