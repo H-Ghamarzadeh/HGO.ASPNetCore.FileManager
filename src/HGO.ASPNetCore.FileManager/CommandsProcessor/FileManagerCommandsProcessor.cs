@@ -965,11 +965,17 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
         switch (Path.GetExtension(physicalPath).ToLower().Trim())
         {
             case ".png" or ".jpg" or ".webp" or ".gif" or ".svg" or ".jpeg" or ".apng" or ".avif" or ".ico" or ".bmp" or ".tif" or ".tiff":
-                return new PhysicalFileResult(physicalPath, Utils.GetMimeTypeForFileExtension(physicalPath))
+                // Decrypt file if encryption is enabled
+                var encryptionHelper = new FileEncryptionHelper(FileManagerComponent.ConfigStorage[id].EncryptionKey, FileManagerComponent.ConfigStorage[id].UseEncryption);
+                Stream fileStream = encryptionHelper.DecryptStream(File.OpenRead(physicalPath)); // Decrypt directly into stream
+
+                var mimeType = Utils.GetMimeTypeForFileExtension(physicalPath);
+                var fileStreamResult = new FileStreamResult(fileStream, mimeType)
                 {
                     FileDownloadName = Path.GetFileName(physicalPath),
                     EnableRangeProcessing = true
                 };
+                return fileStreamResult;
             case ".zip" or ".rar" or ".tar" or ".7z" or ".gzip" or ".7zip":
                 return new RedirectResult("/hgofilemanager/images/zip.png") { Permanent = true };
             case ".js" or ".jsx":
