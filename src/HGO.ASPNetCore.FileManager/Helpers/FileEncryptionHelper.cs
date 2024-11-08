@@ -23,7 +23,7 @@ namespace HGO.ASPNetCore.FileManager.Helpers
         private byte[] GenerateKeyFromPassword(string password)
         {
             if (!_useEncryption)
-                return [];
+                return Array.Empty<byte>();
 
             using (var sha256 = SHA256.Create())
             {
@@ -66,24 +66,11 @@ namespace HGO.ASPNetCore.FileManager.Helpers
 
             if (!_useEncryption || !IsEncrypted(inputStream))
             {
-                outputStream = new MemoryStream();
-                using (var reader = new StreamReader(inputStream, Encoding.UTF8))
-                using (var writer = new StreamWriter(outputStream, Encoding.UTF8, 1024, leaveOpen: true))
-                {
-                    while (!reader.EndOfStream)
-                    {
-                        var line = reader.ReadLine();
-                        if (line != null)
-                        {
-                            writer.WriteLine(line);
-                        }
-                    }
-                    writer.Flush();
-
-                    outputStream.Position = 0; // Reset position for reading
-                    return outputStream;
-                }
-            }    
+                // If no encryption is used, return the input stream as is
+                inputStream.CopyTo(outputStream);
+                outputStream.Position = 0; // Reset position for reading
+                return outputStream;
+            }
 
             // Check for magic number to determine if the file is encrypted
             if (!_useEncryption && IsEncrypted(inputStream))
@@ -98,7 +85,6 @@ namespace HGO.ASPNetCore.FileManager.Helpers
                 fileStream.Position = 0; // Reset stream for reading
                 return fileStream;
             }
-
 
             using (var aes = Aes.Create())
             {
@@ -115,18 +101,8 @@ namespace HGO.ASPNetCore.FileManager.Helpers
 
                 // Decrypt and copy the input stream to the output stream
                 using (var cryptoStream = new CryptoStream(inputStream, aes.CreateDecryptor(), CryptoStreamMode.Read))
-                using (var reader = new StreamReader(cryptoStream, Encoding.UTF8))
-                using (var writer = new StreamWriter(outputStream, Encoding.UTF8, 1024, leaveOpen: true))
                 {
-                    while (!reader.EndOfStream)
-                    {
-                        var line = reader.ReadLine();
-                        if (line != null)
-                        {
-                            writer.WriteLine(line);
-                        }
-                    }
-                    writer.Flush();
+                    cryptoStream.CopyTo(outputStream);
                 }
             }
 
