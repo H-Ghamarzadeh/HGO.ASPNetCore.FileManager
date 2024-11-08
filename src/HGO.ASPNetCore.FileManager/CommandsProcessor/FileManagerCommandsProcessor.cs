@@ -619,26 +619,66 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
 
         // Decrypt file if encryption is enabled
         var encryptionHelper = new FileEncryptionHelper(FileManagerComponent.ConfigStorage[id].EncryptionKey, FileManagerComponent.ConfigStorage[id].UseEncryption);
-
         Stream fileStream = encryptionHelper.DecryptStream(File.OpenRead(physicalPath)); // Decrypt directly into stream
 
-        var fileStreamResult = new FileStreamResult(fileStream, Utils.GetMimeTypeForFileExtension(physicalPath));
+        var mimeType = Utils.GetMimeTypeForFileExtension(physicalPath);
+        var fileStreamResult = new FileStreamResult(fileStream, mimeType);
 
-        if (!view)
+        // Set Content-Type header explicitly
+        _httpContextAccessor!.HttpContext!.Response.ContentType = mimeType;
+
+        // Handle inline viewing for text files
+        if (view && mimeType == "text/plain")
         {
-            fileStreamResult.FileDownloadName = Path.GetFileName(physicalPath);
-            fileStreamResult.EnableRangeProcessing = true;
+            // Read the decrypted file into a byte array
+            byte[] decryptedBytes;
+            using (var ms = new MemoryStream())
+            {
+                fileStream.CopyTo(ms);
+                decryptedBytes = ms.ToArray();
+            }
+
+            // Remove or replace null bytes (0x00) from the byte array
+            decryptedBytes = RemoveNullBytes(decryptedBytes);
+
+            // Convert the cleaned byte array back to a UTF-8 string
+            string fileContent = Encoding.UTF8.GetString(decryptedBytes);
+
+            // Convert the content back into a stream and send it to the browser
+            var contentStream = new MemoryStream(Encoding.UTF8.GetBytes(fileContent));
+            fileStreamResult = new FileStreamResult(contentStream, "text/plain");
+            fileStreamResult.EnableRangeProcessing = false; // Disable range processing for text files
+
+            // Force inline display for text files
+            _httpContextAccessor.HttpContext.Response.Headers.Append("Content-Disposition", $"inline; filename=\"{Path.GetFileName(physicalPath)}\"");
+            _httpContextAccessor.HttpContext.Response.Headers.Append("Content-Type", "text/plain; charset=utf-8");
+        }
+        else if (view && (mimeType.StartsWith("image/") || mimeType == "application/pdf"))
+        {
+            // Images and PDFs should be displayed inline
+            _httpContextAccessor.HttpContext.Response.Headers.Append("Content-Disposition", $"inline; filename=\"{Path.GetFileName(physicalPath)}\"");
         }
         else
         {
-            // For viewing, we want the file to be rendered in the browser
-            fileStreamResult.FileDownloadName = null; // Don't set the filename for inline view
-            fileStreamResult.EnableRangeProcessing = false; // Range processing is usually for downloads
+            // If not inline, force download
+            _httpContextAccessor.HttpContext.Response.Headers.Append("Content-Disposition", $"attachment; filename=\"{Path.GetFileName(physicalPath)}\"");
         }
 
-        return fileStreamResult;
+        // Optional headers to ensure inline viewing is respected
+        _httpContextAccessor.HttpContext.Response.Headers.Append("X-Content-Type-Options", "nosniff");
+        _httpContextAccessor.HttpContext.Response.Headers.Append("Cache-Control", "no-cache");
 
+        return fileStreamResult;
     }
+
+    // Helper method to remove or replace null bytes from the decrypted byte array
+    private byte[] RemoveNullBytes(byte[] bytes)
+    {
+        // Filter out null bytes (0x00) from the byte array
+        return bytes.Where(b => b != 0x00).ToArray();
+    }
+
+
 
 
     private IActionResult GetFileContent(string id, string filePath)
