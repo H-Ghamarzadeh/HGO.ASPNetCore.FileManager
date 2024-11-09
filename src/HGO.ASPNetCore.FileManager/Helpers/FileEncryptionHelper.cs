@@ -63,12 +63,12 @@ namespace HGO.ASPNetCore.FileManager.Helpers
         {
             var outputStream = new MemoryStream();
 
+            // Check if no encryption is applied
             if (!_useEncryption || !IsEncrypted(inputStream))
             {
                 // If no encryption is used, return the input stream as is
-                inputStream.CopyTo(outputStream);
-                outputStream.Position = 0; // Reset position for reading
-                return outputStream;
+                inputStream.Position = 0; // Reset the position to the start of the stream
+                return inputStream;  // Return the original input stream
             }
 
             using (var aes = Aes.Create())
@@ -91,14 +91,10 @@ namespace HGO.ASPNetCore.FileManager.Helpers
                     {
                         cryptoStream.CopyTo(outputStream);
                     }
-                    catch (CryptographicException ex)
+                    catch (CryptographicException)
                     {
                         return GetErrorStream(); // Return a stream containing the error message
                     }
-                    //catch (CryptographicException ex)
-                    //{
-                    //    throw new Exception("The encryption key is invalid or the data is corrupted.", ex);
-                    //}
                 }
             }
 
