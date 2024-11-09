@@ -138,15 +138,12 @@
     </div>
 
     <div style="height: 70vh; margin-bottom:20px">
-        @await Component.InvokeAsync("FileManagerComponent",
-                 new FileManagerModel()
-        {
+        @await Component.InvokeAsync("FileManagerComponent", new FileManagerModel(){
             Id = "FM1",
             RootFolder = "files",
             ApiEndPoint = Url.Action("HgoApi"),
             Config = Model
-        }
-                 )
+        })
     </div>
 
     <button onclick="getSelectedItems('file')" class="btn btn-secondary">Get Selected Files</button>

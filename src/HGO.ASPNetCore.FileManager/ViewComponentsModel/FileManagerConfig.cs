@@ -88,10 +88,18 @@ namespace HGO.ASPNetCore.FileManager.ViewComponentsModel
 
         /// <summary>
         /// Encryption key (EncryptionKey must be provided if UseEncryption is true.)
+        /// <para><b>Warning:</b> It is highly recommended not to hardcode this encryption key directly into your code.</para>
+        /// <para><b>Security Risk:</b> Since both this project and the files reside on the same server, hardcoding the key compromises the entire purpose of encryption.</para>
+        /// <para>The primary goal of encryption is to protect your files in the event of a data breach, whether caused by a vulnerability in the hosting provider or by direct file access attempts.</para>
+        /// <para><b>Reminder:</b> Consider using a secure key management system, environment variables, or a secrets manager to store your encryption key securely.</para>
         /// </summary>
+        /// <remarks>
+        /// <b>Note:</b> Do not store sensitive information like encryption keys in plain text within your source code to prevent unauthorized access.
+        /// </remarks>
         [Required(ErrorMessage = "EncryptionKey must be provided if UseEncryption is true.")]
-        [JsonIgnore] //to prevent json serialization
+        [JsonIgnore] // To prevent JSON serialization of sensitive information
         public string EncryptionKey { get; set; } = string.Empty;
+
 
         /// <summary>
         /// Use encryption (EncryptionKey must be provided if UseEncryption is true.)
