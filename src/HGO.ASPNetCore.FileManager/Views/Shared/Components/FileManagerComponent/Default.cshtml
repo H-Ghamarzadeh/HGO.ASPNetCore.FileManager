@@ -674,6 +674,18 @@
 
             }
 
+            if (@Model.Config.UseEncryption.ToString().ToLower()) {
+                let fsItemIcon = document.createElement('i');
+                fsItemIcon.classList.add('fa-solid');
+                fsItemIcon.classList.add('align-self-end');
+                if (file.IsEncrypted) {
+                    fsItemIcon.classList.add('fa-lock');
+                } else {
+                    fsItemIcon.classList.add('fa-lock-open');
+                }
+                fsItemDiv.appendChild(fsItemIcon);
+            }
+
             let fsItemImg = document.createElement('img');
             fsItemImg.classList.add('lozad');
             fsItemImg.src = '/hgofilemanager/images/loading.gif';
