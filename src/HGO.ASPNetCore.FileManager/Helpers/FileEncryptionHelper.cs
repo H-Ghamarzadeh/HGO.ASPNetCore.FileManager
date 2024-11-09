@@ -87,7 +87,18 @@ namespace HGO.ASPNetCore.FileManager.Helpers
                 // Decrypt and copy the input stream to the output stream
                 using (var cryptoStream = new CryptoStream(inputStream, aes.CreateDecryptor(), CryptoStreamMode.Read))
                 {
-                    cryptoStream.CopyTo(outputStream);
+                    try
+                    {
+                        cryptoStream.CopyTo(outputStream);
+                    }
+                    catch (CryptographicException ex)
+                    {
+                        return GetErrorStream(); // Return a stream containing the error message
+                    }
+                    //catch (CryptographicException ex)
+                    //{
+                    //    throw new Exception("The encryption key is invalid or the data is corrupted.", ex);
+                    //}
                 }
             }
 
@@ -136,6 +147,17 @@ namespace HGO.ASPNetCore.FileManager.Helpers
                 // Save the decrypted stream to a file
                 SaveStreamToFile(decryptedStream, outputFilePath);
             }
+        }
+
+        private Stream GetErrorStream()
+        {
+            var errorMessage = "Decryption failed: Invalid key or corrupted data.";
+            var errorStream = new MemoryStream();
+            var writer = new StreamWriter(errorStream);
+            writer.Write(errorMessage);
+            writer.Flush();
+            errorStream.Position = 0; // Reset position for reading
+            return errorStream;
         }
     }
 }

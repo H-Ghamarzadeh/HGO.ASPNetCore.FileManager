@@ -101,6 +101,9 @@
         /// <summary>Text for the file or folder size label.</summary>
         string Size { get; }
 
+        /// <summary>Text for the encrypted file size label.</summary>
+        string EncryptedSize { get; }
+
         /// <summary>Text for going back to the previous directory.</summary>
         string Back { get; }
 

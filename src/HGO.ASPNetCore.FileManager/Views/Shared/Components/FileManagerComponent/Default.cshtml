@@ -661,7 +661,7 @@
         data.Files.forEach((file) => {
             let encryptionStatusText = file.IsEncrypted ? '@Model.Config.Language.IsEncrypted' : '@Model.Config.Language.NotEncrypted';
             let fsItemDiv = document.createElement('div');
-                fsItemDiv.setAttribute('title', '@Model.Config.Language.FileName: ' + file.FileName + '\n' + '@Model.Config.Language.Size: ' + file.FileSize + '@Model.Config.Language.Size: ' + file.EncryptedFileSize + '\n' + '@Model.Config.Language.CreateDate: ' + file.CreateDate + '\n' + '@Model.Config.Language.ModifiedDate: ' + file.ModifiedDate + '\n' + '@Model.Config.Language.EncryptionStatus: ' + encryptionStatusText);
+                fsItemDiv.setAttribute('title', '@Model.Config.Language.FileName: ' + file.FileName + '\n' + '@Model.Config.Language.Size: ' + file.FileSize + '\n' + '@Model.Config.Language.Size: ' + file.EncryptedFileSize + '\n' + '@Model.Config.Language.CreateDate: ' + file.CreateDate + '\n' + '@Model.Config.Language.ModifiedDate: ' + file.ModifiedDate + '\n' + '@Model.Config.Language.EncryptionStatus: ' + encryptionStatusText);
             fsItemDiv.setAttribute('path', file.VirtualPath);
             fsItemDiv.setAttribute('item-type', 'file');
             fsItemDiv.classList.add('fsitem');

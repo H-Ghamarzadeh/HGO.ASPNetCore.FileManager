@@ -35,6 +35,7 @@
         public string FileName { get; set; } = "*Not Defined*";
         public string FolderName { get; set; } = "*Not Defined*";
         public string Size { get; set; } = "*Not Defined*";
+        public string EncryptedSize { get; set; } = "*Not Defined*";
         public string Back { get; set; } = "*Not Defined*";
         public string Up { get; set; } = "*Not Defined*";
         public string Close { get; set; } = "*Not Defined*";

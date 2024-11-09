@@ -38,6 +38,7 @@ namespace HGO.ASPNetCore.FileManager.ViewComponentsModel.LanguageModels.BuiltIn
         public string FileName { get; } = "Dosya Adı";
         public string FolderName { get; } = "Klasör Adı";
         public string Size { get; } = "Boyut";
+        public string EncryptedSize { get; } = "Şifreli Boyut";
         public string Back { get; } = "Geri";
         public string Up { get; } = "Yukarı";
         public string Close { get; } = "Kapat";

@@ -109,6 +109,8 @@ namespace HGO.ASPNetCore.FileManager.ViewComponentsModel.LanguageModels
         /// <summary>Text for the file or folder size label.</summary>
         public string Size { get; } = null!;
 
+        public string EncryptedSize { get; } = null!;
+
         /// <summary>Text for going back to the previous directory.</summary>
         public string Back { get; } = null!;
 

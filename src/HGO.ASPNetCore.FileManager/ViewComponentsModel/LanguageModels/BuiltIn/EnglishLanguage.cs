@@ -42,6 +42,7 @@ namespace HGO.ASPNetCore.FileManager.ViewComponentsModel.LanguageModels.BuiltIn
         public string FileName { get; } = "File Name";
         public string FolderName { get; } = "Folder Name";
         public string Size { get; } = "Size";
+        public string EncryptedSize { get; } = "Encrypted Size";
         public string Back { get; } = "Back";
         public string Up { get; } = "Up";
         public string Close { get; } = "Close";
