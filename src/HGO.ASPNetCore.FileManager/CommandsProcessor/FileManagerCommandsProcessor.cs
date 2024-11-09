@@ -528,7 +528,7 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
             physicalPath = physicalRootPath;
         }
 
-        //compute all selected zip files size
+        // Compute all selected zip files size
         if (storageSizeLimit > 0)
         {
             long allFilesSize = commandParameters.Items.Select(p => p.ConvertVirtualToPhysicalPath(physicalRootPath))
@@ -542,20 +542,35 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
             }
         }
 
-        //decompress zip archive
+        // Decompress each zip archive and re-encrypt each extracted file
+        var encryptionHelper = new FileEncryptionHelper(FileManagerComponent.ConfigStorage[id].EncryptionKey, FileManagerComponent.ConfigStorage[id].UseEncryption);
+
         foreach (var item in commandParameters.Items)
         {
             var zipArchivePhysicalPath = item.ConvertVirtualToPhysicalPath(physicalRootPath);
 
             if (File.Exists(zipArchivePhysicalPath))
             {
-                using Stream stream = File.OpenRead(zipArchivePhysicalPath);
-                using var reader = ReaderFactory.Open(stream);
-                reader.WriteAllToDirectory(physicalPath, new ExtractionOptions()
+                using var encryptedStream = File.OpenRead(zipArchivePhysicalPath);
+                using var decryptedStream = encryptionHelper.DecryptStream(encryptedStream);
+                using var reader = ReaderFactory.Open(decryptedStream);
+
+                while (reader.MoveToNextEntry())
                 {
-                    ExtractFullPath = true,
-                    Overwrite = true,
-                });
+                    if (!reader.Entry.IsDirectory)
+                    {
+                        var entryPath = Path.Combine(physicalPath, reader.Entry.Key);
+                        Directory.CreateDirectory(Path.GetDirectoryName(entryPath));
+
+                        using var extractedStream = new MemoryStream();
+                        reader.WriteEntryTo(extractedStream); // Extract to memory stream
+                        extractedStream.Position = 0; // Reset stream position for reading
+
+                        // Encrypt the extracted content before saving to disk
+                        using var encryptedExtractedStream = encryptionHelper.EncryptStream(extractedStream);
+                        encryptionHelper.SaveStreamToFile(encryptedExtractedStream, entryPath);
+                    }
+                }
             }
         }
 
