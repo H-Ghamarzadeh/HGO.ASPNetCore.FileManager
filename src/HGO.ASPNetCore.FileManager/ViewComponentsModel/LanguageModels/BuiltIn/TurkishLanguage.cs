@@ -44,6 +44,7 @@ namespace HGO.ASPNetCore.FileManager.ViewComponentsModel.LanguageModels.BuiltIn
         public string EncryptionStatus { get; set; } = "Şifreleme Durumu";
         public string IsEncrypted { get; set; } = "Şifreli";
         public string NotEncrypted { get; set; } = "Şifresiz";
+        public string EncryptedFileExplanation { get; set; } = "Şifreli dosyalar yalnızca bu arayüz üzerinden değiştirilebilir ve dosya yöneticisi tarafından müdahale edilemez. Şifreli dosyalara doğrudan erişim sağlansa bile, bu arayüz yetkisine sahip olmayan kişiler dosyaların içeriğini göremez.";
 
         public string EnterNewFolderNameMessage { get; } = "Lütfen klasör adını girin:";
         public string EnterNewFileNameMessage { get; } = "Lütfen istediğiniz dosya adını girin:";

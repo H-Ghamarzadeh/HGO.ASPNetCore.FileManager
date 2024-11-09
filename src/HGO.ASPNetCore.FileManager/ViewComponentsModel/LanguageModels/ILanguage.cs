@@ -119,6 +119,9 @@
         /// <summary>Text for is not encrypted</summary>
         string NotEncrypted { get; }
 
+        /// <summary>Text for encryption explanation</summary>
+        string EncryptedFileExplanation { get; }
+
         // Notifications and Messages
 
         /// <summary>Message shown when no items are selected.</summary>

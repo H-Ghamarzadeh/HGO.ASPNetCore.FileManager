@@ -48,6 +48,8 @@ namespace HGO.ASPNetCore.FileManager.ViewComponentsModel.LanguageModels.BuiltIn
         public string EncryptionStatus { get; set; } = "Encryption Status";
         public string IsEncrypted { get; set; } = "Encrypted";
         public string NotEncrypted { get; set; } = "Not Encrypted";
+        public string EncryptedFileExplanation { get; set; } = "Encrypted files can only be modified through this interface and cannot be altered by the file manager. Even if direct access to the encrypted files is obtained, individuals without access to this interface will not be able to view the contents of the files.";
+
         public string EnterNewFolderNameMessage { get; } = "Please enter folder name:";
         public string EnterNewFileNameMessage { get; } = "Please enter your desired file name:";
         public string DeleteConfirmationMessage { get; } = "Are you sure you want to delete selected items?";

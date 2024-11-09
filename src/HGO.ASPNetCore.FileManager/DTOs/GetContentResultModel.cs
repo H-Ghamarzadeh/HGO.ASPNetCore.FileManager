@@ -18,6 +18,7 @@ namespace HGO.ASPNetCore.FileManager.DTOs
         public string FileName { get; set; } = string.Empty;
         public string VirtualPath { get; set; } = string.Empty;
         public string FileSize { get; set; } = string.Empty;
+        public string EncryptedFileSize { get; set; } = string.Empty;
         public string ModifiedDate { get; set; } = string.Empty;
         public string CreateDate { get; set; } = string.Empty;
         public bool IsEncrypted { get; set; } = false;

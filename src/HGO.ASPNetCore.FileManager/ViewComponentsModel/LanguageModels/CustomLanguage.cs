@@ -41,6 +41,7 @@
         public string EncryptionStatus { get; set; } = "*Not Defined*";
         public string IsEncrypted { get; set; } = "*Not Defined*";
         public string NotEncrypted { get; set; } = "*Not Defined*";
+        public string EncryptedFileExplanation { get; set; } = "*Not Defined*";
 
         // Notifications and Messages
         public string NoItemsSelectedMessage { get; set; } = "*Not Defined*";

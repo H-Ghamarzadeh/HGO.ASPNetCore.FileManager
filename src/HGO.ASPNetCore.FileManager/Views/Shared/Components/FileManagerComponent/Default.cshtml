@@ -659,9 +659,9 @@
         });
 
         data.Files.forEach((file) => {
-
+            let encryptionStatusText = file.IsEncrypted ? '@Model.Config.Language.IsEncrypted' : '@Model.Config.Language.NotEncrypted';
             let fsItemDiv = document.createElement('div');
-                fsItemDiv.setAttribute('title', '@Model.Config.Language.FileName: ' + file.FileName + '\n' + '@Model.Config.Language.Size: ' + file.FileSize + '\n' + '@Model.Config.Language.CreateDate: ' + file.CreateDate + '\n' + '@Model.Config.Language.ModifiedDate: ' + file.ModifiedDate + '\n' + '@Model.Config.Language.EncryptionStatus: ' + (file.IsEncrypted ? '@Model.Config.Language.IsEncrypted' : '@Model.Config.Language.NotEncrypted'));
+                fsItemDiv.setAttribute('title', '@Model.Config.Language.FileName: ' + file.FileName + '\n' + '@Model.Config.Language.Size: ' + file.FileSize + '@Model.Config.Language.Size: ' + file.EncryptedFileSize + '\n' + '@Model.Config.Language.CreateDate: ' + file.CreateDate + '\n' + '@Model.Config.Language.ModifiedDate: ' + file.ModifiedDate + '\n' + '@Model.Config.Language.EncryptionStatus: ' + encryptionStatusText);
             fsItemDiv.setAttribute('path', file.VirtualPath);
             fsItemDiv.setAttribute('item-type', 'file');
             fsItemDiv.classList.add('fsitem');
@@ -678,6 +678,7 @@
                 let fsItemIcon = document.createElement('i');
                 fsItemIcon.classList.add('fa-solid');
                 fsItemIcon.classList.add('align-self-end');
+                    fsItemIcon.setAttribute('title', '@Model.Config.Language.EncryptedFileExplanation' + '\n' + '@Model.Config.Language.EncryptionStatus: ' + encryptionStatusText);
                 if (file.IsEncrypted) {
                     fsItemIcon.classList.add('fa-lock');
                 } else {

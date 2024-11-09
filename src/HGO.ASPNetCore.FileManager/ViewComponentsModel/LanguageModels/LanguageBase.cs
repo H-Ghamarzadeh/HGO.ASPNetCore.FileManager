@@ -124,6 +124,8 @@ namespace HGO.ASPNetCore.FileManager.ViewComponentsModel.LanguageModels
 
         public string NotEncrypted { get; } = null!;
 
+        public string EncryptedFileExplanation { get; } = null!;
+
         // Notifications and Messages
 
         /// <summary>Message shown when no items are selected.</summary>

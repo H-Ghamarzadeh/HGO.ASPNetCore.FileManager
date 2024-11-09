@@ -123,32 +123,45 @@ namespace HGO.ASPNetCore.FileManager
 
             return false;
         }
-
         public static FileDetail? GetFileDetail(this string filePath, string physicalRootPath, FileEncryptionHelper encryptionHelper, string rootName = "Root")
         {
             if (!File.Exists(filePath)) return null;
 
-            using Stream fileStream = File.OpenRead(filePath); // Decrypt directly into stream
-            using Stream encryptionStream = encryptionHelper.DecryptStream(File.OpenRead(filePath)); // Decrypt directly into stream
-
-            var fileDetail = new FileDetail();
-
-            string[] sizes = { "B", "KB", "MB", "GB", "TB" };
-            var fileInfo = new FileInfo(filePath);
-            double len = encryptionStream.Length;
-            var order = 0;
-            while (len >= 1024 && order < sizes.Length - 1)
+            // Open stream to check encryption status
+            bool isEncrypted;
+            using (var encryptionCheckStream = File.OpenRead(filePath))
             {
-                order++;
-                len = len / 1024;
+                isEncrypted = encryptionHelper.IsEncrypted(encryptionCheckStream);
             }
 
-            fileDetail.FileSize = $"{len:0.##} {sizes[order]}";
+            // Open stream to read decrypted file data
+            using var fileStream = File.OpenRead(filePath); // Original file stream
+            using var encryptionStream = encryptionHelper.DecryptStream(fileStream); // Decrypted stream
+
+            var fileInfo = new FileInfo(filePath);
+            var fileDetail = new FileDetail();
+            string[] sizes = { "B", "KB", "MB", "GB", "TB" };
+
+            // Calculate sizes
+            double[] lengths = { encryptionStream.Length, fileInfo.Length };
+            int[] orders = { 0, 0 };
+
+            for (int i = 0; i < lengths.Length; i++)
+            {
+                while (lengths[i] >= 1024 && orders[i] < sizes.Length - 1)
+                {
+                    orders[i]++;
+                    lengths[i] /= 1024;
+                }
+            }
+
+            fileDetail.EncryptedFileSize = $"{lengths[0]:0.##} {sizes[orders[0]]}";
+            fileDetail.FileSize = $"{lengths[1]:0.##} {sizes[orders[1]]}";
             fileDetail.CreateDate = fileInfo.CreationTime.ToString("yyyy MMM dd - HH:mm");
             fileDetail.ModifiedDate = fileInfo.LastWriteTime.ToString("yyyy MMM dd - HH:mm");
             fileDetail.FileName = fileInfo.Name;
             fileDetail.VirtualPath = filePath.ConvertPhysicalToVirtualPath(physicalRootPath, rootName);
-            fileDetail.IsEncrypted = encryptionHelper.IsEncrypted(fileStream);
+            fileDetail.IsEncrypted = isEncrypted;
 
             return fileDetail;
         }
