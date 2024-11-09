@@ -921,18 +921,11 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
         // Encrypt and save the file
         using (var fileStream = new FileStream(filePath, FileMode.Append))
         {
-            //if (FileManagerComponent.ConfigStorage[id].UseEncryption)
-            //{
             var encryptionHelper = new FileEncryptionHelper(FileManagerComponent.ConfigStorage[id].EncryptionKey, FileManagerComponent.ConfigStorage[id].UseEncryption);
             using (var encryptedStream = encryptionHelper.EncryptStream(file.OpenReadStream()))
             {
                 encryptedStream.CopyTo(fileStream);
             }
-            //}
-            //else
-            //{
-            //    file.CopyTo(fileStream);
-            //}
         }
 
         return new OkResult();
