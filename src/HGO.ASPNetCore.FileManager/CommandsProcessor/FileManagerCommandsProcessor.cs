@@ -413,13 +413,11 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
         }
 
         var physicalPath = commandParameters.Path.ConvertVirtualToPhysicalPath(physicalRootPath);
-
         if (!physicalPath.ToLower().StartsWith(physicalRootPath.ToLower()) || !Directory.Exists(physicalPath))
         {
             physicalPath = physicalRootPath;
         }
 
-        //check if file exist
         var newZipFileName = Path.Combine(physicalPath, commandParameters.FileName.TrimStart(Path.DirectorySeparatorChar).TrimEnd(".zip"));
         var tmp = newZipFileName;
         int counter = 1;
@@ -430,7 +428,6 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
         }
         newZipFileName += ".zip";
 
-        //Compute all selected files size
         var compressionMaxSize = FileManagerComponent.ConfigStorage[id].CompressionMaxSizeMByte;
         if (compressionMaxSize > 0 || storageSizeLimit > 0)
         {
@@ -439,8 +436,7 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
             {
                 if (Directory.Exists(item))
                 {
-                    allFilesSize += new DirectoryInfo(item).GetFiles("*", SearchOption.AllDirectories)
-                        .Sum(p => p.Length);
+                    allFilesSize += new DirectoryInfo(item).GetFiles("*", SearchOption.AllDirectories).Sum(p => p.Length);
                 }
 
                 if (File.Exists(item))
@@ -450,13 +446,9 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
             }
 
             allFilesSize = allFilesSize / 1024 / 1024;
-
-            if (compressionMaxSize > 0)
+            if (compressionMaxSize > 0 && compressionMaxSize < allFilesSize)
             {
-                if (compressionMaxSize < allFilesSize)
-                {
-                    throw new Exception(FileManagerComponent.ConfigStorage[id].Language.TooBigErrorMessage);
-                }
+                throw new Exception(FileManagerComponent.ConfigStorage[id].Language.TooBigErrorMessage);
             }
 
             if (storageSizeLimit > 0 && storageSizeLimit < rootFolderSize + allFilesSize)
@@ -465,33 +457,50 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
             }
         }
 
-        //create Zip archive
-        using (Stream stream = File.Create(newZipFileName))
+        // Create a temporary memory stream for the unencrypted zip archive
+        using (var zipMemoryStream = new MemoryStream())
         using (var archive = ZipArchive.Create())
         {
             archive.DeflateCompressionLevel = (CompressionLevel)FileManagerComponent.ConfigStorage[id].CompressionLevel;
 
-            foreach (var item in commandParameters.Items.Select(p => p.ConvertVirtualToPhysicalPath(physicalRootPath)))
+
+            var encryptionHelper = new FileEncryptionHelper(FileManagerComponent.ConfigStorage[id].EncryptionKey, FileManagerComponent.ConfigStorage[id].UseEncryption);
+
+            foreach (string item in commandParameters.Items.Select(p => p.ConvertVirtualToPhysicalPath(physicalRootPath)))
             {
                 if (Directory.Exists(item))
                 {
-                    foreach (var file in Utils.GetFiles(item, "*.*", SearchOption.AllDirectories))
+                    foreach (string file in Utils.GetFiles(item, "*.*", SearchOption.AllDirectories))
                     {
-                        archive.AddEntry(file.TrimStart(physicalPath), file);
+                        using (var fileStream = new FileStream(file, FileMode.Open, FileAccess.Read))
+                        {
+                            // Decrypt file if necessary before adding to zip
+                            var decryptedStream =  encryptionHelper.DecryptStream(fileStream);
+                            archive.AddEntry(file.TrimStart(physicalPath), decryptedStream);
+                        }
                     }
                 }
 
                 if (File.Exists(item))
                 {
-                    archive.AddEntry(Path.GetFileName(item), item);
+                    using (var fileStream = new FileStream(item, FileMode.Open, FileAccess.Read))
+                    {
+                        var decryptedStream = encryptionHelper.DecryptStream(fileStream);
+                        archive.AddEntry(Path.GetFileName(item), decryptedStream);
+                    }
                 }
             }
 
-            archive.SaveTo(stream, new WriterOptions(CompressionType.Deflate)
+            archive.SaveTo(zipMemoryStream, new WriterOptions(CompressionType.Deflate) { LeaveStreamOpen = true });
+            zipMemoryStream.Position = 0; // Reset stream position for reading
+
+            // Encrypt the zip archive stream
+            using (var encryptedZipStream = encryptionHelper.EncryptStream(zipMemoryStream))
             {
-                LeaveStreamOpen = false,
-            });
+                encryptionHelper.SaveStreamToFile(encryptedZipStream, newZipFileName); // Save encrypted zip to file
+            }
         }
+
 
         return GetContent(id, commandParameters.Path);
     }
@@ -500,6 +509,7 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
     {
         var storageSizeLimit = FileManagerComponent.ConfigStorage[id].StorageMaxSizeMByte;
         var rootFolderSize = GetRootFolderSize(id);
+
         if (storageSizeLimit > 0 && storageSizeLimit < rootFolderSize)
         {
             throw new Exception(FileManagerComponent.ConfigStorage[id].Language.NotEnoughSpaceErrorMessage);
