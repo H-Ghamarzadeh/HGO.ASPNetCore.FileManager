@@ -128,8 +128,8 @@ namespace HGO.ASPNetCore.FileManager
         {
             if (!File.Exists(filePath)) return null;
 
-            Stream fileStream = File.OpenRead(filePath); // Decrypt directly into stream
-            Stream encryptionStream = encryptionHelper.DecryptStream(File.OpenRead(filePath)); // Decrypt directly into stream
+            using Stream fileStream = File.OpenRead(filePath); // Decrypt directly into stream
+            using Stream encryptionStream = encryptionHelper.DecryptStream(File.OpenRead(filePath)); // Decrypt directly into stream
 
             var fileDetail = new FileDetail();
 
@@ -171,7 +171,7 @@ namespace HGO.ASPNetCore.FileManager
 
         public static List<string> GetFiles(string path, string searchPattern, SearchOption searchOption)
         {
-            return Directory.GetFiles(path, searchPattern, searchOption).Where(p=> !new FileInfo(p).Attributes.HasFlag(FileAttributes.Hidden)).OrderBy(p=> p).ToList();
+            return Directory.GetFiles(path, searchPattern, searchOption).Where(p => !new FileInfo(p).Attributes.HasFlag(FileAttributes.Hidden)).OrderBy(p => p).ToList();
         }
 
         public static List<string> GetDirectories(string path, string searchPattern, SearchOption searchOption)
