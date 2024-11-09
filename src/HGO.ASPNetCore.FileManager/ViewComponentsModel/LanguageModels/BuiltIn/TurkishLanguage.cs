@@ -41,6 +41,10 @@ namespace HGO.ASPNetCore.FileManager.ViewComponentsModel.LanguageModels.BuiltIn
         public string Back { get; } = "Geri";
         public string Up { get; } = "Yukarı";
         public string Close { get; } = "Kapat";
+        public string EncryptionStatus { get; set; } = "Şifreleme Durumu";
+        public string IsEncrypted { get; set; } = "Şifreli";
+        public string NotEncrypted { get; set; } = "Şifresiz";
+
         public string EnterNewFolderNameMessage { get; } = "Lütfen klasör adını girin:";
         public string EnterNewFileNameMessage { get; } = "Lütfen istediğiniz dosya adını girin:";
         public string DeleteConfirmationMessage { get; } = "Seçilen öğeleri silmek istediğinizden emin misiniz?";

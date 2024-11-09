@@ -110,6 +110,15 @@
         /// <summary>Text for closing a dialog or window.</summary>
         string Close { get; }
 
+        /// <summary>Text for is encryption status</summary>
+        string EncryptionStatus { get; }
+
+        /// <summary>Text for is encrypted</summary>
+        string IsEncrypted { get; }
+
+        /// <summary>Text for is not encrypted</summary>
+        string NotEncrypted { get; }
+
         // Notifications and Messages
 
         /// <summary>Message shown when no items are selected.</summary>

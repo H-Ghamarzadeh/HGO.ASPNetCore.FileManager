@@ -45,6 +45,9 @@ namespace HGO.ASPNetCore.FileManager.ViewComponentsModel.LanguageModels.BuiltIn
         public string Back { get; } = "Back";
         public string Up { get; } = "Up";
         public string Close { get; } = "Close";
+        public string EncryptionStatus { get; set; } = "Encryption Status";
+        public string IsEncrypted { get; set; } = "Encrypted";
+        public string NotEncrypted { get; set; } = "Not Encrypted";
         public string EnterNewFolderNameMessage { get; } = "Please enter folder name:";
         public string EnterNewFileNameMessage { get; } = "Please enter your desired file name:";
         public string DeleteConfirmationMessage { get; } = "Are you sure you want to delete selected items?";

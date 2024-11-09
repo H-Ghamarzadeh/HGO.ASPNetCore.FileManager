@@ -38,6 +38,9 @@
         public string Back { get; set; } = "*Not Defined*";
         public string Up { get; set; } = "*Not Defined*";
         public string Close { get; set; } = "*Not Defined*";
+        public string EncryptionStatus { get; set; } = "*Not Defined*";
+        public string IsEncrypted { get; set; } = "*Not Defined*";
+        public string NotEncrypted { get; set; } = "*Not Defined*";
 
         // Notifications and Messages
         public string NoItemsSelectedMessage { get; set; } = "*Not Defined*";

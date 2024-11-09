@@ -118,6 +118,12 @@ namespace HGO.ASPNetCore.FileManager.ViewComponentsModel.LanguageModels
         /// <summary>Text for closing a dialog or window.</summary>
         public string Close { get; } = null!;
 
+        public string EncryptionStatus { get; } = null!;
+
+        public string IsEncrypted { get; } = null!;
+
+        public string NotEncrypted { get; } = null!;
+
         // Notifications and Messages
 
         /// <summary>Message shown when no items are selected.</summary>
