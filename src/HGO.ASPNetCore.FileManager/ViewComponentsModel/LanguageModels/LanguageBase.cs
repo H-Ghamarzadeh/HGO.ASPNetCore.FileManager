@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Web;
 
-namespace HGO.ASPNetCore.FileManager.Models.LanguageModels
+namespace HGO.ASPNetCore.FileManager.ViewComponentsModel.LanguageModels
 {
     /// <summary>
     /// Base class for all languages.
@@ -109,6 +109,8 @@ namespace HGO.ASPNetCore.FileManager.Models.LanguageModels
         /// <summary>Text for the file or folder size label.</summary>
         public string Size { get; } = null!;
 
+        public string EncryptedSize { get; } = null!;
+
         /// <summary>Text for going back to the previous directory.</summary>
         public string Back { get; } = null!;
 
@@ -117,6 +119,14 @@ namespace HGO.ASPNetCore.FileManager.Models.LanguageModels
 
         /// <summary>Text for closing a dialog or window.</summary>
         public string Close { get; } = null!;
+
+        public string EncryptionStatus { get; } = null!;
+
+        public string IsEncrypted { get; } = null!;
+
+        public string NotEncrypted { get; } = null!;
+
+        public string EncryptedFileExplanation { get; } = null!;
 
         // Notifications and Messages
 

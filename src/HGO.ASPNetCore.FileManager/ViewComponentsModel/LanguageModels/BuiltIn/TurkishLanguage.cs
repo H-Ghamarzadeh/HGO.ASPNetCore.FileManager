@@ -1,6 +1,6 @@
-﻿using HGO.ASPNetCore.FileManager.Models.LanguageModels;
+﻿using HGO.ASPNetCore.FileManager.ViewComponentsModel.LanguageModels;
 
-namespace HGO.ASPNetCore.FileManager.Models.LanguageModels.BuiltIn
+namespace HGO.ASPNetCore.FileManager.ViewComponentsModel.LanguageModels.BuiltIn
 {
     public sealed class TurkishLanguage : LanguageBase, ILanguage
     {
@@ -38,9 +38,15 @@ namespace HGO.ASPNetCore.FileManager.Models.LanguageModels.BuiltIn
         public string FileName { get; } = "Dosya Adı";
         public string FolderName { get; } = "Klasör Adı";
         public string Size { get; } = "Boyut";
+        public string EncryptedSize { get; } = "Şifreli Boyut";
         public string Back { get; } = "Geri";
         public string Up { get; } = "Yukarı";
         public string Close { get; } = "Kapat";
+        public string EncryptionStatus { get; set; } = "Şifreleme Durumu";
+        public string IsEncrypted { get; set; } = "Şifreli";
+        public string NotEncrypted { get; set; } = "Şifresiz";
+        public string EncryptedFileExplanation { get; set; } = "Şifreli dosyalar yalnızca bu arayüz üzerinden değiştirilebilir ve dosya yöneticisi tarafından müdahale edilemez. Şifreli dosyalara doğrudan erişim sağlansa bile, bu arayüz yetkisine sahip olmayan kişiler dosyaların içeriğini göremez.";
+
         public string EnterNewFolderNameMessage { get; } = "Lütfen klasör adını girin:";
         public string EnterNewFileNameMessage { get; } = "Lütfen istediğiniz dosya adını girin:";
         public string DeleteConfirmationMessage { get; } = "Seçilen öğeleri silmek istediğinizden emin misiniz?";

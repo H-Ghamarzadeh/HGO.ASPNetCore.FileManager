@@ -1,6 +1,8 @@
 ﻿using HGO.ASPNetCore.FileManager.Enums;
-using HGO.ASPNetCore.FileManager.Models.LanguageModels;
-using HGO.ASPNetCore.FileManager.Models.LanguageModels.BuiltIn;
+using HGO.ASPNetCore.FileManager.ViewComponentsModel.LanguageModels;
+using HGO.ASPNetCore.FileManager.ViewComponentsModel.LanguageModels.BuiltIn;
+using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace HGO.ASPNetCore.FileManager.ViewComponentsModel
 {
@@ -84,7 +86,25 @@ namespace HGO.ASPNetCore.FileManager.ViewComponentsModel
         /// </summary>
         public ILanguage Language { get; set; } = new EnglishLanguage();
 
+        /// <summary>
+        /// Encryption key (EncryptionKey must be provided if UseEncryption is true.)
+        /// <para><b>Warning:</b> It is highly recommended not to hardcode this encryption key directly into your code.</para>
+        /// <para><b>Security Risk:</b> Since both this project and the files reside on the same server, hardcoding the key compromises the entire purpose of encryption.</para>
+        /// <para>The primary goal of encryption is to protect your files in the event of a data breach, whether caused by a vulnerability in the hosting provider or by direct file access attempts.</para>
+        /// <para><b>Reminder:</b> Consider using a secure key management system, environment variables, or a secrets manager to store your encryption key securely.</para>
+        /// </summary>
+        /// <remarks>
+        /// <b>Note:</b> Do not store sensitive information like encryption keys in plain text within your source code to prevent unauthorized access.
+        /// </remarks>
+        [Required(ErrorMessage = "EncryptionKey must be provided if UseEncryption is true.")]
+        [JsonIgnore] // To prevent JSON serialization of sensitive information
+        public string EncryptionKey { get; set; } = string.Empty;
 
 
+        /// <summary>
+        /// Use encryption (EncryptionKey must be provided if UseEncryption is true.)
+        /// </summary>
+        public bool UseEncryption { get; set; } = false;
+        
     }
 }

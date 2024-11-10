@@ -1,4 +1,6 @@
 ﻿using HGO.ASPNetCore.FileManager.DTOs;
+using HGO.ASPNetCore.FileManager.Helpers;
+using HGO.ASPNetCore.FileManager.ViewComponents;
 using Microsoft.AspNetCore.StaticFiles;
 
 namespace HGO.ASPNetCore.FileManager
@@ -121,28 +123,45 @@ namespace HGO.ASPNetCore.FileManager
 
             return false;
         }
-
-        public static FileDetail? GetFileDetail(this string filePath, string physicalRootPath, string rootName = "Root")
+        public static FileDetail? GetFileDetail(this string filePath, string physicalRootPath, FileEncryptionHelper encryptionHelper, string rootName = "Root")
         {
             if (!File.Exists(filePath)) return null;
 
-            var fileDetail = new FileDetail();
-
-            string[] sizes = { "B", "KB", "MB", "GB", "TB" };
-            var fileInfo = new FileInfo(filePath);
-            double len = fileInfo.Length;
-            var order = 0;
-            while (len >= 1024 && order < sizes.Length - 1)
+            // Open stream to check encryption status
+            bool isEncrypted;
+            using (var encryptionCheckStream = File.OpenRead(filePath))
             {
-                order++;
-                len = len / 1024;
+                isEncrypted = encryptionHelper.IsEncrypted(encryptionCheckStream);
             }
 
-            fileDetail.FileSize = $"{len:0.##} {sizes[order]}";
+            // Open stream to read decrypted file data
+            using var fileStream = File.OpenRead(filePath); // Original file stream
+            using var encryptionStream = encryptionHelper.DecryptStream(fileStream); // Decrypted stream
+
+            var fileInfo = new FileInfo(filePath);
+            var fileDetail = new FileDetail();
+            string[] sizes = { "B", "KB", "MB", "GB", "TB" };
+
+            // Calculate sizes
+            double[] lengths = { fileInfo.Length, encryptionStream.Length };
+            int[] orders = { 0, 0 };
+
+            for (int i = 0; i < lengths.Length; i++)
+            {
+                while (lengths[i] >= 1024 && orders[i] < sizes.Length - 1)
+                {
+                    orders[i]++;
+                    lengths[i] /= 1024;
+                }
+            }
+
+            fileDetail.EncryptedFileSize = $"{lengths[0]:0.##} {sizes[orders[0]]}";
+            fileDetail.FileSize = $"{lengths[1]:0.##} {sizes[orders[1]]}";
             fileDetail.CreateDate = fileInfo.CreationTime.ToString("yyyy MMM dd - HH:mm");
             fileDetail.ModifiedDate = fileInfo.LastWriteTime.ToString("yyyy MMM dd - HH:mm");
             fileDetail.FileName = fileInfo.Name;
             fileDetail.VirtualPath = filePath.ConvertPhysicalToVirtualPath(physicalRootPath, rootName);
+            fileDetail.IsEncrypted = isEncrypted;
 
             return fileDetail;
         }
@@ -165,7 +184,7 @@ namespace HGO.ASPNetCore.FileManager
 
         public static List<string> GetFiles(string path, string searchPattern, SearchOption searchOption)
         {
-            return Directory.GetFiles(path, searchPattern, searchOption).Where(p=> !new FileInfo(p).Attributes.HasFlag(FileAttributes.Hidden)).OrderBy(p=> p).ToList();
+            return Directory.GetFiles(path, searchPattern, searchOption).Where(p => !new FileInfo(p).Attributes.HasFlag(FileAttributes.Hidden)).OrderBy(p => p).ToList();
         }
 
         public static List<string> GetDirectories(string path, string searchPattern, SearchOption searchOption)

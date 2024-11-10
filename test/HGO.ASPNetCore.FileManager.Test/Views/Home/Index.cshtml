@@ -1,6 +1,6 @@
 ﻿@using HGO.ASPNetCore.FileManager.Enums
-@using HGO.ASPNetCore.FileManager.Models.LanguageModels
-@using HGO.ASPNetCore.FileManager.Models.LanguageModels.BuiltIn
+@using HGO.ASPNetCore.FileManager.ViewComponentsModel.LanguageModels
+@using HGO.ASPNetCore.FileManager.ViewComponentsModel.LanguageModels.BuiltIn
 @using HGO.ASPNetCore.FileManager.ViewComponentsModel
 @using System.Reflection
 
@@ -89,8 +89,6 @@
 
                             <div class="col-12 col-sm-12 col-md-8 col-lg-4 col-xl-4">
                                 <label>Language</label>
-
-
                                 <select asp-for="Language" class="form-select text-center">
                                     @{
                                         // Find all types implementing ILanguage
@@ -105,10 +103,20 @@
                                     }
                                 </select>
                             </div>
-                        </div>
 
-                        <div class="row d-flex justify-content-center mt-3">
-                            <div class="col-12 col-sm-6">
+                            <div class="col-12 col-sm-6 col-md-4 col-lg-4 col-xxl-4">
+                                <div class="form-check form-switch d-flex flex-column align-items-center justify-content-center ps-0">
+                                    <label class="form-check-label text-center mb-2" for="SwitchCheck_@nameof(Model.UseEncryption)">Use Encryption</label>
+                                    <input asp-for="UseEncryption" class="form-check-input ms-0" type="checkbox" id="SwitchCheck_@nameof(Model.UseEncryption)">
+                                </div>
+                            </div>
+
+                            <div class="col-12 col-sm-6 col-md-4 col-lg-4 col-xxl-4">
+                                <label>Encryption Key</label>
+                                <input asp-for="EncryptionKey" class="form-control text-center" />
+                            </div>
+
+                            <div class="col-12 col-sm-12 col-md-4 col-lg-4 col-xxl-4">
                                 <label class="text-nowrap">Disabled Functions</label>
                                 <select class="selectpicker w-100" multiple data-live-search="true" name="config.DisabledFunctions">
                                     @foreach (var command in Enum.GetValues(typeof(HGO.ASPNetCore.FileManager.Enums.Command)))
@@ -130,15 +138,12 @@
     </div>
 
     <div style="height: 70vh; margin-bottom:20px">
-        @await Component.InvokeAsync("FileManagerComponent",
-                 new FileManagerModel()
-        {
+        @await Component.InvokeAsync("FileManagerComponent", new FileManagerModel(){
             Id = "FM1",
             RootFolder = "files",
             ApiEndPoint = Url.Action("HgoApi"),
             Config = Model
-        }
-                 )
+        })
     </div>
 
     <button onclick="getSelectedItems('file')" class="btn btn-secondary">Get Selected Files</button>

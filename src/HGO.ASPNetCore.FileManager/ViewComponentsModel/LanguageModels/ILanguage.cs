@@ -1,4 +1,4 @@
-﻿namespace HGO.ASPNetCore.FileManager.Models.LanguageModels
+﻿namespace HGO.ASPNetCore.FileManager.ViewComponentsModel.LanguageModels
 {
     /// <summary>
     /// Defines language-specific text for various UI elements and messages in the file manager.
@@ -101,6 +101,9 @@
         /// <summary>Text for the file or folder size label.</summary>
         string Size { get; }
 
+        /// <summary>Text for the encrypted file size label.</summary>
+        string EncryptedSize { get; }
+
         /// <summary>Text for going back to the previous directory.</summary>
         string Back { get; }
 
@@ -109,6 +112,18 @@
 
         /// <summary>Text for closing a dialog or window.</summary>
         string Close { get; }
+
+        /// <summary>Text for is encryption status</summary>
+        string EncryptionStatus { get; }
+
+        /// <summary>Text for is encrypted</summary>
+        string IsEncrypted { get; }
+
+        /// <summary>Text for is not encrypted</summary>
+        string NotEncrypted { get; }
+
+        /// <summary>Text for encryption explanation</summary>
+        string EncryptedFileExplanation { get; }
 
         // Notifications and Messages
 

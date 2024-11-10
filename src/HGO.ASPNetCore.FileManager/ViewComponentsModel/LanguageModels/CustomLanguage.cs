@@ -1,4 +1,4 @@
-﻿namespace HGO.ASPNetCore.FileManager.Models.LanguageModels
+﻿namespace HGO.ASPNetCore.FileManager.ViewComponentsModel.LanguageModels
 {
     public class CustomLanguage : LanguageBase, ILanguage
     {
@@ -35,9 +35,14 @@
         public string FileName { get; set; } = "*Not Defined*";
         public string FolderName { get; set; } = "*Not Defined*";
         public string Size { get; set; } = "*Not Defined*";
+        public string EncryptedSize { get; set; } = "*Not Defined*";
         public string Back { get; set; } = "*Not Defined*";
         public string Up { get; set; } = "*Not Defined*";
         public string Close { get; set; } = "*Not Defined*";
+        public string EncryptionStatus { get; set; } = "*Not Defined*";
+        public string IsEncrypted { get; set; } = "*Not Defined*";
+        public string NotEncrypted { get; set; } = "*Not Defined*";
+        public string EncryptedFileExplanation { get; set; } = "*Not Defined*";
 
         // Notifications and Messages
         public string NoItemsSelectedMessage { get; set; } = "*Not Defined*";
