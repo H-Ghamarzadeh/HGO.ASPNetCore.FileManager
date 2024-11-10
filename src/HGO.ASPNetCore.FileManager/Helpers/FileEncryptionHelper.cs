@@ -119,32 +119,6 @@ namespace HGO.ASPNetCore.FileManager.Helpers
             }
         }
 
-        // Example usage for encrypting and saving a file
-        public void EncryptAndSaveFile(string inputFilePath, string outputFilePath)
-        {
-            using (var inputFileStream = new FileStream(inputFilePath, FileMode.Open, FileAccess.Read))
-            {
-                // Encrypt the file
-                var encryptedStream = EncryptStream(inputFileStream);
-
-                // Save the encrypted stream to a file
-                SaveStreamToFile(encryptedStream, outputFilePath);
-            }
-        }
-
-        // Example usage for decrypting and saving a file
-        public void DecryptAndSaveFile(string inputFilePath, string outputFilePath)
-        {
-            using (var inputFileStream = new FileStream(inputFilePath, FileMode.Open, FileAccess.Read))
-            {
-                // Decrypt the file
-                var decryptedStream = DecryptStream(inputFileStream);
-
-                // Save the decrypted stream to a file
-                SaveStreamToFile(decryptedStream, outputFilePath);
-            }
-        }
-
         private Stream GetErrorStream()
         {
             var errorMessage = "Decryption failed: Invalid key or corrupted data.";
