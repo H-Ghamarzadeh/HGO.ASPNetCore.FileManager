@@ -39,7 +39,9 @@ namespace HGO.ASPNetCore.FileManager.Enums
         MenuBar,
         ContextMenu,
         FilePreview,
-        View
+        View,
+        Encrypt,
+        Decrypt
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
     }
 }

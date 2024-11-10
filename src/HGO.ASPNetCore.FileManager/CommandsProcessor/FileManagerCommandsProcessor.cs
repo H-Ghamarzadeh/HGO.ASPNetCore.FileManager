@@ -647,8 +647,8 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
 
         // Decrypt file if encryption is enabled
         var encryptionHelper = new FileEncryptionHelper(FileManagerComponent.ConfigStorage[id].EncryptionKey, FileManagerComponent.ConfigStorage[id].UseEncryption);
-        using Stream fileStream = encryptionHelper.DecryptStream(File.OpenRead(physicalPath)); // Decrypt directly into stream
-
+        Stream fileStream = encryptionHelper.DecryptStream(File.OpenRead(physicalPath)); // Decrypt directly into stream
+        
         var mimeType = Utils.GetMimeTypeForFileExtension(physicalPath);
         var fileStreamResult = new FileStreamResult(fileStream, mimeType);
 
