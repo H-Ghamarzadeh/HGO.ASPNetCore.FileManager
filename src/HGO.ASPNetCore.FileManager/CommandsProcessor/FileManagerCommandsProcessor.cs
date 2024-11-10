@@ -475,7 +475,7 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
                         using (var fileStream = new FileStream(file, FileMode.Open, FileAccess.Read))
                         {
                             // Decrypt file if necessary before adding to zip
-                            var decryptedStream =  encryptionHelper.DecryptStream(fileStream);
+                            var decryptedStream = encryptionHelper.DecryptStream(fileStream);
                             archive.AddEntry(file.TrimStart(physicalPath), decryptedStream);
                         }
                     }
@@ -647,7 +647,7 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
 
         // Decrypt file if encryption is enabled
         var encryptionHelper = new FileEncryptionHelper(FileManagerComponent.ConfigStorage[id].EncryptionKey, FileManagerComponent.ConfigStorage[id].UseEncryption);
-        Stream fileStream = encryptionHelper.DecryptStream(File.OpenRead(physicalPath)); // Decrypt directly into stream
+        using Stream fileStream = encryptionHelper.DecryptStream(File.OpenRead(physicalPath)); // Decrypt directly into stream
 
         var mimeType = Utils.GetMimeTypeForFileExtension(physicalPath);
         var fileStreamResult = new FileStreamResult(fileStream, mimeType);
@@ -846,11 +846,31 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
                 FileManagerComponent.ConfigStorage[id].UseEncryption
             );
 
-            // Convert data to a stream and encrypt if encryption is enabled
-            using (var contentStream = encryptionHelper.EncryptStream(new MemoryStream(Encoding.Unicode.GetBytes(commandParameters.Data))))
-            using (var fileStream = new FileStream(physicalPath, FileMode.Create, FileAccess.Write))
+            using (var originalFileStream = new FileStream(physicalPath, FileMode.OpenOrCreate, FileAccess.ReadWrite))
             {
-                contentStream.CopyTo(fileStream);
+                // Check if the file needs to be decrypted
+                if (encryptionHelper.IsEncrypted(originalFileStream) && !FileManagerComponent.ConfigStorage[id].UseEncryption)
+                {
+                    return new ContentResult
+                    {
+                        Content = JsonConvert.SerializeObject(new
+                        {
+                            message = " The file is encrypted and cannot be edited without decrypting it first."
+                        })
+                    };
+                }
+
+
+                // Reset the file stream for writing new content
+                originalFileStream.SetLength(0); // Clears the file to avoid overwriting issues
+                originalFileStream.Position = 0; // Reset position for overwriting
+
+                // Convert data to a stream and encrypt if encryption is enabled
+                using var encryptedStream = encryptionHelper.EncryptStream(new MemoryStream(Encoding.Unicode.GetBytes(commandParameters.Data)));
+
+                // Copy the encrypted content into the file stream
+                encryptedStream.CopyTo(originalFileStream);
+
             }
 
             return new ContentResult
@@ -870,7 +890,27 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
         }
     }
 
+    private bool AreStreamsEqual(Stream stream1, Stream stream2)
+    {
+        if (stream1 == null || stream2 == null) return false;
 
+        // Ensure both streams are at the start
+        stream1.Position = 0;
+        stream2.Position = 0;
+
+        // Quick length check
+        if (stream1.Length != stream2.Length) return false;
+
+        // Compare content byte by byte
+        int byte1, byte2;
+        while ((byte1 = stream1.ReadByte()) != -1 &&
+               (byte2 = stream2.ReadByte()) != -1)
+        {
+            if (byte1 != byte2) return false;
+        }
+
+        return true;
+    }
 
     public IActionResult Upload(string id, string path, IFormFile file)
     {
@@ -986,6 +1026,8 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
             case ".png" or ".jpg" or ".webp" or ".gif" or ".svg" or ".jpeg" or ".apng" or ".avif" or ".ico" or ".bmp" or ".tif" or ".tiff":
                 // Decrypt file if encryption is enabled
                 var encryptionHelper = new FileEncryptionHelper(FileManagerComponent.ConfigStorage[id].EncryptionKey, FileManagerComponent.ConfigStorage[id].UseEncryption);
+                //using (Stream fileStream = encryptionHelper.DecryptStream(File.OpenRead(physicalPath)))
+                //{
                 Stream fileStream = encryptionHelper.DecryptStream(File.OpenRead(physicalPath)); // Decrypt directly into stream
 
                 var mimeType = Utils.GetMimeTypeForFileExtension(physicalPath);
@@ -995,6 +1037,7 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
                     EnableRangeProcessing = true
                 };
                 return fileStreamResult;
+            //}
             case ".zip" or ".rar" or ".tar" or ".7z" or ".gzip" or ".7zip":
                 return new RedirectResult("/hgofilemanager/images/zip.png") { Permanent = true };
             case ".js" or ".jsx":

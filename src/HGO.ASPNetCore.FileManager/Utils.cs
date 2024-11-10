@@ -143,7 +143,7 @@ namespace HGO.ASPNetCore.FileManager
             string[] sizes = { "B", "KB", "MB", "GB", "TB" };
 
             // Calculate sizes
-            double[] lengths = { encryptionStream.Length, fileInfo.Length };
+            double[] lengths = { fileInfo.Length, encryptionStream.Length };
             int[] orders = { 0, 0 };
 
             for (int i = 0; i < lengths.Length; i++)
