@@ -160,7 +160,7 @@
                 this.addButtonToMenu();
 
             }
-            if (!@Model.Config.UseEncryption.ToString().ToLower()) {
+            if (@Model.Config.UseEncryption.ToString().ToLower()) {
 
                 if (!@Model.Config.DisabledFunctions.ContainsToStringToLower(Command.Encrypt)) {
 
@@ -334,7 +334,7 @@
                 menuItems.push(null);
 
             }
-            if (!@Model.Config.UseEncryption.ToString().ToLower()) {
+            if (@Model.Config.UseEncryption.ToString().ToLower()) {
                 if (!@Model.Config.DisabledFunctions.ContainsToStringToLower(Command.Encrypt)) {
 
                     menuItems.push({
