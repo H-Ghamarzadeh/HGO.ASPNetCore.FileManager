@@ -561,7 +561,7 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
         }
 
         // Create a temporary memory stream for the unencrypted zip archive
-        using (var zipMemoryStream = new MemoryStream())
+        var zipMemoryStream = new MemoryStream();
         using (var archive = ZipArchive.Create())
         {
             archive.DeflateCompressionLevel = (CompressionLevel)FileManagerComponent.ConfigStorage[id].CompressionLevel;
@@ -594,7 +594,7 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
                 }
             }
 
-            archive.SaveTo(zipMemoryStream, new WriterOptions(CompressionType.Deflate) { LeaveStreamOpen = true });
+            archive.SaveTo(zipMemoryStream, new WriterOptions(CompressionType.Deflate));
             zipMemoryStream.Position = 0; // Reset stream position for reading
 
             // Encrypt the zip archive stream
@@ -606,6 +606,7 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
 
 
         return GetContent(id, commandParameters.Path);
+
     }
 
     private string UnZip(string id, UnZipCommandParameters commandParameters)
@@ -750,7 +751,7 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
 
         // Decrypt file if encryption is enabled
         var encryptionHelper = new FileEncryptionHelper(FileManagerComponent.ConfigStorage[id].EncryptionKey, FileManagerComponent.ConfigStorage[id].UseEncryption);
-        using Stream fileStream = encryptionHelper.DecryptStream(File.OpenRead(physicalPath)); // Decrypt directly into stream
+        Stream fileStream = encryptionHelper.DecryptStream(File.OpenRead(physicalPath)); // Decrypt directly into stream
 
         var mimeType = Utils.GetMimeTypeForFileExtension(physicalPath);
         var fileStreamResult = new FileStreamResult(fileStream, mimeType);
@@ -800,7 +801,7 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
         _httpContextAccessor.HttpContext.Response.Headers.Append("Cache-Control", "no-cache");
 
         fileStream.Position = 0;
-        fileStream.Close();
+        //fileStream.Close();
 
         return fileStreamResult;
     }
