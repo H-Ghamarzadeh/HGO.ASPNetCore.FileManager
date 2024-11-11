@@ -1189,28 +1189,6 @@
                 let action = this.clipboard[0];
                 this.clipboard.shift();
 
-                //check if already exist
-                let currentPath = this.getCurrentPath();
-                let allItems = this.getAllItemsPath();
-                if (allItems)
-                    for (let j = 0; j < this.clipboard.length; j++) {
-                        let newName = this.clipboard[j].split("\\").pop();
-                        let breakLoop = false;
-                        for (let i = 0; i < allItems.length; i++) {
-                            let element = allItems[i];
-                            if (element.toLowerCase() === (currentPath + newName).toLowerCase()) {
-                                if (confirm("@Model.Config.Language.OverrideConfirmationMessage")) {
-                                    breakLoop = true;
-                                    break;
-                                } else {
-                                    this.clipboard = [action].concat(this.clipboard)
-                                    return;
-                                }
-                            }
-                        }
-                        if (breakLoop == true) break;
-                    }
-
                 let self = this;
                 this.#WaitingPanel();
 
