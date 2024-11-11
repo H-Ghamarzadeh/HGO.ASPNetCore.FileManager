@@ -160,16 +160,18 @@
                 this.addButtonToMenu();
 
             }
+            if (!@Model.Config.UseEncryption.ToString().ToLower()) {
 
-            if (!@Model.Config.DisabledFunctions.ContainsToStringToLower(Command.Encrypt)) {
+                if (!@Model.Config.DisabledFunctions.ContainsToStringToLower(Command.Encrypt)) {
 
-                this.addButtonToMenu('<i class="fa-solid fa-lock"></i>', (e) => this.encryptOrDecryptSelectedItems("@Command.Encrypt")).setAttribute('title', '@Model.Config.Language.Encrypt');
+                    this.addButtonToMenu('<i class="fa-solid fa-lock"></i>', (e) => this.encryptOrDecryptSelectedItems("@Command.Encrypt")).setAttribute('title', '@Model.Config.Language.Encrypt');
 
-            }
-            if (!@Model.Config.DisabledFunctions.ContainsToStringToLower(Command.Decrypt)) {
+                }
+                if (!@Model.Config.DisabledFunctions.ContainsToStringToLower(Command.Decrypt)) {
 
-                this.addButtonToMenu('<i class="fa-solid fa-lock-open"></i>', (e) => this.encryptOrDecryptSelectedItems("@Command.Decrypt")).setAttribute('title', '@Model.Config.Language.Decrypt');
+                    this.addButtonToMenu('<i class="fa-solid fa-lock-open"></i>', (e) => this.encryptOrDecryptSelectedItems("@Command.Decrypt")).setAttribute('title', '@Model.Config.Language.Decrypt');
 
+                }
             }
 
             if (!@Model.Config.DisabledFunctions.ContainsToStringToLower(Command.Zip)) {
@@ -332,25 +334,27 @@
                 menuItems.push(null);
 
             }
-            if (!@Model.Config.DisabledFunctions.ContainsToStringToLower(Command.Encrypt)) {
+            if (!@Model.Config.UseEncryption.ToString().ToLower()) {
+                if (!@Model.Config.DisabledFunctions.ContainsToStringToLower(Command.Encrypt)) {
 
-                menuItems.push({
-                    text: '<i class="fa-solid fa-lock"></i> @Model.Config.Language.Encrypt',
-                    onclick: function (e) {
-                        self.encryptOrDecryptSelectedItems("@Command.Encrypt");
-                    }
-                });
+                    menuItems.push({
+                        text: '<i class="fa-solid fa-lock"></i> @Model.Config.Language.Encrypt',
+                        onclick: function (e) {
+                            self.encryptOrDecryptSelectedItems("@Command.Encrypt");
+                        }
+                    });
 
-            }
-            if (!@Model.Config.DisabledFunctions.ContainsToStringToLower(Command.Decrypt)) {
+                }
+                if (!@Model.Config.DisabledFunctions.ContainsToStringToLower(Command.Decrypt)) {
 
-                menuItems.push({
-                    text: '<i class="fa-solid fa-lock-open"></i> @Model.Config.Language.Decrypt',
-                    onclick: function (e) {
-                        self.encryptOrDecryptSelectedItems("@Command.Decrypt");
-                    }
-                });
+                    menuItems.push({
+                        text: '<i class="fa-solid fa-lock-open"></i> @Model.Config.Language.Decrypt',
+                        onclick: function (e) {
+                            self.encryptOrDecryptSelectedItems("@Command.Decrypt");
+                        }
+                    });
 
+                }
             }
             if (!@Model.Config.DisabledFunctions.ContainsToStringToLower(Command.Zip)) {
 

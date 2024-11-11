@@ -801,7 +801,7 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
         _httpContextAccessor.HttpContext.Response.Headers.Append("Cache-Control", "no-cache");
 
         fileStream.Position = 0;
-        //fileStream.Close();
+        fileStream.Flush();
 
         return fileStreamResult;
     }

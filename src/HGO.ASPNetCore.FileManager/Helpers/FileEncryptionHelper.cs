@@ -40,6 +40,7 @@ namespace HGO.ASPNetCore.FileManager.Helpers
             if (!_useEncryption || IsEncrypted(inputStream))
             {
                 inputStream.CopyTo(outputStream);
+                outputStream.Position = 0;
                 return outputStream;
             }
 
@@ -74,6 +75,7 @@ namespace HGO.ASPNetCore.FileManager.Helpers
             if (!_useEncryption || !IsEncrypted(inputStream))
             {
                 inputStream.CopyTo(outputStream);
+                outputStream.Position = 0;
                 return outputStream;
             }
 
