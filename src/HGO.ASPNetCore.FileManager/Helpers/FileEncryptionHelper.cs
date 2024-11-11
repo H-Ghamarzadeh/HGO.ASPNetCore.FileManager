@@ -34,13 +34,15 @@ namespace HGO.ASPNetCore.FileManager.Helpers
         public Stream EncryptStream(Stream inputStream)
         {
             inputStream.Position = 0; // Reset the position to the start of the stream
+            var outputStream = new MemoryStream();
+
             // Check if no encryption is applied
             if (!_useEncryption || IsEncrypted(inputStream))
             {
-                return inputStream;
+                inputStream.CopyTo(outputStream);
+                return outputStream;
             }
 
-            var outputStream = new MemoryStream();
 
             using (var aes = Aes.Create())
             {
@@ -67,13 +69,14 @@ namespace HGO.ASPNetCore.FileManager.Helpers
         {
             inputStream.Position = 0; // Reset the position to the start of the stream
 
+            var outputStream = new MemoryStream();
             // Check if no encryption is applied
             if (!_useEncryption || !IsEncrypted(inputStream))
             {
-                return inputStream;
+                inputStream.CopyTo(outputStream);
+                return outputStream;
             }
 
-            var outputStream = new MemoryStream();
             using (var aes = Aes.Create())
             {
                 aes.Key = _key;

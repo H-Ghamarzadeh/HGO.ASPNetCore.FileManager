@@ -593,9 +593,9 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
                     }
                 }
             }
-
+            zipMemoryStream.Position = 0;
             archive.SaveTo(zipMemoryStream, new WriterOptions(CompressionType.Deflate));
-            zipMemoryStream.Position = 0; // Reset stream position for reading
+            //zipMemoryStream.Position = 0; // Reset stream position for reading
 
             // Encrypt the zip archive stream
             using (var encryptedZipStream = encryptionHelper.EncryptStream(zipMemoryStream))
