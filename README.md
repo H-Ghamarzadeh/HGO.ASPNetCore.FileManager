@@ -9,10 +9,11 @@
 ![YigitGnc.HGO.ASPNetCore.FileManager](https://github.com/yigitgnc/HGO.ASPNetCore.FileManager/blob/master/HGO.ASPNetCore.FileManager.png?raw=true "HGO.ASPNetCore.FileManager")
 
 ## Features:
--  Multi Language Support
+-  File Encryption (The primary goal of encryption is to protect your files in the event of a data breach, whether caused by a vulnerability in the hosting provider or by direct file access attempts.)
+-  Multiple Language Support with fully customizable language option
 -  Enum Member Access for type safety
 -  Manage server's files from client side
--  Copy & cut & paste functionality
+-  **IMPROVED** Copy & cut & paste functionality
 -  Compress & extract archive files (Rar, Zip, Tar, Tar.GZip, Tar.BZip2, Tar.LZip, Tar.XZ, GZip, 7Zip)
 -  Download & upload
 -  Rename & delete files/folders
@@ -98,19 +99,17 @@ public HomeController(IFileManagerCommandsProcessor processor)
 Now you can add `HGO.ASPNetCore.FileManager` component view to any razor page or view you want:
 ```cs
 <div style="height: 550px; margin-bottom:20px">
-    @await Component.InvokeAsync("FileManagerComponent", new FileManagerModel()
-    {
-       Id = "FM1",
-       RootFolder = AppDomain.CurrentDomain.BaseDirectory,
-       ApiEndPoint = Url.Action("HgoApi"),
-       Config = new FileManagerConfig()
-       {
-           DisabledFunctions = new HashSet<Command>(){
-        Command.Delete,
-        },
-           Language = new TurkishLanguage(),
-       }
-    })
+        @await Component.InvokeAsync("FileManagerComponent", new FileManagerModel(){
+            Id = "FM1",
+            RootFolder = "files",
+            ApiEndPoint = Url.Action("HgoApi"),
+            Config = new FileManagerConfig(){
+                UseEncryption = true,
+                EncryptionKey = "<Your Super Secret Encryption Key>",
+                DisabledFunctions = { Command.Delete, Command.Rename },
+                Language = new TurkishLanguage(),                
+            }
+        })
 </div>
 ```
 Also you need to reference HGO.ASPNetCore.FileManager JavaScript and CSS files to your view:
@@ -128,20 +127,17 @@ Also you need to reference HGO.ASPNetCore.FileManager JavaScript and CSS files t
 <body>
     <div class="container">
         <main role="main" class="pb-3">
-             @await Component.InvokeAsync("FileManagerComponent", new FileManagerModel()
-              {
-                   Id = "FM1",
-                   RootFolder = AppDomain.CurrentDomain.BaseDirectory,
-                   ApiEndPoint = Url.Action("HgoApi"),
-                   Config = new FileManagerConfig()
-                   {
-                        DisabledFunctions = new HashSet<Command>()
-                        {
-                        Command.Delete,
-                        },
-                       Language = new TurkishLanguage(),
-                   }
-              })
+        @await Component.InvokeAsync("FileManagerComponent", new FileManagerModel(){
+            Id = "FM1",
+            RootFolder = "files",
+            ApiEndPoint = Url.Action("HgoApi"),
+            Config = new FileManagerConfig(){
+                UseEncryption = true,
+                EncryptionKey = "<Your Super Secret Encryption Key>",
+                DisabledFunctions = { Command.Delete, Command.Rename },
+                Language = new TurkishLanguage(),                
+            }
+        })
         </main>
     </div>
 
