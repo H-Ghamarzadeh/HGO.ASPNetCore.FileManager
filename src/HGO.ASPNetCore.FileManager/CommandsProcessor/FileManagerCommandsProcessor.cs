@@ -83,6 +83,14 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
                         result.Content = Rename(id,
                             JsonConvert.DeserializeObject<RenameCommandParameters>(parameters) ?? new());
                         return result;
+                    case Command.Encrypt:
+                    case Command.Decrypt:
+                        result.Content = EncryptOrDecrypt(
+                            id,
+                            JsonConvert.DeserializeObject<EncryptionCommandParameters>(parameters) ?? new(),
+                            command
+                            );
+                        return result;
                     case Command.Zip:
                         result.Content = Zip(id,
                             JsonConvert.DeserializeObject<ZipCommandParameters>(parameters) ?? new());
@@ -397,6 +405,101 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
         return GetContent(id, commandParameters.Path);
     }
 
+    private string EncryptOrDecrypt(string id, EncryptionCommandParameters commandParameters, Command action)
+    {
+        if (action != Command.Encrypt && action != Command.Decrypt)
+            throw new Exception(FileManagerComponent.ConfigStorage[id].Language.UnknownCommandErrorMessage);
+
+        var storageSizeLimit = FileManagerComponent.ConfigStorage[id].StorageMaxSizeMByte;
+        var rootFolderSize = GetRootFolderSize(id);
+        if (storageSizeLimit > 0 && storageSizeLimit < rootFolderSize)
+        {
+            throw new Exception(FileManagerComponent.ConfigStorage[id].Language.NotEnoughSpaceErrorMessage);
+        }
+
+        var physicalRootPath = GetCurrentSessionPhysicalRootPath(id);
+        if (string.IsNullOrWhiteSpace(physicalRootPath))
+        {
+            throw new Exception(FileManagerComponent.ConfigStorage[id].Language.InvalidRootPathErrorMessage);
+        }
+
+        var physicalPath = commandParameters.Path.ConvertVirtualToPhysicalPath(physicalRootPath);
+        if (!physicalPath.ToLower().StartsWith(physicalRootPath.ToLower()) || !Directory.Exists(physicalPath))
+        {
+            physicalPath = physicalRootPath;
+        }
+
+        var encryptionHelper = new FileEncryptionHelper(
+            FileManagerComponent.ConfigStorage[id].EncryptionKey,
+            FileManagerComponent.ConfigStorage[id].UseEncryption
+        );
+
+        // Process each file/directory item
+        foreach (var itemPath in commandParameters.Items.Select(p => p.ConvertVirtualToPhysicalPath(physicalRootPath)))
+        {
+            if (Directory.Exists(itemPath))
+            {
+                // Process all files in the directory recursively
+                foreach (var filePath in Utils.GetFiles(itemPath, "*.*", SearchOption.AllDirectories))
+                {
+                    ProcessFile(filePath, encryptionHelper, action);
+                }
+            }
+            else if (File.Exists(itemPath))
+            {
+                ProcessFile(itemPath, encryptionHelper, action);
+            }
+        }
+
+        return GetContent(id, commandParameters.Path);
+    }
+
+    // Helper method to process a single file for encryption or decryption
+    private void ProcessFile(string filePath, FileEncryptionHelper encryptionHelper, Command action)
+    {
+        // Open the file with ReadWrite access
+        using (var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.ReadWrite))
+        {
+            // Copy fileStream to tempStream to check encryption status and process content
+            using var tempStream = new MemoryStream();
+            fileStream.CopyTo(tempStream);
+
+            // Reset tempStream position to the beginning for processing
+            tempStream.Position = 0;
+
+            Stream processedStream;
+
+            // Determine if encryption or decryption is needed
+            if (encryptionHelper.IsEncrypted(tempStream) && action == Command.Decrypt)
+            {
+                // Reset position after checking encryption status
+                tempStream.Position = 0;
+                processedStream = encryptionHelper.DecryptStream(tempStream);
+            }
+            else if (!encryptionHelper.IsEncrypted(tempStream) && action == Command.Encrypt)
+            {
+                // Reset position after checking encryption status
+                tempStream.Position = 0;
+                processedStream = encryptionHelper.EncryptStream(tempStream);
+            }
+            else
+            {
+                // No processing needed; exit the method early
+                return;
+            }
+
+            // Clear fileStream and write the processed content back to it
+            fileStream.SetLength(0); // Clear the file content
+            processedStream.CopyTo(fileStream);
+
+            // Ensure processedStream is disposed if it is a MemoryStream
+            if (processedStream is MemoryStream)
+                processedStream.Dispose();
+        }
+    }
+
+
+
     private string Zip(string id, ZipCommandParameters commandParameters)
     {
         var storageSizeLimit = FileManagerComponent.ConfigStorage[id].StorageMaxSizeMByte;
@@ -647,8 +750,8 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
 
         // Decrypt file if encryption is enabled
         var encryptionHelper = new FileEncryptionHelper(FileManagerComponent.ConfigStorage[id].EncryptionKey, FileManagerComponent.ConfigStorage[id].UseEncryption);
-        Stream fileStream = encryptionHelper.DecryptStream(File.OpenRead(physicalPath)); // Decrypt directly into stream
-        
+        using Stream fileStream = encryptionHelper.DecryptStream(File.OpenRead(physicalPath)); // Decrypt directly into stream
+
         var mimeType = Utils.GetMimeTypeForFileExtension(physicalPath);
         var fileStreamResult = new FileStreamResult(fileStream, mimeType);
 
@@ -695,6 +798,9 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
         // Optional headers to ensure inline viewing is respected
         _httpContextAccessor.HttpContext.Response.Headers.Append("X-Content-Type-Options", "nosniff");
         _httpContextAccessor.HttpContext.Response.Headers.Append("Cache-Control", "no-cache");
+
+        fileStream.Position = 0;
+        fileStream.Close();
 
         return fileStreamResult;
     }
@@ -801,7 +907,7 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
     private IActionResult EditFile(string id, EditFileCommandParameters commandParameters)
     {
         var storageSizeLimit = FileManagerComponent.ConfigStorage[id].StorageMaxSizeMByte;
-        var fileContentSize = Encoding.Unicode.GetByteCount(commandParameters.Data) / 1024 / 1024;
+        var fileContentSize = Encoding.UTF8.GetByteCount(commandParameters.Data) / 1024 / 1024;
         if (storageSizeLimit > 0 && storageSizeLimit < GetRootFolderSize(id) + fileContentSize)
         {
             return new ContentResult
@@ -866,10 +972,11 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
                 originalFileStream.Position = 0; // Reset position for overwriting
 
                 // Convert data to a stream and encrypt if encryption is enabled
-                using var encryptedStream = encryptionHelper.EncryptStream(new MemoryStream(Encoding.Unicode.GetBytes(commandParameters.Data)));
+                using var encryptedStream = encryptionHelper.EncryptStream(new MemoryStream(Encoding.UTF8.GetBytes(commandParameters.Data)));
 
                 // Copy the encrypted content into the file stream
                 encryptedStream.CopyTo(originalFileStream);
+                //new MemoryStream(Encoding.Unicode.GetBytes(commandParameters.Data)).CopyTo(originalFileStream);
 
             }
 

@@ -161,6 +161,17 @@
 
             }
 
+            if (!@Model.Config.DisabledFunctions.ContainsToStringToLower(Command.Encrypt)) {
+
+                this.addButtonToMenu('<i class="fa-solid fa-lock"></i>', (e) => this.encryptOrDecryptSelectedItems("@Command.Encrypt")).setAttribute('title', '@Model.Config.Language.Encrypt');
+
+            }
+            if (!@Model.Config.DisabledFunctions.ContainsToStringToLower(Command.Decrypt)) {
+
+                this.addButtonToMenu('<i class="fa-solid fa-lock-open"></i>', (e) => this.encryptOrDecryptSelectedItems("@Command.Decrypt")).setAttribute('title', '@Model.Config.Language.Decrypt');
+
+            }
+
             if (!@Model.Config.DisabledFunctions.ContainsToStringToLower(Command.Zip)) {
 
                 this.addButtonToMenu('<i class="fa-solid fa-file-zipper"></i>', (e) => this.zipSelectedItems()).setAttribute('title', '@Model.Config.Language.Zip');
@@ -171,6 +182,7 @@
                 this.addButtonToMenu('<i class="fa-solid fa-square-arrow-up-right"></i>', (e) => this.extractSelectedItems()).setAttribute('title', '@Model.Config.Language.Unzip');
 
             }
+
             if (!(@Model.Config.DisabledFunctions.ContainsToStringToLower(Command.Unzip) && @Model.Config.DisabledFunctions.ContainsToStringToLower(Command.Zip))) {
 
                 this.addButtonToMenu();
@@ -318,6 +330,26 @@
             if (!(@Model.Config.DisabledFunctions.ContainsToStringToLower(Command.Rename) && @Model.Config.DisabledFunctions.ContainsToStringToLower(Command.GetFileContent) && @Model.Config.DisabledFunctions.ContainsToStringToLower(Command.Delete))) {
 
                 menuItems.push(null);
+
+            }
+            if (!@Model.Config.DisabledFunctions.ContainsToStringToLower(Command.Encrypt)) {
+
+                menuItems.push({
+                    text: '<i class="fa-solid fa-lock"></i> @Model.Config.Language.Encrypt',
+                    onclick: function (e) {
+                        self.encryptOrDecryptSelectedItems("@Command.Encrypt");
+                    }
+                });
+
+            }
+            if (!@Model.Config.DisabledFunctions.ContainsToStringToLower(Command.Decrypt)) {
+
+                menuItems.push({
+                    text: '<i class="fa-solid fa-lock-open"></i> @Model.Config.Language.Decrypt',
+                    onclick: function (e) {
+                        self.encryptOrDecryptSelectedItems("@Command.Decrypt");
+                    }
+                });
 
             }
             if (!@Model.Config.DisabledFunctions.ContainsToStringToLower(Command.Zip)) {
@@ -659,7 +691,7 @@
             });
 
             data.Files.forEach((file) => {
-                let encryptionStatusText = file.IsEncrypted ? '@Model.Config.Language.IsEncrypted' : '@Model.Config.Language.NotEncrypted';
+                let encryptionStatusText = file.IsEncrypted ? '@Model.Config.Language.IsEncrypted' : '@Model.Config.Language.Unencrypted';
                 let fsItemDiv = document.createElement('div');
                 fsItemDiv.setAttribute('title', '@Model.Config.Language.FileName: ' + file.FileName + '\n' + '@Model.Config.Language.Size: ' + file.FileSize + '\n' + '@Model.Config.Language.EncryptedSize: ' + file.EncryptedFileSize + '\n' + '@Model.Config.Language.CreateDate: ' + file.CreateDate + '\n' + '@Model.Config.Language.ModifiedDate: ' + file.ModifiedDate + '\n' + '@Model.Config.Language.EncryptionStatus: ' + encryptionStatusText);
                 fsItemDiv.setAttribute('path', file.VirtualPath);
@@ -1048,6 +1080,28 @@
                 self.#fillFolderContent(data);
             }, 'json');
         }
+
+        encryptOrDecryptSelectedItems = function (action) {
+            let selectedItems = this.#checkIfAnyItemSelected();
+            if (selectedItems === false) {
+                return;
+            }
+
+            let self = this;
+            this.#WaitingPanel();
+            $.post(this.apiUrl, {
+                id: this.thisId,
+                command: action,
+                parameters: JSON.stringify({
+                    Path: this.getCurrentPath(),
+                    Items: selectedItems
+                })
+            }, function (data) {
+                self.#WaitingPanel();
+                self.#fillFolderContent(data);
+            }, 'json');
+        }
+
 
         getFileContent = function () {
             let selectedItems = this.#checkIfAnyItemSelected('file');
