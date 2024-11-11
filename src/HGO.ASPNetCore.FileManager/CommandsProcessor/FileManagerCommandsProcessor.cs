@@ -739,7 +739,6 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
 
         var physicalPath = filePath.ConvertVirtualToPhysicalPath(physicalRootPath);
 
-        // Validate path security and existence
         if (!physicalPath.ToLower().StartsWith(physicalRootPath.ToLower()) || !File.Exists(physicalPath))
         {
             return new ContentResult
@@ -749,22 +748,17 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
             };
         }
 
-        // Decrypt file if encryption is enabled
         var encryptionHelper = new FileEncryptionHelper(FileManagerComponent.ConfigStorage[id].EncryptionKey, FileManagerComponent.ConfigStorage[id].UseEncryption);
-        var phsicalFileStream = File.OpenRead(physicalPath);
-        Stream fileStream = encryptionHelper.DecryptStream(phsicalFileStream); // Decrypt directly into stream
-        phsicalFileStream.Close();
+        var physicalFileStream = File.OpenRead(physicalPath);
+        Stream fileStream = encryptionHelper.DecryptStream(physicalFileStream);
 
         var mimeType = Utils.GetMimeTypeForFileExtension(physicalPath);
         var fileStreamResult = new FileStreamResult(fileStream, mimeType);
 
-        // Set Content-Type header explicitly
         _httpContextAccessor!.HttpContext!.Response.ContentType = mimeType;
 
-        // Handle inline viewing for text files
         if (view && mimeType == "text/plain")
         {
-            // Read the decrypted file into a byte array
             byte[] decryptedBytes;
             using (var ms = new MemoryStream())
             {
@@ -772,41 +766,39 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
                 decryptedBytes = ms.ToArray();
             }
 
-            // Remove or replace null bytes (0x00) from the byte array
             decryptedBytes = RemoveNullBytes(decryptedBytes);
-
-            // Convert the cleaned byte array back to a UTF-8 string
             string fileContent = Encoding.UTF8.GetString(decryptedBytes);
 
-            // Convert the content back into a stream and send it to the browser
             var contentStream = new MemoryStream(Encoding.UTF8.GetBytes(fileContent));
             fileStreamResult = new FileStreamResult(contentStream, "text/plain");
-            fileStreamResult.EnableRangeProcessing = false; // Disable range processing for text files
+            fileStreamResult.EnableRangeProcessing = false;
 
-            // Force inline display for text files
             _httpContextAccessor.HttpContext.Response.Headers.Append("Content-Disposition", $"inline; filename=\"{Path.GetFileName(physicalPath)}\"");
             _httpContextAccessor.HttpContext.Response.Headers.Append("Content-Type", "text/plain; charset=utf-8");
         }
         else if (view && (mimeType.StartsWith("image/") || mimeType == "application/pdf"))
         {
-            // Images and PDFs should be displayed inline
             _httpContextAccessor.HttpContext.Response.Headers.Append("Content-Disposition", $"inline; filename=\"{Path.GetFileName(physicalPath)}\"");
         }
         else
         {
-            // If not inline, force download
             _httpContextAccessor.HttpContext.Response.Headers.Append("Content-Disposition", $"attachment; filename=\"{Path.GetFileName(physicalPath)}\"");
         }
 
-        // Optional headers to ensure inline viewing is respected
         _httpContextAccessor.HttpContext.Response.Headers.Append("X-Content-Type-Options", "nosniff");
         _httpContextAccessor.HttpContext.Response.Headers.Append("Cache-Control", "no-cache");
 
         fileStream.Position = 0;
-        fileStream.Flush();
+
+        _httpContextAccessor.HttpContext.Response.OnCompleted(async () =>
+        {
+            await fileStream.DisposeAsync();
+            await physicalFileStream.DisposeAsync();
+        });
 
         return fileStreamResult;
     }
+
 
     // Helper method to remove or replace null bytes from the decrypted byte array
     private byte[] RemoveNullBytes(byte[] bytes)
@@ -814,8 +806,6 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
         // Filter out null bytes (0x00) from the byte array
         return bytes.Where(b => b != 0x00).ToArray();
     }
-
-
 
 
     private IActionResult GetFileContent(string id, string filePath)
@@ -832,7 +822,6 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
 
         var physicalPath = filePath.ConvertVirtualToPhysicalPath(physicalRootPath);
 
-        // Validate path security and existence
         if (!physicalPath.ToLower().StartsWith(physicalRootPath.ToLower()) || !File.Exists(physicalPath))
         {
             return new ContentResult
@@ -842,7 +831,6 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
             };
         }
 
-        // Check if the file is binary; if so, it’s not editable
         if (Utils.IsBinary(physicalPath))
         {
             return new ContentResult
@@ -852,32 +840,28 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
             };
         }
 
-        string fileData = string.Empty;
+        string fileData;
+        Stream? physicalFileStream = null;
+        Stream? decryptedStream = null;
+
         try
         {
             var encryptionHelper = new FileEncryptionHelper(FileManagerComponent.ConfigStorage[id].EncryptionKey, FileManagerComponent.ConfigStorage[id].UseEncryption);
+            physicalFileStream = File.OpenRead(physicalPath);
+            decryptedStream = encryptionHelper.DecryptStream(physicalFileStream);
 
-            using (var decryptedStream = encryptionHelper.DecryptStream(File.OpenRead(physicalPath)))
-            using (var reader = new StreamReader(decryptedStream, Encoding.UTF8)) // Use UTF-8 encoding to read the content
+            using (var ms = new MemoryStream())
             {
-                // Read the decrypted file into a byte array
-                byte[] decryptedBytes;
-                using (var ms = new MemoryStream())
-                {
-                    decryptedStream.CopyTo(ms);
-                    decryptedBytes = ms.ToArray();
-                }
-
-                // Remove or replace null bytes (0x00) from the byte array
-                decryptedBytes = RemoveNullBytes(decryptedBytes);
-
-                // Convert the cleaned byte array back to a UTF-8 string
+                decryptedStream.CopyTo(ms);
+                var decryptedBytes = RemoveNullBytes(ms.ToArray());
                 fileData = Encoding.UTF8.GetString(decryptedBytes);
             }
         }
         catch (Exception ex)
         {
-            // Handle errors during decryption or reading
+            physicalFileStream?.Dispose();
+            decryptedStream?.Dispose();
+
             return new ContentResult
             {
                 Content = $"Error reading file: {ex.Message}",
@@ -885,7 +869,6 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
             };
         }
 
-        // Create and populate the view model
         var viewModel = new EditViewModel
         {
             Id = id,
@@ -895,13 +878,19 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
             Language = FileManagerComponent.ConfigStorage[id].Language,
         };
 
-        // Prepare the view result with the view model in TempData
         var result = new ViewResult
         {
             ViewName = "HgoFileManager/Edit",
             TempData = new TempDataDictionary(_httpContextAccessor.HttpContext!, _tempDataProvider),
         };
         result.TempData["model"] = viewModel;
+
+        // Ensure streams are disposed after response is completed
+        _httpContextAccessor.HttpContext!.Response.OnCompleted(async () =>
+        {
+            if (decryptedStream != null) await decryptedStream.DisposeAsync();
+            if (physicalFileStream != null) await physicalFileStream.DisposeAsync();
+        });
 
         return result;
     }
