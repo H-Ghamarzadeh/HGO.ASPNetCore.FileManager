@@ -119,11 +119,17 @@
         /// <summary>Text for is encrypted</summary>
         string IsEncrypted { get; }
 
-        /// <summary>Text for is not encrypted</summary>
-        string NotEncrypted { get; }
+        /// <summary>Text for is unencrypted</summary>
+        string Unencrypted { get; }
 
         /// <summary>Text for encryption explanation</summary>
         string EncryptedFileExplanation { get; }
+
+        /// <summary>Text for encrypt</summary>
+        string Encrypt { get; }
+
+        /// <summary>Text for decrypt</summary>
+        string Decrypt { get; }
 
         // Notifications and Messages
 

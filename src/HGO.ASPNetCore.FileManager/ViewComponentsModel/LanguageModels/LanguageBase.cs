@@ -124,9 +124,13 @@ namespace HGO.ASPNetCore.FileManager.ViewComponentsModel.LanguageModels
 
         public string IsEncrypted { get; } = null!;
 
-        public string NotEncrypted { get; } = null!;
+        public string Unencrypted { get; } = null!;
 
         public string EncryptedFileExplanation { get; } = null!;
+
+        public string Encrypt { get; } = null!;
+
+        public string Decrypt { get; } = null!;
 
         // Notifications and Messages
 

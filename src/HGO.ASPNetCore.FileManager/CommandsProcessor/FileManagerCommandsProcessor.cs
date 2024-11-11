@@ -83,6 +83,14 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
                         result.Content = Rename(id,
                             JsonConvert.DeserializeObject<RenameCommandParameters>(parameters) ?? new());
                         return result;
+                    case Command.Encrypt:
+                    case Command.Decrypt:
+                        result.Content = EncryptOrDecrypt(
+                            id,
+                            JsonConvert.DeserializeObject<EncryptionCommandParameters>(parameters) ?? new(),
+                            command
+                            );
+                        return result;
                     case Command.Zip:
                         result.Content = Zip(id,
                             JsonConvert.DeserializeObject<ZipCommandParameters>(parameters) ?? new());
@@ -397,6 +405,101 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
         return GetContent(id, commandParameters.Path);
     }
 
+    private string EncryptOrDecrypt(string id, EncryptionCommandParameters commandParameters, Command action)
+    {
+        if (action != Command.Encrypt && action != Command.Decrypt)
+            throw new Exception(FileManagerComponent.ConfigStorage[id].Language.UnknownCommandErrorMessage);
+
+        var storageSizeLimit = FileManagerComponent.ConfigStorage[id].StorageMaxSizeMByte;
+        var rootFolderSize = GetRootFolderSize(id);
+        if (storageSizeLimit > 0 && storageSizeLimit < rootFolderSize)
+        {
+            throw new Exception(FileManagerComponent.ConfigStorage[id].Language.NotEnoughSpaceErrorMessage);
+        }
+
+        var physicalRootPath = GetCurrentSessionPhysicalRootPath(id);
+        if (string.IsNullOrWhiteSpace(physicalRootPath))
+        {
+            throw new Exception(FileManagerComponent.ConfigStorage[id].Language.InvalidRootPathErrorMessage);
+        }
+
+        var physicalPath = commandParameters.Path.ConvertVirtualToPhysicalPath(physicalRootPath);
+        if (!physicalPath.ToLower().StartsWith(physicalRootPath.ToLower()) || !Directory.Exists(physicalPath))
+        {
+            physicalPath = physicalRootPath;
+        }
+
+        var encryptionHelper = new FileEncryptionHelper(
+            FileManagerComponent.ConfigStorage[id].EncryptionKey,
+            FileManagerComponent.ConfigStorage[id].UseEncryption
+        );
+
+        // Process each file/directory item
+        foreach (var itemPath in commandParameters.Items.Select(p => p.ConvertVirtualToPhysicalPath(physicalRootPath)))
+        {
+            if (Directory.Exists(itemPath))
+            {
+                // Process all files in the directory recursively
+                foreach (var filePath in Utils.GetFiles(itemPath, "*.*", SearchOption.AllDirectories))
+                {
+                    ProcessFile(filePath, encryptionHelper, action);
+                }
+            }
+            else if (File.Exists(itemPath))
+            {
+                ProcessFile(itemPath, encryptionHelper, action);
+            }
+        }
+
+        return GetContent(id, commandParameters.Path);
+    }
+
+    // Helper method to process a single file for encryption or decryption
+    private void ProcessFile(string filePath, FileEncryptionHelper encryptionHelper, Command action)
+    {
+        // Open the file with ReadWrite access
+        using (var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.ReadWrite))
+        {
+            // Copy fileStream to tempStream to check encryption status and process content
+            using var tempStream = new MemoryStream();
+            fileStream.CopyTo(tempStream);
+
+            // Reset tempStream position to the beginning for processing
+            tempStream.Position = 0;
+
+            Stream processedStream;
+
+            // Determine if encryption or decryption is needed
+            if (encryptionHelper.IsEncrypted(tempStream) && action == Command.Decrypt)
+            {
+                // Reset position after checking encryption status
+                tempStream.Position = 0;
+                processedStream = encryptionHelper.DecryptStream(tempStream);
+            }
+            else if (!encryptionHelper.IsEncrypted(tempStream) && action == Command.Encrypt)
+            {
+                // Reset position after checking encryption status
+                tempStream.Position = 0;
+                processedStream = encryptionHelper.EncryptStream(tempStream);
+            }
+            else
+            {
+                // No processing needed; exit the method early
+                return;
+            }
+
+            // Clear fileStream and write the processed content back to it
+            fileStream.SetLength(0); // Clear the file content
+            processedStream.CopyTo(fileStream);
+
+            // Ensure processedStream is disposed if it is a MemoryStream
+            if (processedStream is MemoryStream)
+                processedStream.Dispose();
+        }
+    }
+
+
+
     private string Zip(string id, ZipCommandParameters commandParameters)
     {
         var storageSizeLimit = FileManagerComponent.ConfigStorage[id].StorageMaxSizeMByte;
@@ -458,7 +561,7 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
         }
 
         // Create a temporary memory stream for the unencrypted zip archive
-        using (var zipMemoryStream = new MemoryStream())
+        var zipMemoryStream = new MemoryStream();
         using (var archive = ZipArchive.Create())
         {
             archive.DeflateCompressionLevel = (CompressionLevel)FileManagerComponent.ConfigStorage[id].CompressionLevel;
@@ -490,9 +593,9 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
                     }
                 }
             }
-
-            archive.SaveTo(zipMemoryStream, new WriterOptions(CompressionType.Deflate) { LeaveStreamOpen = true });
-            zipMemoryStream.Position = 0; // Reset stream position for reading
+            zipMemoryStream.Position = 0;
+            archive.SaveTo(zipMemoryStream, new WriterOptions(CompressionType.Deflate));
+            //zipMemoryStream.Position = 0; // Reset stream position for reading
 
             // Encrypt the zip archive stream
             using (var encryptedZipStream = encryptionHelper.EncryptStream(zipMemoryStream))
@@ -503,6 +606,7 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
 
 
         return GetContent(id, commandParameters.Path);
+
     }
 
     private string UnZip(string id, UnZipCommandParameters commandParameters)
@@ -592,34 +696,180 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
             physicalPath = physicalRootPath;
         }
 
-        //Copy/Move Files/Folders
+        bool isMoveOperation = action == Command.Cut; // Move this line to ensure `isMoveOperation` is scoped for all operations
+
+        // Copy/Move Files/Folders
         foreach (var item in commandParameters.Items)
         {
             var physicalItemPathToCopy = item.ConvertVirtualToPhysicalPath(physicalRootPath);
+            var destinationPath = Path.Combine(physicalPath, Path.GetFileName(physicalItemPathToCopy));
 
+            // Handle copying files
             if (File.Exists(physicalItemPathToCopy))
             {
+                // If cutting the file and source is the same as destination, do nothing
+                if (isMoveOperation && string.Equals(physicalItemPathToCopy, destinationPath, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
                 if (action == Command.Copy)
                 {
-                    File.Copy(physicalItemPathToCopy, Path.Combine(physicalPath, Path.GetFileName(physicalItemPathToCopy)), true);
+                    // If the file already exists at the destination, handle renaming to avoid overwrite
+                    if (File.Exists(destinationPath))
+                    {
+                        int counter = 1;
+                        string tempDestinationPath;
+                        var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(physicalItemPathToCopy);
+                        var extension = Path.GetExtension(physicalItemPathToCopy);
+                        string baseName = fileNameWithoutExtension;
+
+                        // Handle renaming to avoid file overwrite (file (1), file (2), ...)
+                        do
+                        {
+                            tempDestinationPath = Path.Combine(physicalPath, baseName + $" ({counter})" + extension);
+                            counter++;
+                        } while (File.Exists(tempDestinationPath)); // Check if the temp name already exists
+
+                        // Perform the file copy with the new name
+                        using (var sourceStream = new FileStream(physicalItemPathToCopy, FileMode.Open, FileAccess.Read, FileShare.Read))
+                        using (var destinationStream = new FileStream(tempDestinationPath, FileMode.Create, FileAccess.Write, FileShare.None))
+                        {
+                            sourceStream.CopyTo(destinationStream);
+                        }
+
+                        destinationPath = tempDestinationPath; // Update to the new file path
+                    }
+                    else
+                    {
+                        // Perform the file copy normally if source and destination are different
+                        using (var sourceStream = new FileStream(physicalItemPathToCopy, FileMode.Open, FileAccess.Read, FileShare.Read))
+                        using (var destinationStream = new FileStream(destinationPath, FileMode.Create, FileAccess.Write, FileShare.None))
+                        {
+                            sourceStream.CopyTo(destinationStream);
+                        }
+                    }
                 }
-                else if (action == Command.Cut)
+
+                // Handle the Cut (Move) operation
+                if (isMoveOperation && !string.Equals(physicalItemPathToCopy, destinationPath, StringComparison.OrdinalIgnoreCase))
                 {
-                    File.Move(physicalItemPathToCopy, Path.Combine(physicalPath, Path.GetFileName(physicalItemPathToCopy)), true);
+                    try
+                    {
+                        // Check if the file already exists at the destination
+                        if (File.Exists(destinationPath))
+                        {
+                            int counter = 1;
+                            string tempDestinationPath;
+                            var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(physicalItemPathToCopy);
+                            var extension = Path.GetExtension(physicalItemPathToCopy);
+                            string baseName = fileNameWithoutExtension;
+
+                            // Handle renaming to avoid file overwrite for the move operation
+                            do
+                            {
+                                tempDestinationPath = Path.Combine(physicalPath, baseName + $" ({counter})" + extension);
+                                counter++;
+                            } while (File.Exists(tempDestinationPath)); // Check if the temp name already exists
+
+                            // Move the file to the new name
+                            File.Move(physicalItemPathToCopy, tempDestinationPath);
+                        }
+                        else
+                        {
+                            // Move the file normally if the destination does not exist
+                            File.Move(physicalItemPathToCopy, destinationPath);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        // Log or handle any error if deleting the original file fails
+                        throw new Exception($"Error during cut operation: {ex.Message}");
+                    }
                 }
             }
+            // Handle copying directories
             else if (Directory.Exists(physicalItemPathToCopy))
             {
-                Utils.CopyDirectory(physicalItemPathToCopy, physicalPath, true);
+                string destinationDirectoryPath = destinationPath;
+
+                // If the directory is being cut and pasted into the same directory, don't rename it
+                if (isMoveOperation && string.Equals(physicalItemPathToCopy, destinationDirectoryPath, StringComparison.OrdinalIgnoreCase))
+                {
+                    // Skip renaming if the directory is being moved within the same directory
+                    continue;
+                }
+
+                // If the directory already exists at the destination, apply renaming logic
+                if (Directory.Exists(destinationDirectoryPath))
+                {
+                    int counter = 1;
+                    string baseDirectoryName = Path.GetFileName(physicalItemPathToCopy);
+                    string tempDestinationDirectoryPath;
+
+                    // Generate a new directory name with (n) if it already exists
+                    do
+                    {
+                        tempDestinationDirectoryPath = Path.Combine(physicalPath, baseDirectoryName + $" ({counter})");
+                        counter++;
+                    } while (Directory.Exists(tempDestinationDirectoryPath)); // Check if the temp directory name exists
+
+                    // Set the destination path to the new directory name
+                    destinationDirectoryPath = tempDestinationDirectoryPath;
+                }
+
+                // Skip renaming and copying the directory if source and destination are the same
+                if (string.Equals(physicalItemPathToCopy, destinationDirectoryPath, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue; // Skip renaming and deletion logic if the directory is being moved within itself
+                }
+
+                // Copy the directory contents
+                CopyDirectoryContents(physicalItemPathToCopy, destinationDirectoryPath);
+
+                // If the action is Cut, delete the original directory after copying
                 if (action == Command.Cut)
                 {
-                    Directory.Delete(physicalItemPathToCopy, true);
+                    try
+                    {
+                        Directory.Delete(physicalItemPathToCopy, true); // Recursive delete
+                    }
+                    catch (Exception ex)
+                    {
+                        // Log or handle any error if deleting the original folder fails
+                        throw new Exception($"Error deleting original directory after move: {ex.Message}");
+                    }
                 }
             }
         }
 
         return GetContent(id, commandParameters.Path);
     }
+
+    private void CopyDirectoryContents(string sourceDir, string destDir)
+    {
+        // Ensure destination directory exists
+        if (!Directory.Exists(destDir))
+        {
+            Directory.CreateDirectory(destDir);
+        }
+
+        // Copy all files in the source directory to the destination directory
+        foreach (var file in Directory.GetFiles(sourceDir))
+        {
+            var destFile = Path.Combine(destDir, Path.GetFileName(file));
+            File.Copy(file, destFile, true); // Overwrite if file exists
+        }
+
+        // Copy all subdirectories in the source directory to the destination directory
+        foreach (var subDir in Directory.GetDirectories(sourceDir))
+        {
+            var destSubDir = Path.Combine(destDir, Path.GetFileName(subDir));
+            CopyDirectoryContents(subDir, destSubDir); // Recursively copy subdirectories
+        }
+    }
+
+
 
     private IActionResult Download(string id, string filePath, bool view)
     {
@@ -635,7 +885,6 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
 
         var physicalPath = filePath.ConvertVirtualToPhysicalPath(physicalRootPath);
 
-        // Validate path security and existence
         if (!physicalPath.ToLower().StartsWith(physicalRootPath.ToLower()) || !File.Exists(physicalPath))
         {
             return new ContentResult
@@ -645,20 +894,17 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
             };
         }
 
-        // Decrypt file if encryption is enabled
         var encryptionHelper = new FileEncryptionHelper(FileManagerComponent.ConfigStorage[id].EncryptionKey, FileManagerComponent.ConfigStorage[id].UseEncryption);
-        Stream fileStream = encryptionHelper.DecryptStream(File.OpenRead(physicalPath)); // Decrypt directly into stream
-        
+        var physicalFileStream = File.OpenRead(physicalPath);
+        Stream fileStream = encryptionHelper.DecryptStream(physicalFileStream);
+
         var mimeType = Utils.GetMimeTypeForFileExtension(physicalPath);
         var fileStreamResult = new FileStreamResult(fileStream, mimeType);
 
-        // Set Content-Type header explicitly
         _httpContextAccessor!.HttpContext!.Response.ContentType = mimeType;
 
-        // Handle inline viewing for text files
         if (view && mimeType == "text/plain")
         {
-            // Read the decrypted file into a byte array
             byte[] decryptedBytes;
             using (var ms = new MemoryStream())
             {
@@ -666,38 +912,39 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
                 decryptedBytes = ms.ToArray();
             }
 
-            // Remove or replace null bytes (0x00) from the byte array
             decryptedBytes = RemoveNullBytes(decryptedBytes);
-
-            // Convert the cleaned byte array back to a UTF-8 string
             string fileContent = Encoding.UTF8.GetString(decryptedBytes);
 
-            // Convert the content back into a stream and send it to the browser
             var contentStream = new MemoryStream(Encoding.UTF8.GetBytes(fileContent));
             fileStreamResult = new FileStreamResult(contentStream, "text/plain");
-            fileStreamResult.EnableRangeProcessing = false; // Disable range processing for text files
+            fileStreamResult.EnableRangeProcessing = false;
 
-            // Force inline display for text files
             _httpContextAccessor.HttpContext.Response.Headers.Append("Content-Disposition", $"inline; filename=\"{Path.GetFileName(physicalPath)}\"");
             _httpContextAccessor.HttpContext.Response.Headers.Append("Content-Type", "text/plain; charset=utf-8");
         }
         else if (view && (mimeType.StartsWith("image/") || mimeType == "application/pdf"))
         {
-            // Images and PDFs should be displayed inline
             _httpContextAccessor.HttpContext.Response.Headers.Append("Content-Disposition", $"inline; filename=\"{Path.GetFileName(physicalPath)}\"");
         }
         else
         {
-            // If not inline, force download
             _httpContextAccessor.HttpContext.Response.Headers.Append("Content-Disposition", $"attachment; filename=\"{Path.GetFileName(physicalPath)}\"");
         }
 
-        // Optional headers to ensure inline viewing is respected
         _httpContextAccessor.HttpContext.Response.Headers.Append("X-Content-Type-Options", "nosniff");
         _httpContextAccessor.HttpContext.Response.Headers.Append("Cache-Control", "no-cache");
 
+        fileStream.Position = 0;
+
+        _httpContextAccessor.HttpContext.Response.OnCompleted(async () =>
+        {
+            await fileStream.DisposeAsync();
+            await physicalFileStream.DisposeAsync();
+        });
+
         return fileStreamResult;
     }
+
 
     // Helper method to remove or replace null bytes from the decrypted byte array
     private byte[] RemoveNullBytes(byte[] bytes)
@@ -705,8 +952,6 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
         // Filter out null bytes (0x00) from the byte array
         return bytes.Where(b => b != 0x00).ToArray();
     }
-
-
 
 
     private IActionResult GetFileContent(string id, string filePath)
@@ -723,7 +968,6 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
 
         var physicalPath = filePath.ConvertVirtualToPhysicalPath(physicalRootPath);
 
-        // Validate path security and existence
         if (!physicalPath.ToLower().StartsWith(physicalRootPath.ToLower()) || !File.Exists(physicalPath))
         {
             return new ContentResult
@@ -733,7 +977,6 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
             };
         }
 
-        // Check if the file is binary; if so, it’s not editable
         if (Utils.IsBinary(physicalPath))
         {
             return new ContentResult
@@ -743,32 +986,28 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
             };
         }
 
-        string fileData = string.Empty;
+        string fileData;
+        Stream? physicalFileStream = null;
+        Stream? decryptedStream = null;
+
         try
         {
             var encryptionHelper = new FileEncryptionHelper(FileManagerComponent.ConfigStorage[id].EncryptionKey, FileManagerComponent.ConfigStorage[id].UseEncryption);
+            physicalFileStream = File.OpenRead(physicalPath);
+            decryptedStream = encryptionHelper.DecryptStream(physicalFileStream);
 
-            using (var decryptedStream = encryptionHelper.DecryptStream(File.OpenRead(physicalPath)))
-            using (var reader = new StreamReader(decryptedStream, Encoding.UTF8)) // Use UTF-8 encoding to read the content
+            using (var ms = new MemoryStream())
             {
-                // Read the decrypted file into a byte array
-                byte[] decryptedBytes;
-                using (var ms = new MemoryStream())
-                {
-                    decryptedStream.CopyTo(ms);
-                    decryptedBytes = ms.ToArray();
-                }
-
-                // Remove or replace null bytes (0x00) from the byte array
-                decryptedBytes = RemoveNullBytes(decryptedBytes);
-
-                // Convert the cleaned byte array back to a UTF-8 string
+                decryptedStream.CopyTo(ms);
+                var decryptedBytes = RemoveNullBytes(ms.ToArray());
                 fileData = Encoding.UTF8.GetString(decryptedBytes);
             }
         }
         catch (Exception ex)
         {
-            // Handle errors during decryption or reading
+            physicalFileStream?.Dispose();
+            decryptedStream?.Dispose();
+
             return new ContentResult
             {
                 Content = $"Error reading file: {ex.Message}",
@@ -776,7 +1015,6 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
             };
         }
 
-        // Create and populate the view model
         var viewModel = new EditViewModel
         {
             Id = id,
@@ -786,13 +1024,19 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
             Language = FileManagerComponent.ConfigStorage[id].Language,
         };
 
-        // Prepare the view result with the view model in TempData
         var result = new ViewResult
         {
             ViewName = "HgoFileManager/Edit",
             TempData = new TempDataDictionary(_httpContextAccessor.HttpContext!, _tempDataProvider),
         };
         result.TempData["model"] = viewModel;
+
+        // Ensure streams are disposed after response is completed
+        _httpContextAccessor.HttpContext!.Response.OnCompleted(async () =>
+        {
+            if (decryptedStream != null) await decryptedStream.DisposeAsync();
+            if (physicalFileStream != null) await physicalFileStream.DisposeAsync();
+        });
 
         return result;
     }
@@ -801,7 +1045,7 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
     private IActionResult EditFile(string id, EditFileCommandParameters commandParameters)
     {
         var storageSizeLimit = FileManagerComponent.ConfigStorage[id].StorageMaxSizeMByte;
-        var fileContentSize = Encoding.Unicode.GetByteCount(commandParameters.Data) / 1024 / 1024;
+        var fileContentSize = Encoding.UTF8.GetByteCount(commandParameters.Data) / 1024 / 1024;
         if (storageSizeLimit > 0 && storageSizeLimit < GetRootFolderSize(id) + fileContentSize)
         {
             return new ContentResult
@@ -866,10 +1110,11 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
                 originalFileStream.Position = 0; // Reset position for overwriting
 
                 // Convert data to a stream and encrypt if encryption is enabled
-                using var encryptedStream = encryptionHelper.EncryptStream(new MemoryStream(Encoding.Unicode.GetBytes(commandParameters.Data)));
+                using var encryptedStream = encryptionHelper.EncryptStream(new MemoryStream(Encoding.UTF8.GetBytes(commandParameters.Data)));
 
                 // Copy the encrypted content into the file stream
                 encryptedStream.CopyTo(originalFileStream);
+                //new MemoryStream(Encoding.Unicode.GetBytes(commandParameters.Data)).CopyTo(originalFileStream);
 
             }
 

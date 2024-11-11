@@ -160,6 +160,19 @@
                 this.addButtonToMenu();
 
             }
+            if (@Model.Config.UseEncryption.ToString().ToLower()) {
+
+                if (!@Model.Config.DisabledFunctions.ContainsToStringToLower(Command.Encrypt)) {
+
+                    this.addButtonToMenu('<i class="fa-solid fa-lock"></i>', (e) => this.encryptOrDecryptSelectedItems("@Command.Encrypt")).setAttribute('title', '@Model.Config.Language.Encrypt');
+
+                }
+                if (!@Model.Config.DisabledFunctions.ContainsToStringToLower(Command.Decrypt)) {
+
+                    this.addButtonToMenu('<i class="fa-solid fa-lock-open"></i>', (e) => this.encryptOrDecryptSelectedItems("@Command.Decrypt")).setAttribute('title', '@Model.Config.Language.Decrypt');
+
+                }
+            }
 
             if (!@Model.Config.DisabledFunctions.ContainsToStringToLower(Command.Zip)) {
 
@@ -171,6 +184,7 @@
                 this.addButtonToMenu('<i class="fa-solid fa-square-arrow-up-right"></i>', (e) => this.extractSelectedItems()).setAttribute('title', '@Model.Config.Language.Unzip');
 
             }
+
             if (!(@Model.Config.DisabledFunctions.ContainsToStringToLower(Command.Unzip) && @Model.Config.DisabledFunctions.ContainsToStringToLower(Command.Zip))) {
 
                 this.addButtonToMenu();
@@ -319,6 +333,28 @@
 
                 menuItems.push(null);
 
+            }
+            if (@Model.Config.UseEncryption.ToString().ToLower()) {
+                if (!@Model.Config.DisabledFunctions.ContainsToStringToLower(Command.Encrypt)) {
+
+                    menuItems.push({
+                        text: '<i class="fa-solid fa-lock"></i> @Model.Config.Language.Encrypt',
+                        onclick: function (e) {
+                            self.encryptOrDecryptSelectedItems("@Command.Encrypt");
+                        }
+                    });
+
+                }
+                if (!@Model.Config.DisabledFunctions.ContainsToStringToLower(Command.Decrypt)) {
+
+                    menuItems.push({
+                        text: '<i class="fa-solid fa-lock-open"></i> @Model.Config.Language.Decrypt',
+                        onclick: function (e) {
+                            self.encryptOrDecryptSelectedItems("@Command.Decrypt");
+                        }
+                    });
+
+                }
             }
             if (!@Model.Config.DisabledFunctions.ContainsToStringToLower(Command.Zip)) {
 
@@ -659,7 +695,7 @@
             });
 
             data.Files.forEach((file) => {
-                let encryptionStatusText = file.IsEncrypted ? '@Model.Config.Language.IsEncrypted' : '@Model.Config.Language.NotEncrypted';
+                let encryptionStatusText = file.IsEncrypted ? '@Model.Config.Language.IsEncrypted' : '@Model.Config.Language.Unencrypted';
                 let fsItemDiv = document.createElement('div');
                 fsItemDiv.setAttribute('title', '@Model.Config.Language.FileName: ' + file.FileName + '\n' + '@Model.Config.Language.Size: ' + file.FileSize + '\n' + '@Model.Config.Language.EncryptedSize: ' + file.EncryptedFileSize + '\n' + '@Model.Config.Language.CreateDate: ' + file.CreateDate + '\n' + '@Model.Config.Language.ModifiedDate: ' + file.ModifiedDate + '\n' + '@Model.Config.Language.EncryptionStatus: ' + encryptionStatusText);
                 fsItemDiv.setAttribute('path', file.VirtualPath);
@@ -1049,6 +1085,28 @@
             }, 'json');
         }
 
+        encryptOrDecryptSelectedItems = function (action) {
+            let selectedItems = this.#checkIfAnyItemSelected();
+            if (selectedItems === false) {
+                return;
+            }
+
+            let self = this;
+            this.#WaitingPanel();
+            $.post(this.apiUrl, {
+                id: this.thisId,
+                command: action,
+                parameters: JSON.stringify({
+                    Path: this.getCurrentPath(),
+                    Items: selectedItems
+                })
+            }, function (data) {
+                self.#WaitingPanel();
+                self.#fillFolderContent(data);
+            }, 'json');
+        }
+
+
         getFileContent = function () {
             let selectedItems = this.#checkIfAnyItemSelected('file');
             if (selectedItems === false) {
@@ -1130,28 +1188,6 @@
 
                 let action = this.clipboard[0];
                 this.clipboard.shift();
-
-                //check if already exist
-                let currentPath = this.getCurrentPath();
-                let allItems = this.getAllItemsPath();
-                if (allItems)
-                    for (let j = 0; j < this.clipboard.length; j++) {
-                        let newName = this.clipboard[j].split("\\").pop();
-                        let breakLoop = false;
-                        for (let i = 0; i < allItems.length; i++) {
-                            let element = allItems[i];
-                            if (element.toLowerCase() === (currentPath + newName).toLowerCase()) {
-                                if (confirm("@Model.Config.Language.OverrideConfirmationMessage")) {
-                                    breakLoop = true;
-                                    break;
-                                } else {
-                                    this.clipboard = [action].concat(this.clipboard)
-                                    return;
-                                }
-                            }
-                        }
-                        if (breakLoop == true) break;
-                    }
 
                 let self = this;
                 this.#WaitingPanel();
