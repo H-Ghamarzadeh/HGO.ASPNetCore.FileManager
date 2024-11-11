@@ -696,34 +696,180 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
             physicalPath = physicalRootPath;
         }
 
-        //Copy/Move Files/Folders
+        bool isMoveOperation = action == Command.Cut; // Move this line to ensure `isMoveOperation` is scoped for all operations
+
+        // Copy/Move Files/Folders
         foreach (var item in commandParameters.Items)
         {
             var physicalItemPathToCopy = item.ConvertVirtualToPhysicalPath(physicalRootPath);
+            var destinationPath = Path.Combine(physicalPath, Path.GetFileName(physicalItemPathToCopy));
 
+            // Handle copying files
             if (File.Exists(physicalItemPathToCopy))
             {
+                // If cutting the file and source is the same as destination, do nothing
+                if (isMoveOperation && string.Equals(physicalItemPathToCopy, destinationPath, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
                 if (action == Command.Copy)
                 {
-                    File.Copy(physicalItemPathToCopy, Path.Combine(physicalPath, Path.GetFileName(physicalItemPathToCopy)), true);
+                    // If the file already exists at the destination, handle renaming to avoid overwrite
+                    if (File.Exists(destinationPath))
+                    {
+                        int counter = 1;
+                        string tempDestinationPath;
+                        var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(physicalItemPathToCopy);
+                        var extension = Path.GetExtension(physicalItemPathToCopy);
+                        string baseName = fileNameWithoutExtension;
+
+                        // Handle renaming to avoid file overwrite (file (1), file (2), ...)
+                        do
+                        {
+                            tempDestinationPath = Path.Combine(physicalPath, baseName + $" ({counter})" + extension);
+                            counter++;
+                        } while (File.Exists(tempDestinationPath)); // Check if the temp name already exists
+
+                        // Perform the file copy with the new name
+                        using (var sourceStream = new FileStream(physicalItemPathToCopy, FileMode.Open, FileAccess.Read, FileShare.Read))
+                        using (var destinationStream = new FileStream(tempDestinationPath, FileMode.Create, FileAccess.Write, FileShare.None))
+                        {
+                            sourceStream.CopyTo(destinationStream);
+                        }
+
+                        destinationPath = tempDestinationPath; // Update to the new file path
+                    }
+                    else
+                    {
+                        // Perform the file copy normally if source and destination are different
+                        using (var sourceStream = new FileStream(physicalItemPathToCopy, FileMode.Open, FileAccess.Read, FileShare.Read))
+                        using (var destinationStream = new FileStream(destinationPath, FileMode.Create, FileAccess.Write, FileShare.None))
+                        {
+                            sourceStream.CopyTo(destinationStream);
+                        }
+                    }
                 }
-                else if (action == Command.Cut)
+
+                // Handle the Cut (Move) operation
+                if (isMoveOperation && !string.Equals(physicalItemPathToCopy, destinationPath, StringComparison.OrdinalIgnoreCase))
                 {
-                    File.Move(physicalItemPathToCopy, Path.Combine(physicalPath, Path.GetFileName(physicalItemPathToCopy)), true);
+                    try
+                    {
+                        // Check if the file already exists at the destination
+                        if (File.Exists(destinationPath))
+                        {
+                            int counter = 1;
+                            string tempDestinationPath;
+                            var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(physicalItemPathToCopy);
+                            var extension = Path.GetExtension(physicalItemPathToCopy);
+                            string baseName = fileNameWithoutExtension;
+
+                            // Handle renaming to avoid file overwrite for the move operation
+                            do
+                            {
+                                tempDestinationPath = Path.Combine(physicalPath, baseName + $" ({counter})" + extension);
+                                counter++;
+                            } while (File.Exists(tempDestinationPath)); // Check if the temp name already exists
+
+                            // Move the file to the new name
+                            File.Move(physicalItemPathToCopy, tempDestinationPath);
+                        }
+                        else
+                        {
+                            // Move the file normally if the destination does not exist
+                            File.Move(physicalItemPathToCopy, destinationPath);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        // Log or handle any error if deleting the original file fails
+                        throw new Exception($"Error during cut operation: {ex.Message}");
+                    }
                 }
             }
+            // Handle copying directories
             else if (Directory.Exists(physicalItemPathToCopy))
             {
-                Utils.CopyDirectory(physicalItemPathToCopy, physicalPath, true);
+                string destinationDirectoryPath = destinationPath;
+
+                // If the directory is being cut and pasted into the same directory, don't rename it
+                if (isMoveOperation && string.Equals(physicalItemPathToCopy, destinationDirectoryPath, StringComparison.OrdinalIgnoreCase))
+                {
+                    // Skip renaming if the directory is being moved within the same directory
+                    continue;
+                }
+
+                // If the directory already exists at the destination, apply renaming logic
+                if (Directory.Exists(destinationDirectoryPath))
+                {
+                    int counter = 1;
+                    string baseDirectoryName = Path.GetFileName(physicalItemPathToCopy);
+                    string tempDestinationDirectoryPath;
+
+                    // Generate a new directory name with (n) if it already exists
+                    do
+                    {
+                        tempDestinationDirectoryPath = Path.Combine(physicalPath, baseDirectoryName + $" ({counter})");
+                        counter++;
+                    } while (Directory.Exists(tempDestinationDirectoryPath)); // Check if the temp directory name exists
+
+                    // Set the destination path to the new directory name
+                    destinationDirectoryPath = tempDestinationDirectoryPath;
+                }
+
+                // Skip renaming and copying the directory if source and destination are the same
+                if (string.Equals(physicalItemPathToCopy, destinationDirectoryPath, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue; // Skip renaming and deletion logic if the directory is being moved within itself
+                }
+
+                // Copy the directory contents
+                CopyDirectoryContents(physicalItemPathToCopy, destinationDirectoryPath);
+
+                // If the action is Cut, delete the original directory after copying
                 if (action == Command.Cut)
                 {
-                    Directory.Delete(physicalItemPathToCopy, true);
+                    try
+                    {
+                        Directory.Delete(physicalItemPathToCopy, true); // Recursive delete
+                    }
+                    catch (Exception ex)
+                    {
+                        // Log or handle any error if deleting the original folder fails
+                        throw new Exception($"Error deleting original directory after move: {ex.Message}");
+                    }
                 }
             }
         }
 
         return GetContent(id, commandParameters.Path);
     }
+
+    private void CopyDirectoryContents(string sourceDir, string destDir)
+    {
+        // Ensure destination directory exists
+        if (!Directory.Exists(destDir))
+        {
+            Directory.CreateDirectory(destDir);
+        }
+
+        // Copy all files in the source directory to the destination directory
+        foreach (var file in Directory.GetFiles(sourceDir))
+        {
+            var destFile = Path.Combine(destDir, Path.GetFileName(file));
+            File.Copy(file, destFile, true); // Overwrite if file exists
+        }
+
+        // Copy all subdirectories in the source directory to the destination directory
+        foreach (var subDir in Directory.GetDirectories(sourceDir))
+        {
+            var destSubDir = Path.Combine(destDir, Path.GetFileName(subDir));
+            CopyDirectoryContents(subDir, destSubDir); // Recursively copy subdirectories
+        }
+    }
+
+
 
     private IActionResult Download(string id, string filePath, bool view)
     {
