@@ -1271,9 +1271,9 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
             case ".png" or ".jpg" or ".webp" or ".gif" or ".svg" or ".jpeg" or ".apng" or ".avif" or ".ico" or ".bmp" or ".tif" or ".tiff":
                 // Decrypt file if encryption is enabled
                 var encryptionHelper = new FileEncryptionHelper(FileManagerComponent.ConfigStorage[id].EncryptionKey, FileManagerComponent.ConfigStorage[id].UseEncryption);
-                //using (Stream fileStream = encryptionHelper.DecryptStream(File.OpenRead(physicalPath)))
-                //{
-                Stream fileStream = encryptionHelper.DecryptStream(File.OpenRead(physicalPath)); // Decrypt directly into stream
+
+                var phisicalFileStream = File.OpenRead(physicalPath);
+                Stream fileStream = encryptionHelper.DecryptStream(phisicalFileStream); // Decrypt directly into stream
 
                 var mimeType = Utils.GetMimeTypeForFileExtension(physicalPath);
                 var fileStreamResult = new FileStreamResult(fileStream, mimeType)
@@ -1281,6 +1281,13 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
                     FileDownloadName = Path.GetFileName(physicalPath),
                     EnableRangeProcessing = true
                 };
+
+                _httpContextAccessor.HttpContext?.Response.OnCompleted(async () =>
+                {
+                    await phisicalFileStream.DisposeAsync();
+                    await fileStream.DisposeAsync();
+                });
+
                 return fileStreamResult;
             //}
             case ".zip" or ".rar" or ".tar" or ".7z" or ".gzip" or ".7zip":
