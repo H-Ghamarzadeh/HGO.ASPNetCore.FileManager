@@ -1,3 +1,24 @@
+There was some issue i tried to solve
+
+**1- Video Stream: It always tried to download first then display the video. which this edit fixed it.
+
+2- if i tried to install script in subdirectories like x.com/admin/ or any other path nothing would load.
+i believe i resolved it dynamically. there was one folder icon in CSS which writing code would make it unmaintainable, that is why i convert it to base64 png code.
+
+3- dotnet 10 + package security problem
+
+4- upload fail = you can delete failed one and make sure to show success.
+
+5- mobile touch screen were always select, couldn't scroll**
+
+
+
+I hope, this code is of some help.
+
+
+
+
+
 # HGO.ASPNetCore.FileManager (Free & Open Source File Explorer for ASP.Net Core 6+)
 HGO.ASPNetCore.FileManager is a free, open source, feature rich and easy to use file explorer/manager component for ASP.Net Core 6 and above with MIT license!
 
