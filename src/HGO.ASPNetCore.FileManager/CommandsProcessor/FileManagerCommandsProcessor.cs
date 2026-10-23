@@ -9,12 +9,14 @@ using SharpCompress.Archives.Zip;
 using SharpCompress.Common;
 using SharpCompress.Readers;
 using SharpCompress.Writers;
+using SharpCompress.Writers.Zip;
 using HGO.ASPNetCore.FileManager.ViewComponents;
 using SharpCompress.Compressors.Deflate;
 using System.Text;
 
 namespace HGO.ASPNetCore.FileManager.CommandsProcessor;
 
+/// <summary>Processes commands submitted to the file manager.</summary>
 public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
 {
     private readonly IHttpContextAccessor _httpContextAccessor;
@@ -22,13 +24,17 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
     private readonly ISession? _session;
     private const string RootPathSessionKey = "HGO-FM-RootFolder";
 
+    /// <summary>Initializes a file-manager command processor.</summary>
+    /// <param name="httpContextAccessor">Provides access to the current HTTP context.</param>
+    /// <param name="tempDataProvider">Provides temporary data storage for MVC views.</param>
     public FileManagerCommandsProcessor(IHttpContextAccessor httpContextAccessor, ITempDataProvider tempDataProvider)
     {
         _httpContextAccessor = httpContextAccessor;
         _tempDataProvider = tempDataProvider;
-        _session = httpContextAccessor.HttpContext.Session;
+        _session = httpContextAccessor.HttpContext!.Session;
     }
 
+    /// <inheritdoc />
     public async Task<IActionResult> ProcessCommandAsync(string id, string command, string parameters, IFormFile file)
     {
 
@@ -60,40 +66,40 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
                         result.Content = GetContent(id, parameters);
                         return result;
                     case "search":
-                        result.Content = Search(id, JsonConvert.DeserializeObject<SearchCommandParameters>(parameters));
+                        result.Content = Search(id, JsonConvert.DeserializeObject<SearchCommandParameters>(parameters)!);
                         return result;
                     case "createnewfolder":
                         result.Content = CreateNewFolder(id,
-                            JsonConvert.DeserializeObject<CreateNewFolderCommandParameters>(parameters));
+                            JsonConvert.DeserializeObject<CreateNewFolderCommandParameters>(parameters)!);
                         return result;
                     case "createnewfile":
                         result.Content = CreateNewFile(id,
-                            JsonConvert.DeserializeObject<CreateNewFileCommandParameters>(parameters));
+                            JsonConvert.DeserializeObject<CreateNewFileCommandParameters>(parameters)!);
                         return result;
                     case "delete":
                         result.Content = Delete(id,
-                            JsonConvert.DeserializeObject<DeleteCommandParameters>(parameters));
+                            JsonConvert.DeserializeObject<DeleteCommandParameters>(parameters)!);
                         return result;
                     case "rename":
                         result.Content = Rename(id,
-                            JsonConvert.DeserializeObject<RenameCommandParameters>(parameters));
+                            JsonConvert.DeserializeObject<RenameCommandParameters>(parameters)!);
                         return result;
                     case "zip":
                         result.Content = Zip(id,
-                            JsonConvert.DeserializeObject<ZipCommandParameters>(parameters));
+                            JsonConvert.DeserializeObject<ZipCommandParameters>(parameters)!);
                         return result;
                     case "unzip":
                         result.Content = UnZip(id,
-                            JsonConvert.DeserializeObject<UnZipCommandParameters>(parameters));
+                            JsonConvert.DeserializeObject<UnZipCommandParameters>(parameters)!);
                         return result;
                     case "copy":
                     case "cut":
                         result.Content = CopyCutItems(id, command.ToLower(),
-                            JsonConvert.DeserializeObject<CopyCutCommandParameters>(parameters));
+                            JsonConvert.DeserializeObject<CopyCutCommandParameters>(parameters)!);
                         return result;
                     case "editfile":
                         return EditFile(id,
-                            JsonConvert.DeserializeObject<EditFileCommandParameters>(parameters));
+                            JsonConvert.DeserializeObject<EditFileCommandParameters>(parameters)!);
                     case "download":
                         return Download(id, parameters, false);
                     case "view":
@@ -133,7 +139,7 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
             return null;
         }
 
-        return Path.GetFullPath(_session.GetString(sessionKey).Trim());
+        return Path.GetFullPath(_session.GetString(sessionKey)!.Trim());
     }
 
     private long GetRootFolderSize(string id)
@@ -203,21 +209,21 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
         if (searchPattern.Contains("*"))
         {
             result.Files.AddRange(Utils.GetFiles(physicalPath, searchPattern, SearchOption.AllDirectories).OrderBy(p => p)
-                .Select(p => p.GetFileDetail(physicalRootPath)));
+                .Select(p => p == null ? null : p.GetFileDetail(physicalRootPath)));
             result.Folders.AddRange(Utils.GetDirectories(physicalPath, searchPattern, SearchOption.AllDirectories)
-                .OrderBy(p => p).Select(p => p.GetFolderDetail(physicalRootPath)));
+                .OrderBy(p => p).Select(p => p == null ? null : p.GetFolderDetail(physicalRootPath)));
         }
         else
         {
             result.Files.AddRange(Utils.GetFiles(physicalPath, "*", SearchOption.AllDirectories).OrderBy(p => p)
-                .Select(p => p.GetFileDetail(physicalRootPath)));
+                .Select(p => p == null ? null : p.GetFileDetail(physicalRootPath)));
             result.Folders.AddRange(Utils.GetDirectories(physicalPath, "*", SearchOption.AllDirectories)
-                .OrderBy(p => p).Select(p => p.GetFolderDetail(physicalRootPath)));
+                .OrderBy(p => p).Select(p => p == null ? null : p.GetFolderDetail(physicalRootPath)));
 
             result.Files.RemoveAll(p =>
-                !p.FileName.Contains(searchPattern, StringComparison.InvariantCultureIgnoreCase));
+                !p!.FileName.Contains(searchPattern, StringComparison.InvariantCultureIgnoreCase));
             result.Folders.RemoveAll(p =>
-                !p.FolderName.Contains(searchPattern, StringComparison.InvariantCultureIgnoreCase));
+                !p!.FolderName.Contains(searchPattern, StringComparison.InvariantCultureIgnoreCase));
         }
 
         return result.ToString();
@@ -458,9 +464,13 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
 
         //create Zip archive
         using (Stream stream = File.Create(newZipFileName))
-        using (var archive = ZipArchive.Create())
+        using (var archive = ZipArchive.CreateArchive())
         {
-            archive.DeflateCompressionLevel = (CompressionLevel)FileManagerComponent.ConfigStorage[id].CompressionLevel;
+            var writerOptions = new ZipWriterOptions(CompressionType.Deflate,
+                (CompressionLevel)FileManagerComponent.ConfigStorage[id].CompressionLevel)
+            {
+                LeaveStreamOpen = false,
+            };
 
             foreach (var item in commandParameters.Items.Select(p => p.ConvertVirtualToPhysicalPath(physicalRootPath)))
             {
@@ -478,10 +488,7 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
                 }
             }
 
-            archive.SaveTo(stream, new WriterOptions(CompressionType.Deflate)
-            {
-                LeaveStreamOpen = false,
-            });
+            archive.SaveTo(stream, writerOptions);
         }
 
         return GetContent(id, commandParameters.Path);
@@ -531,7 +538,7 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
             if (File.Exists(zipArchivePhysicalPath))
             {
                 using (Stream stream = File.OpenRead(zipArchivePhysicalPath))
-                using (var reader = ReaderFactory.Open(stream))
+                using (var reader = ReaderFactory.OpenReader(stream, new ReaderOptions()))
                 {
                     reader.WriteAllToDirectory(physicalPath, new ExtractionOptions()
                     {
@@ -659,7 +666,7 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
         var result = new ViewResult()
         {
             ViewName = "HgoFileManager/Edit",
-            TempData = new TempDataDictionary(_httpContextAccessor.HttpContext, _tempDataProvider)
+            TempData = new TempDataDictionary(_httpContextAccessor.HttpContext!, _tempDataProvider)
         };
         result.TempData["Id"] = id;
         result.TempData["FileFullPath"] = filePath;
@@ -787,13 +794,13 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
         if (File.Exists(filePath) && _httpContextAccessor.HttpContext.Request.Form.TryGetValue("dzchunkindex", out StringValues chunkIndex))
         {
             if (int.TryParse(chunkIndex.ToString(), out int idx) && idx == 0)
+        {
+            return new ContentResult()
             {
-                return new ContentResult()
-                {
                     Content = "File already exist",
-                    StatusCode = 400
-                };
-            }
+                StatusCode = 400
+            };
+        }
         }
 
         using Stream fileStream = new FileStream(filePath, FileMode.Append);

@@ -10,17 +10,23 @@ using Microsoft.AspNetCore.Mvc.Razor;
 
 namespace HGO.ASPNetCore.FileManager
 {
+    /// <summary>Provides registration, middleware, and rendering helpers for the file manager.</summary>
     public static class Extensions
     {
+        /// <summary>Registers the file-manager services and its embedded views.</summary>
+        /// <param name="services">The application's service collection.</param>
         public static void AddHgoFileManager(this IServiceCollection services)
         {
-            services.AddControllersWithViews().AddRazorRuntimeCompilation(c => c.FileProviders.Add(new EmbeddedFileProvider(typeof(FileManagerComponent)
-                .GetTypeInfo().Assembly, "HGO.ASPNetCore.FileManager")));
+            services.AddControllersWithViews().AddRazorRuntimeCompilation(options =>
+                options.FileProviders.Add(new EmbeddedFileProvider(typeof(FileManagerComponent)
+                    .GetTypeInfo().Assembly, "HGO.ASPNetCore.FileManager")));
             services.AddSession();
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddScoped(typeof(IFileManagerCommandsProcessor), typeof(FileManagerCommandsProcessor));
         }
 
+        /// <summary>Adds the file-manager embedded static files and session middleware.</summary>
+        /// <param name="builder">The application's middleware pipeline.</param>
         public static void UseHgoFileManager(this IApplicationBuilder builder)
         {
             var embeddedProvider = new EmbeddedFileProvider(typeof(FileManagerComponent)
@@ -34,6 +40,10 @@ namespace HGO.ASPNetCore.FileManager
             });
         }
 
+        /// <summary>Renders the file-manager JavaScript references.</summary>
+        /// <param name="razorPage">The Razor page used to resolve the application path.</param>
+        /// <param name="exclude">Optional names of script libraries to exclude.</param>
+        /// <returns>An HTML string containing the script references.</returns>
         public static HtmlString RenderHgoFileManagerJavaScripts(this RazorPageBase razorPage, string[]? exclude = null)
         {
             var excludelist = new List<string>();
@@ -43,7 +53,7 @@ namespace HGO.ASPNetCore.FileManager
             }
 
             var basePath = razorPage.ViewContext.HttpContext.Request.PathBase.HasValue
-                ? razorPage.ViewContext.HttpContext.Request.PathBase.Value.TrimEnd('/')
+                ? razorPage.ViewContext.HttpContext.Request.PathBase.Value!.TrimEnd('/')
                 : "";
             var scripts = "";
             if (!excludelist.Any(p => p.ToLower() == "js.cookie"))
@@ -87,6 +97,11 @@ namespace HGO.ASPNetCore.FileManager
             return new HtmlString(scripts);
         }
 
+        /// <summary>Renders the file-manager CSS references and records the selected theme.</summary>
+        /// <param name="razorPage">The Razor page used to resolve the application path and session.</param>
+        /// <param name="darkMode">Whether to render the dark theme.</param>
+        /// <param name="exclude">Optional names of style libraries to exclude.</param>
+        /// <returns>An HTML string containing the style references.</returns>
         public static HtmlString RenderHgoFileManagerCss(this RazorPageBase razorPage, bool darkMode = false, string[]? exclude = null)
         {
             var excludelist = new List<string>();
@@ -96,7 +111,7 @@ namespace HGO.ASPNetCore.FileManager
             }
 
             var basePath = razorPage.ViewContext.HttpContext.Request.PathBase.HasValue
-                ? razorPage.ViewContext.HttpContext.Request.PathBase.Value.TrimEnd('/')
+                ? razorPage.ViewContext.HttpContext.Request.PathBase.Value!.TrimEnd('/')
                 : "";
             var styles = $"<script>window.HGOFM_BASEPATH = '{basePath}';</script>\r\n";
             if (!excludelist.Any(p => p.ToLower() == "jsTree"))

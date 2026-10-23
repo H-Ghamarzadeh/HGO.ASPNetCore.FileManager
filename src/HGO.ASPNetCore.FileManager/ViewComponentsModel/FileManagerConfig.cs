@@ -1,5 +1,6 @@
 ﻿namespace HGO.ASPNetCore.FileManager.ViewComponentsModel
 {
+    /// <summary>Configures file-manager functionality, storage limits, and uploads.</summary>
     public class FileManagerConfig
     {
         private byte _compressionLevel = 6;
