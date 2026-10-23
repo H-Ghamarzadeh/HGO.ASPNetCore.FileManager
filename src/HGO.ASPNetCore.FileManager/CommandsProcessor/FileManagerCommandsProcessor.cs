@@ -619,14 +619,19 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
             };
         }
 
-        //if (view)
-        //{
-        //    return new FileStreamResult(File.OpenRead(physicalPath), Utils.GetMimeTypeForFileExtension(physicalPath));
-        //}
+        var fileName = Path.GetFileName(physicalPath);
+        var contentType = Utils.GetMimeTypeForFileExtension(physicalPath);
 
-        return new PhysicalFileResult(physicalPath, Utils.GetMimeTypeForFileExtension(physicalPath))
+        if (view)
         {
-            FileDownloadName = view ? null : Path.GetFileName(physicalPath),
+            // inline disposition WITH filename so browsers that cannot render the content
+            // inline still save with the correct name instead of the URL's last path segment.
+            return new InlinePhysicalFileResult(physicalPath, contentType, fileName);
+        }
+
+        return new PhysicalFileResult(physicalPath, contentType)
+        {
+            FileDownloadName = fileName,
             EnableRangeProcessing = true
         };
     }

@@ -83,9 +83,21 @@ namespace HGO.ASPNetCore.FileManager
 
             var provider = new FileExtensionContentTypeProvider();
 
-            if (!provider.TryGetContentType(filePath, out string contentType))
+            if (!provider.TryGetContentType(filePath, out string? contentType))
             {
-                contentType = defaultContentType;
+                // Add support for common video formats not in default provider
+                var extension = Path.GetExtension(filePath).ToLowerInvariant();
+                contentType = extension switch
+                {
+                    ".mkv" => "video/x-matroska",
+                    ".webm" => "video/webm",
+                    ".flv" => "video/x-flv",
+                    ".ogv" => "video/ogg",
+                    ".ts" => "video/mp2t",
+                    ".mts" => "video/mp2t",
+                    ".m2ts" => "video/mp2t",
+                    _ => defaultContentType
+                };
             }
 
             return contentType;
@@ -165,7 +177,10 @@ namespace HGO.ASPNetCore.FileManager
 
         public static List<string> GetFiles(string path, string searchPattern, SearchOption searchOption)
         {
-            return Directory.GetFiles(path, searchPattern, searchOption).Where(p=> !new FileInfo(p).Attributes.HasFlag(FileAttributes.Hidden)).OrderBy(p=> p).ToList();
+            return Directory.GetFiles(path, searchPattern, searchOption)
+                .Where(p => !new FileInfo(p).Attributes.HasFlag(FileAttributes.Hidden))
+                .Where(p => !p.EndsWith(".uploading", StringComparison.OrdinalIgnoreCase))
+                .OrderBy(p => p).ToList();
         }
 
         public static List<string> GetDirectories(string path, string searchPattern, SearchOption searchOption)
