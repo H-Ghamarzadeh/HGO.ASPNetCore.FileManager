@@ -110,6 +110,12 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
                         return Upload(id, parameters, file);
                     case "filepreview":
                         return FilePreview(id, parameters);
+                    case "cleanupuploads":
+                        return CleanupUploads(id, parameters);
+                    case "countfaileduploads":
+                        return CountFailedUploads(id, parameters);
+                    case "finalizeupload":
+                        return FinalizeUpload(id, parameters);
                     default:
                         result.Content = JsonConvert.SerializeObject(new { Error = "Unknown command!" });
                         return result;
@@ -176,6 +182,10 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
             .Select(p => p.GetFileDetail(physicalRootPath)));
         result.Folders.AddRange(Utils.GetDirectories(physicalPath, "*.*", SearchOption.TopDirectoryOnly)
             .OrderBy(p => p).Select(p => p.GetFolderDetail(physicalRootPath)));
+
+        // Count failed uploads
+        var failedUploadsCount = Directory.GetFiles(physicalPath, "*.uploading", SearchOption.TopDirectoryOnly).Length;
+        result.FailedUploadsCount = failedUploadsCount;
 
         return result.ToString();
     }
@@ -795,21 +805,155 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
         }
 
         var filePath = Path.Combine(physicalPath, file.FileName);
+        var tempFilePath = filePath + ".uploading";
 
-        if (File.Exists(filePath) && _httpContextAccessor.HttpContext.Request.Form.TryGetValue("dzchunkindex", out StringValues chunkIndex))
+        // Check if this is chunked upload
+        _httpContextAccessor.HttpContext!.Request.Form.TryGetValue("dzchunkindex", out StringValues chunkIndex);
+        _httpContextAccessor.HttpContext!.Request.Form.TryGetValue("dztotalchunkcount", out StringValues totalChunks);
+
+        var isChunkedUpload = chunkIndex.Count > 0 && totalChunks.Count > 0;
+
+        if (isChunkedUpload)
         {
+            // Clean up any existing incomplete upload if this is the first chunk
             if (int.TryParse(chunkIndex.ToString(), out int idx) && idx == 0)
+            {
+                if (File.Exists(tempFilePath))
+                {
+                    File.Delete(tempFilePath);
+                }
+            }
+
+            // Write chunk to temporary file
+            using Stream fileStream = new FileStream(tempFilePath, FileMode.Append);
+            file.CopyTo(fileStream);
+        }
+        else
+        {
+            // Non-chunked upload - write directly
+            if (File.Exists(filePath))
+            {
+                File.Delete(filePath);
+            }
+            using Stream fileStream = new FileStream(filePath, FileMode.Create);
+            file.CopyTo(fileStream);
+        }
+
+        return new OkResult();
+    }
+
+    private IActionResult CleanupUploads(string id, string path)
+    {
+        var physicalRootPath = GetCurrentSessionPhysicalRootPath(id);
+        if (string.IsNullOrWhiteSpace(physicalRootPath))
         {
             return new ContentResult()
             {
-                    Content = "File already exist",
+                Content = "Invalid Root Path!",
                 StatusCode = 400
             };
         }
+
+        var physicalPath = path.ConvertVirtualToPhysicalPath(physicalRootPath);
+
+        if (!physicalPath.ToLower().StartsWith(physicalRootPath.ToLower()) || !Directory.Exists(physicalPath))
+        {
+            physicalPath = physicalRootPath;
         }
 
-        using Stream fileStream = new FileStream(filePath, FileMode.Append);
-        file.CopyTo(fileStream);
+        var uploadingFiles = Directory.GetFiles(physicalPath, "*.uploading", SearchOption.TopDirectoryOnly);
+        int deletedCount = 0;
+
+        foreach (var file in uploadingFiles)
+        {
+            try
+            {
+                File.Delete(file);
+                deletedCount++;
+            }
+            catch
+            {
+                // Ignore errors
+            }
+        }
+
+        return new ContentResult()
+        {
+            Content = JsonConvert.SerializeObject(new { DeletedCount = deletedCount }),
+            ContentType = "application/json"
+        };
+    }
+
+    private IActionResult CountFailedUploads(string id, string path)
+    {
+        var physicalRootPath = GetCurrentSessionPhysicalRootPath(id);
+        if (string.IsNullOrWhiteSpace(physicalRootPath))
+        {
+            return new ContentResult()
+            {
+                Content = "Invalid Root Path!",
+                StatusCode = 400
+            };
+        }
+
+        var physicalPath = path.ConvertVirtualToPhysicalPath(physicalRootPath);
+
+        if (!physicalPath.ToLower().StartsWith(physicalRootPath.ToLower()) || !Directory.Exists(physicalPath))
+        {
+            physicalPath = physicalRootPath;
+        }
+
+        var count = Directory.GetFiles(physicalPath, "*.uploading", SearchOption.TopDirectoryOnly).Length;
+
+        return new ContentResult()
+        {
+            Content = JsonConvert.SerializeObject(new { Count = count }),
+            ContentType = "application/json"
+        };
+    }
+
+    private IActionResult FinalizeUpload(string id, string parameters)
+    {
+        var physicalRootPath = GetCurrentSessionPhysicalRootPath(id);
+        if (string.IsNullOrWhiteSpace(physicalRootPath))
+        {
+            return new ContentResult()
+            {
+                Content = "Invalid Root Path!",
+                StatusCode = 400
+            };
+        }
+
+        dynamic paramData = JsonConvert.DeserializeObject(parameters);
+        string fileName = paramData.fileName;
+        string path = paramData.path;
+
+        var physicalPath = path.ConvertVirtualToPhysicalPath(physicalRootPath);
+
+        if (!physicalPath.ToLower().StartsWith(physicalRootPath.ToLower()) || !Directory.Exists(physicalPath))
+        {
+            physicalPath = physicalRootPath;
+        }
+
+        var filePath = Path.Combine(physicalPath, fileName);
+        var tempFilePath = filePath + ".uploading";
+
+        // If temp file exists, rename it to final filename
+        if (File.Exists(tempFilePath))
+        {
+            try
+            {
+                if (File.Exists(filePath))
+                {
+                    File.Delete(filePath);
+                }
+                File.Move(tempFilePath, filePath);
+            }
+            catch
+            {
+                // Ignore errors - file might be locked or in use
+            }
+        }
 
         return new OkResult();
     }
