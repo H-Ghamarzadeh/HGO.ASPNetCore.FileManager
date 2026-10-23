@@ -126,6 +126,118 @@
             justify-content: center !important;
             flex-grow: 1 !important;
         }
+
+    .hgo-fm-fsitems {
+        padding: 10px;
+    }
+
+        .hgo-fm-fsitems .fsitem {
+            height: 120px;
+            width: 120px;
+            margin: 4px;
+            font-size: 12px;
+            padding: 6px;
+        }
+
+            .hgo-fm-fsitems .fsitem img {
+                max-width: 70px;
+                max-height: 70px;
+            }
+
+    .hgo-fm-fsitems.list .fsitem {
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+
+        .hgo-fm-fsitems.list .fsitem img {
+            max-width: 22px;
+            max-height: 22px;
+        }
+}
+
+@media screen and (max-width: 600px) {
+    .hgo-fm-fsitems .fsitem {
+        height: 80px;
+        width: 80px;
+        margin: 3px;
+        font-size: 10px;
+        padding: 4px;
+    }
+
+        .hgo-fm-fsitems .fsitem img {
+            max-width: 45px;
+            max-height: 45px;
+        }
+
+    .hgo-fm-fsitems.list .fsitem {
+        padding: 8px 6px;
+        font-size: 12px;
+    }
+
+        .hgo-fm-fsitems.list .fsitem img {
+            max-width: 24px;
+            max-height: 24px;
+        }
+
+    .hgo-fm-menu button {
+        font-size: 14px;
+        padding: 3px 5px;
+        height: auto !important;
+    }
+
+    .hgo-fm-menu input {
+        font-size: 13px;
+    }
+}
+
+@media screen and (max-width: 400px) {
+    .hgo-fm-fsitems .fsitem {
+        height: 70px;
+        width: 70px;
+        margin: 2px;
+        font-size: 9px;
+        padding: 3px;
+    }
+
+        .hgo-fm-fsitems .fsitem img {
+            max-width: 38px;
+            max-height: 38px;
+        }
+
+    .hgo-fm-fsitems.list .fsitem {
+        padding: 6px 4px;
+        font-size: 10px;
+    }
+
+        .hgo-fm-fsitems.list .fsitem img {
+            max-width: 18px;
+            max-height: 18px;
+    }
+}
+
+@media screen and (max-width: 360px) {
+    .hgo-fm-fsitems .fsitem {
+        height: 65px;
+        width: 65px;
+        margin: 2px;
+        font-size: 8px;
+        padding: 2px;
+    }
+
+        .hgo-fm-fsitems .fsitem img {
+            max-width: 35px;
+            max-height: 35px;
+        }
+
+    .hgo-fm-fsitems.list .fsitem {
+        padding: 5px 3px;
+        font-size: 9px;
+    }
+
+        .hgo-fm-fsitems.list .fsitem img {
+            max-width: 16px;
+            max-height: 16px;
+    }
 }
 
     .hgo-fm-menu .button-continer {
@@ -245,6 +357,9 @@
     align-items: stretch;
     flex: 1;
     overflow: auto;
+    touch-action: pan-x pan-y;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
 }
 
     .hgo-fm-content-wrapper .split {
@@ -272,8 +387,13 @@
 
     .hgo-fm-tree .jstree-icon.jstree-themeicon {
         background-size: cover;
-        background-image: url(/hgofilemanager/images/folder.png);
+        /*background-image: url(var(--hgofm-basepath)/hgofilemanager/images/folder.png);*/
+        background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABAAQMAAACQp+OdAAAABlBMVEUAAAD/yigfXxocAAAAAXRSTlMAQObYZgAAAEBJREFUeF7t0LENwCAQxdBDFFmb0W6UG4GSzhFffGUDqrh6teNGMIQGKXQoYwoPrANlMIw0auNHR+WH5mOBigu9rcsJrN38ucEAAAAASUVORK5CYII=');
         background-position: center;
+    }
+
+    .hgo-fm-tree .jstree-parent-folder .jstree-icon.jstree-themeicon {
+        background-image: url('/hgofilemanager/images/folderBack64.png');
     }
 
     .hgo-fm-tree .jstree-anchor {
@@ -298,6 +418,11 @@
     align-content: flex-start;
     flex-wrap: wrap;
     align-items: flex-start;
+    touch-action: pan-x pan-y pinch-zoom;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
 }
 
     .hgo-fm-fsitems .fsitem {
@@ -315,6 +440,19 @@
         padding: 8px;
         align-items: center;
         border: 1px solid #00000000;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        touch-action: manipulation;
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+    }
+
+        .hgo-fm-fsitems .fsitem:active {
+            transform: scale(0.95);
+        }
+
+    .hgo-fm-fsitems .fsitem.fsitem-parent {
+        background: rgba(46, 115, 252, 0.15);
+        border: 1px solid rgba(46, 115, 252, 0.4);
     }
 
         .hgo-fm-fsitems .fsitem img {
@@ -387,6 +525,13 @@
     background: rgba(46, 115, 252, 0.11);
     border: 1px solid rgba(98, 155, 255, 0.85);
     border-radius: 0.15em;
+}
+
+@media (pointer: coarse) {
+    .selection-area {
+        display: none !important;
+        pointer-events: none !important;
+    }
 }
 /*---- filest list continer end ----------------------*/
 

@@ -18,6 +18,7 @@
 
     backButton;
     pasteButton;
+    cleanupButton;
 
     static instances = [];
 
@@ -103,11 +104,15 @@
 
         if (!disabledFunctions.includes('view'))
             this.addButtonToMenu('<i class="fa-solid fa-eye"></i>', (e) => this.viewFile()).setAttribute('title', 'View');
-        if (!disabledFunctions.includes('download')) 
+        if (!disabledFunctions.includes('download'))
             this.addButtonToMenu('<i class="fa-solid fa-cloud-arrow-down"></i>', (e) => this.downloadFile()).setAttribute('title', 'Download');
-        if (!disabledFunctions.includes('upload')) 
+        if (!disabledFunctions.includes('upload'))
             this.addButtonToMenu('<i class="fa-solid fa-cloud-arrow-up"></i>', (e) => this.showUploadPanel()).setAttribute('title', 'Upload');
-        if (!(disabledFunctions.includes('download') && disabledFunctions.includes('upload') && disabledFunctions.includes('view'))) 
+        if (!disabledFunctions.includes('cleanupuploads')) {
+            this.cleanupButton = this.addButtonToMenu('<i class="fa-solid fa-broom"></i>', (e) => this.cleanupFailedUploads());
+            this.cleanupButton.setAttribute('title', 'Clean Failed Uploads');
+        }
+        if (!(disabledFunctions.includes('download') && disabledFunctions.includes('upload') && disabledFunctions.includes('view') && disabledFunctions.includes('cleanupuploads')))
             this.addButtonToMenu();
 
         if (!disabledFunctions.includes('zip')) 
@@ -188,6 +193,7 @@
     #initExplorer() {
         let self = this;
         let disabledFunctions = (typeof this.config.disabledFunctions != "undefined" ? this.config.disabledFunctions.join(',') : '').toLowerCase();
+        const isTouchDevice = window.matchMedia('(pointer: coarse)').matches;
 
         this.#fileManager().classList.add('hgo-fm-wrapper');
 
@@ -240,64 +246,79 @@
         this.#initContextMenu();
 
         //init JsTree--------------------------------------------------
-        $(jsTreeDiv).jstree({
-            "checkbox": {
-                "keep_selected_style": false
-            },
-            "plugins": []
-        }).on("select_node.jstree", (!disabledFunctions.includes('browse')) ? 
-            function (evt, data) {
-                if (data.event.type === 'click') {
-                    if (data.node.parent === "#") {
-                        //Click on root node
-                        self.goUpFolder();
-                    }
-                    else {
-                        //Click on child nodes
-                        self.getFolderContent(self.getCurrentPath() + "\\" + data.node.text);
+        if (!isTouchDevice) {
+            $(jsTreeDiv).jstree({
+                "checkbox": {
+                    "keep_selected_style": false
+                },
+                "plugins": []
+            }).on("select_node.jstree", (!disabledFunctions.includes('browse')) ?
+                function (evt, data) {
+                    if (data.event.type === 'click') {
+                        if (data.node.parent === "#") {
+                            //Click on root node
+                            self.goUpFolder();
+                        }
+                        else {
+                            //Click on child nodes
+                            self.getFolderContent(self.getCurrentPath() + "\\" + data.node.text);
+                        }
                     }
                 }
-            } 
-            : null
-        );
-        this.jsTree = $(jsTreeDiv).jstree(true);
-        if (disabledFunctions.includes('folderstree'))
-            jsTreeDiv.style.display = 'none';
+                : null
+            );
+            this.jsTree = $(jsTreeDiv).jstree(true);
+            if (disabledFunctions.includes('folderstree'))
+                jsTreeDiv.style.display = 'none';
+        } else {
+            this.jsTree = null;
+            if (!disabledFunctions.includes('folderstree'))
+                jsTreeDiv.style.display = 'none';
+        }
 
         //init ViSelect------------------------------------------------
-        this.jsSelect = new SelectionArea({
-            selectables: ['#' + this.thisId + ' .hgo-fm-fsitems > .fsitem'],
-            boundaries: [this.jsSelectContinerDiv],
-        }).on('beforestart', ({ store, event }) => {
-            let contextMenu = $('#' + this.thisId + ' .hgo-fm-fsitems .context');
-            if (!event.ctrlKey && !event.metaKey && contextMenu.length === 0) {
+        if (!isTouchDevice) {
+            this.jsSelect = new SelectionArea({
+                selectables: ['#' + this.thisId + ' .hgo-fm-fsitems > .fsitem'],
+                boundaries: [this.jsSelectContinerDiv],
+            }).on('beforestart', ({ store, event }) => {
+                let contextMenu = $('#' + this.thisId + ' .hgo-fm-fsitems .context');
+                if (!event.ctrlKey && !event.metaKey && contextMenu.length === 0) {
 
-                for (const el of store.stored) {
+                    for (const el of store.stored) {
+                        el.classList.remove('selected');
+                    }
+
+                    this.jsSelect.clearSelection();
+                }
+            }).on('move', ({ store: { changed: { added, removed } } }) => {
+                for (const el of added) {
+                    el.classList.add('selected');
+                }
+
+                for (const el of removed) {
                     el.classList.remove('selected');
                 }
 
-                this.jsSelect.clearSelection();
-            }
-        }).on('move', ({ store: { changed: { added, removed } } }) => {
-            for (const el of added) {
-                el.classList.add('selected');
-            }
-
-            for (const el of removed) {
-                el.classList.remove('selected');
-            }
-            
-        }).on('beforedrag', ({ store, event }) => {
-            if (!event.ctrlKey && !event.metaKey) {
-                this.jsSelect.clearSelection();
-            }
-        });
+            }).on('beforedrag', ({ store, event }) => {
+                if (!event.ctrlKey && !event.metaKey) {
+                    this.jsSelect.clearSelection();
+                }
+            });
+        } else {
+            this.jsSelect = null;
+        }
 
         //init SplitJS-------------------------------------------------
-        if (!disabledFunctions.includes('folderstree'))
+        if (!disabledFunctions.includes('folderstree') && !isTouchDevice)
             Split([jsTreeDiv, this.jsSelectContinerDiv], {
                 sizes: [20, 80],
             });
+        if (isTouchDevice && !disabledFunctions.includes('folderstree')) {
+            jsTreeDiv.style.width = '0';
+            jsTreeDiv.style.display = 'none';
+            this.jsSelectContinerDiv.style.width = '100%';
+        }
     }
 
     #WaitingPanel() {
@@ -364,11 +385,190 @@
         this.#setCurrentPath(currentPath);
 
         let self = this;
-
         let selectDiv = this.jsSelectContinerDiv;
         selectDiv.innerHTML = '';
 
+        // Add touch handling to container to prevent selection during scroll
+        let containerTouchStartX = 0;
+        let containerTouchStartY = 0;
+        let containerTouchStartTime = 0;
+        let isScrolling = false;
+
+        selectDiv.addEventListener('touchstart', (event) => {
+            containerTouchStartX = event.touches[0].clientX;
+            containerTouchStartY = event.touches[0].clientY;
+            containerTouchStartTime = Date.now();
+            isScrolling = false;
+        }, { passive: true });
+
+        selectDiv.addEventListener('touchmove', (event) => {
+            const touchDistance = Math.sqrt(
+                Math.pow(event.touches[0].clientX - containerTouchStartX, 2) +
+                Math.pow(event.touches[0].clientY - containerTouchStartY, 2)
+            );
+            if (touchDistance > 10) {
+                isScrolling = true;
+            }
+        }, { passive: true });
+
+        selectDiv.addEventListener('touchend', () => {
+            isScrolling = false;
+        }, { passive: true });
+
+        const addSelectionHandlers = (item) => {
+            let lastClickTime = 0;
+            let isMobile = window.matchMedia('(pointer: coarse)').matches;
+            let touchStartTime = 0;
+            let touchStartX = 0;
+            let touchStartY = 0;
+
+            item.addEventListener('touchstart', (event) => {
+                touchStartTime = Date.now();
+                touchStartX = event.touches[0].clientX;
+                touchStartY = event.touches[0].clientY;
+            }, { passive: true });
+
+            item.addEventListener('touchend', (event) => {
+                // If container is scrolling, don't handle as tap
+                if (isScrolling) return;
+
+                const touchDuration = Date.now() - touchStartTime;
+                const touchEndX = event.changedTouches[0].clientX;
+                const touchEndY = event.changedTouches[0].clientY;
+                const touchDistance = Math.sqrt(Math.pow(touchEndX - touchStartX, 2) + Math.pow(touchEndY - touchStartY, 2));
+
+                // If it was a scroll (moved more than 10px or took longer than 500ms), don't treat as tap
+                if (touchDistance > 10 || touchDuration > 500) {
+                    return;
+                }
+
+                const alreadySelected = item.classList.contains('selected');
+                const itemType = item.getAttribute('item-type');
+                const itemPath = item.getAttribute('path');
+
+                const currentSelection = Array.from(selectDiv.querySelectorAll('.fsitem.selected'));
+                if (currentSelection.length > 0 && !currentSelection.includes(item)) {
+                    currentSelection.forEach((selectedItem) => selectedItem.classList.remove('selected'));
+                }
+                item.classList.toggle('selected', !alreadySelected);
+
+                const now = Date.now();
+                if (now - lastClickTime < 300 && alreadySelected) {
+                    if (itemType === 'folder') {
+                        self.getFolderContent(itemPath);
+                    } else if (!disabledFunctions.includes('view')) {
+                        self.viewFile();
+                    }
+                }
+                lastClickTime = now;
+            }, { passive: true });
+
+            item.addEventListener('click', (event) => {
+                if (isMobile) return;
+                const alreadySelected = item.classList.contains('selected');
+                const itemType = item.getAttribute('item-type');
+                const itemPath = item.getAttribute('path');
+
+                if (event.ctrlKey || event.metaKey || event.shiftKey) {
+                    item.classList.toggle('selected', !alreadySelected);
+                    return;
+                }
+
+                const otherSelectedItems = Array.from(selectDiv.querySelectorAll('.fsitem.selected'));
+                otherSelectedItems.forEach((selectedItem) => {
+                    if (selectedItem !== item) selectedItem.classList.remove('selected');
+                });
+                item.classList.add('selected');
+            });
+
+            item.addEventListener('dblclick', (event) => {
+                if (isMobile) return;
+                event.stopPropagation();
+                const itemType = item.getAttribute('item-type');
+                const itemPath = item.getAttribute('path');
+                if (itemType === 'folder') {
+                    self.getFolderContent(itemPath);
+                } else if (!disabledFunctions.includes('view')) {
+                    self.viewFile();
+                }
+            });
+        };
+
         let jsTreeNodes = [];
+        const normalizedCurrentPath = currentPath.replace(/\\+$/, '');
+        const parentPath = normalizedCurrentPath.lastIndexOf('\\') >= 0
+            ? normalizedCurrentPath.substring(0, normalizedCurrentPath.lastIndexOf('\\')) + "\\"
+            : currentPath;
+
+        if (normalizedCurrentPath && normalizedCurrentPath.lastIndexOf('\\') >= 0) {
+            const parentItem = document.createElement('div');
+            parentItem.setAttribute('title', 'پوشه قبلی');
+            parentItem.setAttribute('path', parentPath);
+            parentItem.setAttribute('item-type', 'folder');
+            parentItem.classList.add('fsitem', 'fsitem-parent');
+            let parentLastClickTime = 0;
+            let parentTouchStartTime = 0;
+            let parentTouchStartX = 0;
+            let parentTouchStartY = 0;
+
+            parentItem.addEventListener('touchstart', (event) => {
+                parentTouchStartTime = Date.now();
+                parentTouchStartX = event.touches[0].clientX;
+                parentTouchStartY = event.touches[0].clientY;
+            }, { passive: true });
+
+            parentItem.addEventListener('touchend', (event) => {
+                // If container is scrolling, don't handle as tap
+                if (isScrolling) return;
+
+                const touchDuration = Date.now() - parentTouchStartTime;
+                const touchEndX = event.changedTouches[0].clientX;
+                const touchEndY = event.changedTouches[0].clientY;
+                const touchDistance = Math.sqrt(Math.pow(touchEndX - parentTouchStartX, 2) + Math.pow(touchEndY - parentTouchStartY, 2));
+
+                if (touchDistance > 10 || touchDuration > 500) {
+                    return;
+                }
+
+                const alreadySelected = parentItem.classList.contains('selected');
+                const currentSelection = Array.from(selectDiv.querySelectorAll('.fsitem.selected'));
+                currentSelection.forEach((selectedItem) => selectedItem.classList.remove('selected'));
+                parentItem.classList.toggle('selected', !alreadySelected);
+
+                const now = Date.now();
+                if (now - parentLastClickTime < 300 && alreadySelected) {
+                    self.getFolderContent(parentPath);
+                }
+                parentLastClickTime = now;
+            }, { passive: true });
+
+            parentItem.addEventListener('click', (event) => {
+                if (window.matchMedia('(pointer: coarse)').matches) return;
+                const alreadySelected = parentItem.classList.contains('selected');
+                const currentSelection = Array.from(selectDiv.querySelectorAll('.fsitem.selected'));
+                currentSelection.forEach((selectedItem) => selectedItem.classList.remove('selected'));
+                parentItem.classList.add('selected');
+            });
+
+            parentItem.addEventListener('dblclick', (event) => {
+                if (window.matchMedia('(pointer: coarse)').matches) return;
+                event.stopPropagation();
+                self.getFolderContent(parentPath);
+            });
+
+            const basePath = window.HGOFM_BASEPATH || '';
+            const fsItemImg = document.createElement('img');
+            fsItemImg.classList.add('lozad');
+            fsItemImg.src = basePath + '/hgofilemanager/images/loading.gif';
+            fsItemImg.setAttribute('data-src', basePath + '/hgofilemanager/images/folderBack64.png');
+            parentItem.appendChild(fsItemImg);
+
+            const fsItemSpan = document.createElement('span');
+            fsItemSpan.innerText = '(پوشه قبلی)';
+            parentItem.appendChild(fsItemSpan);
+
+            selectDiv.appendChild(parentItem);
+        }
 
         $.each(data.Folders, function (idx, folder) {
 
@@ -379,6 +579,7 @@
             fsItemDiv.setAttribute('path', folder.VirtualPath);
             fsItemDiv.setAttribute('item-type', 'folder');
             fsItemDiv.classList.add('fsitem');
+            addSelectionHandlers(fsItemDiv);
             if (!disabledFunctions.includes('browse'))
                 fsItemDiv.addEventListener('dblclick', (e) => {
                     e.stopPropagation();
@@ -386,10 +587,11 @@
                     self.getFolderContent(path);
                 });
 
+            let basePath = window.HGOFM_BASEPATH || '';
             let fsItemImg = document.createElement('img');
             fsItemImg.classList.add('lozad');
-            fsItemImg.src = '/hgofilemanager/images/loading.gif';
-            fsItemImg.setAttribute('data-src', '/hgofilemanager/images/folder.png');
+            fsItemImg.src = basePath + '/hgofilemanager/images/loading.gif';
+            fsItemImg.setAttribute('data-src', basePath + '/hgofilemanager/images/folder.png');
             fsItemDiv.appendChild(fsItemImg);
 
             let fsItemSpan = document.createElement('span');
@@ -406,6 +608,7 @@
             fsItemDiv.setAttribute('path', file.VirtualPath);
             fsItemDiv.setAttribute('item-type', 'file');
             fsItemDiv.classList.add('fsitem');
+            addSelectionHandlers(fsItemDiv);
 
             if (!disabledFunctions.includes('view')) 
                 fsItemDiv.addEventListener('dblclick', (e) => {
@@ -413,13 +616,14 @@
                     self.viewFile();
                 });
 
+            let basePath = window.HGOFM_BASEPATH || '';
             let fsItemImg = document.createElement('img');
             fsItemImg.classList.add('lozad');
-            fsItemImg.src = '/hgofilemanager/images/loading.gif';
+            fsItemImg.src = basePath + '/hgofilemanager/images/loading.gif';
             if (!disabledFunctions.includes('filepreview')) {
-                fsItemImg.setAttribute('data-src', this.apiUrl + `?id=${this.thisId}&command=filePreview&parameters=${file.VirtualPath}`);
+                fsItemImg.setAttribute('data-src', this.apiUrl + `?id=${this.thisId}&command=filePreview&parameters=${encodeURIComponent(file.VirtualPath)}`);
             } else {
-                fsItemImg.setAttribute('data-src', '/hgofilemanager/images/file.png');
+                fsItemImg.setAttribute('data-src', basePath + '/hgofilemanager/images/file.png');
             }
             fsItemDiv.appendChild(fsItemImg);
 
@@ -436,16 +640,25 @@
 
         });
 
-        this.jsTree.settings.core.data = [
-
-            {
-                'text': currentPath,
-                'state': { 'opened': true, 'selected': false },
-                'children': jsTreeNodes
-            }
-        ];
-        this.jsTree.deselect_all(true);
-        this.jsTree.refresh();
+        let treeData = [];
+        if (normalizedCurrentPath && normalizedCurrentPath.lastIndexOf('\\') >= 0) {
+            treeData.push({
+                'text': 'پوشه قبلی',
+                'state': { 'opened': false, 'selected': false },
+                'data': { 'isParent': true, 'path': parentPath },
+                'li_attr': { 'class': 'jstree-parent-folder' }
+            });
+        }
+        treeData.push({
+            'text': currentPath,
+            'state': { 'opened': true, 'selected': false },
+            'children': jsTreeNodes
+        });
+        if (this.jsTree) {
+            this.jsTree.settings.core.data = treeData;
+            this.jsTree.deselect_all(true);
+            this.jsTree.refresh();
+        }
         this.#reloadBreadcrumb(currentPath);
         this.lazyLoader.observe();;
     }
@@ -498,8 +711,15 @@
     }
 
     getSelectedItemsPath = function (itemtype) {
-        let selectedItems = this.jsSelect.getSelection();
-        if (selectedItems.length == 0) {
+        let selectedItems = this.jsSelect && typeof this.jsSelect.getSelection === 'function'
+            ? this.jsSelect.getSelection()
+            : [];
+
+        if (!selectedItems || selectedItems.length === 0) {
+            selectedItems = Array.from(this.jsSelectContinerDiv.querySelectorAll('.fsitem.selected'));
+        }
+
+        if (!selectedItems || selectedItems.length === 0) {
             return undefined;
         }
 
@@ -573,6 +793,7 @@
         $.post(this.apiUrl, { id: this.thisId, command: "getFolderContent", parameters: folder }, function (data) {
             self.#WaitingPanel();
             self.#fillFolderContent(data);
+            self.#updateCleanupButton(data.FailedUploadsCount || 0);
         }, 'json');
     }
 
@@ -588,6 +809,7 @@
         this.#WaitingPanel();
         $.post(this.apiUrl, { id: this.thisId, command: "Search", parameters: JSON.stringify({ Path: this.getCurrentPath(), Query: query }) }, function (data) {
             self.#WaitingPanel();
+            data.IsSearchResult = true;
             self.#fillFolderContent(data);
         }, 'json');
     }
@@ -715,7 +937,7 @@
         }
 
         for (let i = 0; i < selectedItems.length; i++) {
-            window.open(`${this.apiUrl}?id=${this.thisId}&command=getfilecontent&parameters=${selectedItems[i]}`, '_blank');
+            window.open(`${this.apiUrl}?id=${this.thisId}&command=getfilecontent&parameters=${encodeURIComponent(selectedItems[i])}`, '_blank');
         }
     }
 
@@ -726,7 +948,7 @@
         }
 
         for (let i = 0; i < selectedItems.length; i++) {
-            window.open(`${this.apiUrl}?id=${this.thisId}&command=download&parameters=${selectedItems[i]}`, '_blank');
+            window.open(`${this.apiUrl}?id=${this.thisId}&command=download&parameters=${encodeURIComponent(selectedItems[i])}`, '_blank');
         }
     }
 
@@ -737,7 +959,7 @@
         }
 
         for (let i = 0; i < selectedItems.length; i++) {
-            window.open(`${this.apiUrl}?id=${this.thisId}&command=view&parameters=${selectedItems[i]}`, '_blank');
+            window.open(`${this.apiUrl}?id=${this.thisId}&command=view&parameters=${encodeURIComponent(selectedItems[i])}`, '_blank');
         }
     }
 
@@ -849,6 +1071,12 @@
         closeBtn.innerText = 'Close';
         uploadPanel.appendChild(closeBtn);
         closeBtn.addEventListener('click', (e) => {
+            // Cancel all ongoing uploads before closing
+            if (dropZone.getUploadingFiles().length > 0) {
+                dropZone.getUploadingFiles().forEach(file => {
+                    dropZone.cancelUpload(file);
+                });
+            }
             uploadPanel.remove();
             this.getFolderContent();
         });
@@ -858,15 +1086,60 @@
         //init DropZone (Uploader)-------------------------------------
         Dropzone.autoDiscover = false;
         let dropZone = new Dropzone(uploadPanel, {
-            url: this.apiUrl + `?id=${this.thisId}&command=upload&parameters=${this.getCurrentPath()}`,
+            url: this.apiUrl + `?id=${this.thisId}&command=upload&parameters=${encodeURIComponent(this.getCurrentPath())}`,
             parallelUploads: (typeof this.config.parallelUploads != "undefined" ? this.config.parallelUploads : 1),
             chunking: (typeof this.config.chunking != "undefined" ? this.config.chunking : true),
             chunkSize: (typeof this.config.chunkSizeByte != "undefined" ? this.config.chunkSizeByte : 10000000),  // bytes
-            retryChunks: (typeof this.config.retryChunks != "undefined" ? this.config.retryChunks : true),  
-            retryChunksLimit: (typeof this.config.retryChunksLimit != "undefined" ? this.config.retryChunksLimit : 3),  
+            retryChunks: (typeof this.config.retryChunks != "undefined" ? this.config.retryChunks : true),
+            retryChunksLimit: (typeof this.config.retryChunksLimit != "undefined" ? this.config.retryChunksLimit : 3),
             maxFilesize: (typeof this.config.maxFileSizeToUploadMByte != "undefined" ? this.config.maxFileSizeToUploadMByte : 256), // mega bytes
             acceptedFiles: (typeof this.config.acceptedFiles != "undefined" ? this.config.acceptedFiles : ''), //'.png,.pdf'
             paramName: 'file',
         });
+
+        // Refresh folder content when upload completes successfully
+        dropZone.on("success", (file) => {
+            // If this was a chunked upload, finalize it
+            if (file.upload.chunked) {
+                $.post(this.apiUrl, { id: this.thisId, command: "finalizeupload", parameters: JSON.stringify({ fileName: file.name, path: this.getCurrentPath() }) });
+            }
+            this.getFolderContent();
+        });
+
+        // Handle upload errors
+        dropZone.on("error", (file, errorMessage) => {
+            this.showToastify('Upload failed: ' + errorMessage);
+        });
+
+        // Handle cancellation
+        dropZone.on("canceled", (file) => {
+            this.showToastify('Upload cancelled');
+        });
+    }
+
+    #updateCleanupButton(count) {
+        if (this.cleanupButton) {
+            if (count > 0) {
+                this.cleanupButton.innerHTML = `<i class="fa-solid fa-broom"></i> (${count})`;
+                this.cleanupButton.removeAttribute('disabled');
+            } else {
+                this.cleanupButton.innerHTML = '<i class="fa-solid fa-broom"></i>';
+                this.cleanupButton.setAttribute('disabled', 'disabled');
+            }
+        }
+    }
+
+    cleanupFailedUploads = function () {
+        let self = this;
+        this.#WaitingPanel();
+        $.post(this.apiUrl, { id: this.thisId, command: "cleanupuploads", parameters: this.getCurrentPath() }, function (data) {
+            self.#WaitingPanel();
+            if (data.DeletedCount > 0) {
+                self.showToastify(`Cleaned up ${data.DeletedCount} failed upload(s)`, 'success');
+            } else {
+                self.showToastify('No failed uploads to clean');
+            }
+            self.getFolderContent();
+        }, 'json');
     }
 }

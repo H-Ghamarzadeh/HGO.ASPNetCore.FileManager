@@ -4,17 +4,24 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace HGO.ASPNetCore.FileManager.ViewComponents
 {
+    /// <summary>Renders and initializes an instance of the file-manager UI.</summary>
     public class FileManagerComponent: ViewComponent
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
         private const string RootPathSessionKey = "HGO-FM-RootFolder";
+        /// <summary>Gets the in-memory configuration for active file-manager instances.</summary>
         public static Dictionary<string, FileManagerConfig> ConfigStorage = new Dictionary<string, FileManagerConfig>();
 
+        /// <summary>Initializes the file-manager component.</summary>
+        /// <param name="httpContextAccessor">Provides access to the current HTTP context.</param>
         public FileManagerComponent(IHttpContextAccessor httpContextAccessor)
         {
             _httpContextAccessor = httpContextAccessor;
         }
 
+        /// <summary>Initializes the requested instance and renders its view.</summary>
+        /// <param name="model">The instance configuration and root-folder information.</param>
+        /// <returns>The view component result.</returns>
         public IViewComponentResult Invoke(FileManagerModel model)
         {
             //Check if ID isn't null
@@ -33,7 +40,7 @@ namespace HGO.ASPNetCore.FileManager.ViewComponents
             }
 
             //Add root path to session
-            _httpContextAccessor.HttpContext.Session.SetString(RootPathSessionKey + model.Id, model.RootFolder);
+            _httpContextAccessor.HttpContext!.Session.SetString(RootPathSessionKey + model.Id, model.RootFolder);
 
             //return component view
             return View(model);

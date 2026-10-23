@@ -9,12 +9,14 @@ using SharpCompress.Archives.Zip;
 using SharpCompress.Common;
 using SharpCompress.Readers;
 using SharpCompress.Writers;
+using SharpCompress.Writers.Zip;
 using HGO.ASPNetCore.FileManager.ViewComponents;
 using SharpCompress.Compressors.Deflate;
 using System.Text;
 
 namespace HGO.ASPNetCore.FileManager.CommandsProcessor;
 
+/// <summary>Processes commands submitted to the file manager.</summary>
 public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
 {
     private readonly IHttpContextAccessor _httpContextAccessor;
@@ -22,13 +24,17 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
     private readonly ISession? _session;
     private const string RootPathSessionKey = "HGO-FM-RootFolder";
 
+    /// <summary>Initializes a file-manager command processor.</summary>
+    /// <param name="httpContextAccessor">Provides access to the current HTTP context.</param>
+    /// <param name="tempDataProvider">Provides temporary data storage for MVC views.</param>
     public FileManagerCommandsProcessor(IHttpContextAccessor httpContextAccessor, ITempDataProvider tempDataProvider)
     {
         _httpContextAccessor = httpContextAccessor;
         _tempDataProvider = tempDataProvider;
-        _session = httpContextAccessor.HttpContext.Session;
+        _session = httpContextAccessor.HttpContext!.Session;
     }
 
+    /// <inheritdoc />
     public async Task<IActionResult> ProcessCommandAsync(string id, string command, string parameters, IFormFile file)
     {
 
@@ -60,40 +66,40 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
                         result.Content = GetContent(id, parameters);
                         return result;
                     case "search":
-                        result.Content = Search(id, JsonConvert.DeserializeObject<SearchCommandParameters>(parameters));
+                        result.Content = Search(id, JsonConvert.DeserializeObject<SearchCommandParameters>(parameters)!);
                         return result;
                     case "createnewfolder":
                         result.Content = CreateNewFolder(id,
-                            JsonConvert.DeserializeObject<CreateNewFolderCommandParameters>(parameters));
+                            JsonConvert.DeserializeObject<CreateNewFolderCommandParameters>(parameters)!);
                         return result;
                     case "createnewfile":
                         result.Content = CreateNewFile(id,
-                            JsonConvert.DeserializeObject<CreateNewFileCommandParameters>(parameters));
+                            JsonConvert.DeserializeObject<CreateNewFileCommandParameters>(parameters)!);
                         return result;
                     case "delete":
                         result.Content = Delete(id,
-                            JsonConvert.DeserializeObject<DeleteCommandParameters>(parameters));
+                            JsonConvert.DeserializeObject<DeleteCommandParameters>(parameters)!);
                         return result;
                     case "rename":
                         result.Content = Rename(id,
-                            JsonConvert.DeserializeObject<RenameCommandParameters>(parameters));
+                            JsonConvert.DeserializeObject<RenameCommandParameters>(parameters)!);
                         return result;
                     case "zip":
                         result.Content = Zip(id,
-                            JsonConvert.DeserializeObject<ZipCommandParameters>(parameters));
+                            JsonConvert.DeserializeObject<ZipCommandParameters>(parameters)!);
                         return result;
                     case "unzip":
                         result.Content = UnZip(id,
-                            JsonConvert.DeserializeObject<UnZipCommandParameters>(parameters));
+                            JsonConvert.DeserializeObject<UnZipCommandParameters>(parameters)!);
                         return result;
                     case "copy":
                     case "cut":
                         result.Content = CopyCutItems(id, command.ToLower(),
-                            JsonConvert.DeserializeObject<CopyCutCommandParameters>(parameters));
+                            JsonConvert.DeserializeObject<CopyCutCommandParameters>(parameters)!);
                         return result;
                     case "editfile":
                         return EditFile(id,
-                            JsonConvert.DeserializeObject<EditFileCommandParameters>(parameters));
+                            JsonConvert.DeserializeObject<EditFileCommandParameters>(parameters)!);
                     case "download":
                         return Download(id, parameters, false);
                     case "view":
@@ -104,6 +110,12 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
                         return Upload(id, parameters, file);
                     case "filepreview":
                         return FilePreview(id, parameters);
+                    case "cleanupuploads":
+                        return CleanupUploads(id, parameters);
+                    case "countfaileduploads":
+                        return CountFailedUploads(id, parameters);
+                    case "finalizeupload":
+                        return FinalizeUpload(id, parameters);
                     default:
                         result.Content = JsonConvert.SerializeObject(new { Error = "Unknown command!" });
                         return result;
@@ -133,7 +145,7 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
             return null;
         }
 
-        return Path.GetFullPath(_session.GetString(sessionKey).Trim());
+        return Path.GetFullPath(_session.GetString(sessionKey)!.Trim());
     }
 
     private long GetRootFolderSize(string id)
@@ -171,6 +183,10 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
         result.Folders.AddRange(Utils.GetDirectories(physicalPath, "*.*", SearchOption.TopDirectoryOnly)
             .OrderBy(p => p).Select(p => p.GetFolderDetail(physicalRootPath)));
 
+        // Count failed uploads
+        var failedUploadsCount = Directory.GetFiles(physicalPath, "*.uploading", SearchOption.TopDirectoryOnly).Length;
+        result.FailedUploadsCount = failedUploadsCount;
+
         return result.ToString();
     }
 
@@ -203,21 +219,21 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
         if (searchPattern.Contains("*"))
         {
             result.Files.AddRange(Utils.GetFiles(physicalPath, searchPattern, SearchOption.AllDirectories).OrderBy(p => p)
-                .Select(p => p.GetFileDetail(physicalRootPath)));
+                .Select(p => p == null ? null : p.GetFileDetail(physicalRootPath)));
             result.Folders.AddRange(Utils.GetDirectories(physicalPath, searchPattern, SearchOption.AllDirectories)
-                .OrderBy(p => p).Select(p => p.GetFolderDetail(physicalRootPath)));
+                .OrderBy(p => p).Select(p => p == null ? null : p.GetFolderDetail(physicalRootPath)));
         }
         else
         {
             result.Files.AddRange(Utils.GetFiles(physicalPath, "*", SearchOption.AllDirectories).OrderBy(p => p)
-                .Select(p => p.GetFileDetail(physicalRootPath)));
+                .Select(p => p == null ? null : p.GetFileDetail(physicalRootPath)));
             result.Folders.AddRange(Utils.GetDirectories(physicalPath, "*", SearchOption.AllDirectories)
-                .OrderBy(p => p).Select(p => p.GetFolderDetail(physicalRootPath)));
+                .OrderBy(p => p).Select(p => p == null ? null : p.GetFolderDetail(physicalRootPath)));
 
             result.Files.RemoveAll(p =>
-                !p.FileName.Contains(searchPattern, StringComparison.InvariantCultureIgnoreCase));
+                !p!.FileName.Contains(searchPattern, StringComparison.InvariantCultureIgnoreCase));
             result.Folders.RemoveAll(p =>
-                !p.FolderName.Contains(searchPattern, StringComparison.InvariantCultureIgnoreCase));
+                !p!.FolderName.Contains(searchPattern, StringComparison.InvariantCultureIgnoreCase));
         }
 
         return result.ToString();
@@ -458,9 +474,13 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
 
         //create Zip archive
         using (Stream stream = File.Create(newZipFileName))
-        using (var archive = ZipArchive.Create())
+        using (var archive = ZipArchive.CreateArchive())
         {
-            archive.DeflateCompressionLevel = (CompressionLevel)FileManagerComponent.ConfigStorage[id].CompressionLevel;
+            var writerOptions = new ZipWriterOptions(CompressionType.Deflate,
+                (CompressionLevel)FileManagerComponent.ConfigStorage[id].CompressionLevel)
+            {
+                LeaveStreamOpen = false,
+            };
 
             foreach (var item in commandParameters.Items.Select(p => p.ConvertVirtualToPhysicalPath(physicalRootPath)))
             {
@@ -478,10 +498,7 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
                 }
             }
 
-            archive.SaveTo(stream, new WriterOptions(CompressionType.Deflate)
-            {
-                LeaveStreamOpen = false,
-            });
+            archive.SaveTo(stream, writerOptions);
         }
 
         return GetContent(id, commandParameters.Path);
@@ -531,7 +548,7 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
             if (File.Exists(zipArchivePhysicalPath))
             {
                 using (Stream stream = File.OpenRead(zipArchivePhysicalPath))
-                using (var reader = ReaderFactory.Open(stream))
+                using (var reader = ReaderFactory.OpenReader(stream, new ReaderOptions()))
                 {
                     reader.WriteAllToDirectory(physicalPath, new ExtractionOptions()
                     {
@@ -612,14 +629,19 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
             };
         }
 
+        var fileName = Path.GetFileName(physicalPath);
+        var contentType = Utils.GetMimeTypeForFileExtension(physicalPath);
+
         if (view)
         {
-            return new FileStreamResult(File.OpenRead(physicalPath), Utils.GetMimeTypeForFileExtension(physicalPath));
+            // inline disposition WITH filename so browsers that cannot render the content
+            // inline still save with the correct name instead of the URL's last path segment.
+            return new InlinePhysicalFileResult(physicalPath, contentType, fileName);
         }
 
-        return new PhysicalFileResult(physicalPath, Utils.GetMimeTypeForFileExtension(physicalPath))
+        return new PhysicalFileResult(physicalPath, contentType)
         {
-            FileDownloadName = Path.GetFileName(physicalPath),
+            FileDownloadName = fileName,
             EnableRangeProcessing = true
         };
     }
@@ -659,7 +681,7 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
         var result = new ViewResult()
         {
             ViewName = "HgoFileManager/Edit",
-            TempData = new TempDataDictionary(_httpContextAccessor.HttpContext, _tempDataProvider)
+            TempData = new TempDataDictionary(_httpContextAccessor.HttpContext!, _tempDataProvider)
         };
         result.TempData["Id"] = id;
         result.TempData["FileFullPath"] = filePath;
@@ -783,21 +805,155 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
         }
 
         var filePath = Path.Combine(physicalPath, file.FileName);
+        var tempFilePath = filePath + ".uploading";
 
-        if (File.Exists(filePath) && _httpContextAccessor.HttpContext.Request.Form.TryGetValue("dzchunkindex", out StringValues chunkIndex))
+        // Check if this is chunked upload
+        _httpContextAccessor.HttpContext!.Request.Form.TryGetValue("dzchunkindex", out StringValues chunkIndex);
+        _httpContextAccessor.HttpContext!.Request.Form.TryGetValue("dztotalchunkcount", out StringValues totalChunks);
+
+        var isChunkedUpload = chunkIndex.Count > 0 && totalChunks.Count > 0;
+
+        if (isChunkedUpload)
         {
+            // Clean up any existing incomplete upload if this is the first chunk
             if (int.TryParse(chunkIndex.ToString(), out int idx) && idx == 0)
             {
-                return new ContentResult()
+                if (File.Exists(tempFilePath))
                 {
-                    Content = "File already exist",
-                    StatusCode = 400
-                };
+                    File.Delete(tempFilePath);
+                }
+            }
+
+            // Write chunk to temporary file
+            using Stream fileStream = new FileStream(tempFilePath, FileMode.Append);
+            file.CopyTo(fileStream);
+        }
+        else
+        {
+            // Non-chunked upload - write directly
+            if (File.Exists(filePath))
+            {
+                File.Delete(filePath);
+            }
+            using Stream fileStream = new FileStream(filePath, FileMode.Create);
+            file.CopyTo(fileStream);
+        }
+
+        return new OkResult();
+    }
+
+    private IActionResult CleanupUploads(string id, string path)
+    {
+        var physicalRootPath = GetCurrentSessionPhysicalRootPath(id);
+        if (string.IsNullOrWhiteSpace(physicalRootPath))
+        {
+            return new ContentResult()
+            {
+                Content = "Invalid Root Path!",
+                StatusCode = 400
+            };
+        }
+
+        var physicalPath = path.ConvertVirtualToPhysicalPath(physicalRootPath);
+
+        if (!physicalPath.ToLower().StartsWith(physicalRootPath.ToLower()) || !Directory.Exists(physicalPath))
+        {
+            physicalPath = physicalRootPath;
+        }
+
+        var uploadingFiles = Directory.GetFiles(physicalPath, "*.uploading", SearchOption.TopDirectoryOnly);
+        int deletedCount = 0;
+
+        foreach (var file in uploadingFiles)
+        {
+            try
+            {
+                File.Delete(file);
+                deletedCount++;
+            }
+            catch
+            {
+                // Ignore errors
             }
         }
 
-        using Stream fileStream = new FileStream(filePath, FileMode.Append);
-        file.CopyTo(fileStream);
+        return new ContentResult()
+        {
+            Content = JsonConvert.SerializeObject(new { DeletedCount = deletedCount }),
+            ContentType = "application/json"
+        };
+    }
+
+    private IActionResult CountFailedUploads(string id, string path)
+    {
+        var physicalRootPath = GetCurrentSessionPhysicalRootPath(id);
+        if (string.IsNullOrWhiteSpace(physicalRootPath))
+        {
+            return new ContentResult()
+            {
+                Content = "Invalid Root Path!",
+                StatusCode = 400
+            };
+        }
+
+        var physicalPath = path.ConvertVirtualToPhysicalPath(physicalRootPath);
+
+        if (!physicalPath.ToLower().StartsWith(physicalRootPath.ToLower()) || !Directory.Exists(physicalPath))
+        {
+            physicalPath = physicalRootPath;
+        }
+
+        var count = Directory.GetFiles(physicalPath, "*.uploading", SearchOption.TopDirectoryOnly).Length;
+
+        return new ContentResult()
+        {
+            Content = JsonConvert.SerializeObject(new { Count = count }),
+            ContentType = "application/json"
+        };
+    }
+
+    private IActionResult FinalizeUpload(string id, string parameters)
+    {
+        var physicalRootPath = GetCurrentSessionPhysicalRootPath(id);
+        if (string.IsNullOrWhiteSpace(physicalRootPath))
+        {
+            return new ContentResult()
+            {
+                Content = "Invalid Root Path!",
+                StatusCode = 400
+            };
+        }
+
+        dynamic paramData = JsonConvert.DeserializeObject(parameters);
+        string fileName = paramData.fileName;
+        string path = paramData.path;
+
+        var physicalPath = path.ConvertVirtualToPhysicalPath(physicalRootPath);
+
+        if (!physicalPath.ToLower().StartsWith(physicalRootPath.ToLower()) || !Directory.Exists(physicalPath))
+        {
+            physicalPath = physicalRootPath;
+        }
+
+        var filePath = Path.Combine(physicalPath, fileName);
+        var tempFilePath = filePath + ".uploading";
+
+        // If temp file exists, rename it to final filename
+        if (File.Exists(tempFilePath))
+        {
+            try
+            {
+                if (File.Exists(filePath))
+                {
+                    File.Delete(filePath);
+                }
+                File.Move(tempFilePath, filePath);
+            }
+            catch
+            {
+                // Ignore errors - file might be locked or in use
+            }
+        }
 
         return new OkResult();
     }
@@ -825,6 +981,7 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
             };
         }
 
+        var basePath = _httpContextAccessor.HttpContext?.Request.PathBase.Value?.TrimEnd('/') ?? "";
         switch (Path.GetExtension(physicalPath).ToLower().Trim())
         {
             case ".png" or ".jpg" or ".webp" or ".gif" or ".svg" or ".jpeg" or ".apng" or ".avif" or ".ico" or ".bmp" or ".tif" or ".tiff":
@@ -834,31 +991,31 @@ public class FileManagerCommandsProcessor : IFileManagerCommandsProcessor
                     EnableRangeProcessing = true
                 };
             case ".zip" or ".rar" or ".tar" or ".7z" or ".gzip" or ".7zip":
-                return new RedirectResult("/hgofilemanager/images/zip.png") { Permanent = true };
+                return new RedirectResult(basePath + "/hgofilemanager/images/zip.png") { Permanent = true };
             case ".js" or ".jsx":
-                return new RedirectResult("/hgofilemanager/images/js.png") { Permanent = true };
+                return new RedirectResult(basePath + "/hgofilemanager/images/js.png") { Permanent = true };
             case ".php":
-                return new RedirectResult("/hgofilemanager/images/php.png") { Permanent = true };
+                return new RedirectResult(basePath + "/hgofilemanager/images/php.png") { Permanent = true };
             case ".html" or ".htm" or ".cshtml":
-                return new RedirectResult("/hgofilemanager/images/html.png") { Permanent = true };
+                return new RedirectResult(basePath + "/hgofilemanager/images/html.png") { Permanent = true };
             case ".css":
-                return new RedirectResult("/hgofilemanager/images/css.png") { Permanent = true };
+                return new RedirectResult(basePath + "/hgofilemanager/images/css.png") { Permanent = true };
             case ".json":
-                return new RedirectResult("/hgofilemanager/images/json.png") { Permanent = true };
+                return new RedirectResult(basePath + "/hgofilemanager/images/json.png") { Permanent = true };
             case ".txt":
-                return new RedirectResult("/hgofilemanager/images/txt.png") { Permanent = true };
+                return new RedirectResult(basePath + "/hgofilemanager/images/txt.png") { Permanent = true };
             case ".pdf":
-                return new RedirectResult("/hgofilemanager/images/pdf.png") { Permanent = true };
+                return new RedirectResult(basePath + "/hgofilemanager/images/pdf.png") { Permanent = true };
             case ".mp4":
-                return new RedirectResult("/hgofilemanager/images/mp4.png") { Permanent = true };
+                return new RedirectResult(basePath + "/hgofilemanager/images/mp4.png") { Permanent = true };
             case ".mp3":
-                return new RedirectResult("/hgofilemanager/images/mp3.png") { Permanent = true };
+                return new RedirectResult(basePath + "/hgofilemanager/images/mp3.png") { Permanent = true };
             case ".exe":
-                return new RedirectResult("/hgofilemanager/images/exe.png") { Permanent = true };
+                return new RedirectResult(basePath + "/hgofilemanager/images/exe.png") { Permanent = true };
             case ".dll":
-                return new RedirectResult("/hgofilemanager/images/dll.png") { Permanent = true };
+                return new RedirectResult(basePath + "/hgofilemanager/images/dll.png") { Permanent = true };
             default:
-                return new RedirectResult("/hgofilemanager/images/file.png") { Permanent = true };
+                return new RedirectResult(basePath + "/hgofilemanager/images/file.png") { Permanent = true };
         }
     }
 }
